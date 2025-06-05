@@ -2,7 +2,8 @@ add_executable(${CMAKE_PROJECT_NAME}
     main.c
     draw.c
     palette.c
-    palette_emojis_data.c
+    emoji_data.c
+    emoji_renderer.c
     app_context.c
     event_handler.c
     resize_handler.c

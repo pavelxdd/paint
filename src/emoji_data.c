@@ -1,5 +1,5 @@
 // AI Summary: Contains the static definition of the emoji codepoint array and its count for the palette.
-#include "palette_emojis_data.h"
+#include "emoji_data.h"
 #include <stddef.h> // For sizeof
 
 // Predefined list of emojis - will be shuffled on startup
