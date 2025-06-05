@@ -11,17 +11,15 @@
 #include <stdlib.h>
 #include <string.h> // For strlen (used indirectly by emoji_renderer)
 #include <math.h> // For fabsf, fmodf, roundf
-// #include <time.h>   // No longer needed for srand/rand here
 
 // Constants for dynamic row calculation
 #define MIN_DYNAMIC_COLOR_ROWS 2
 #define MAX_DYNAMIC_COLOR_ROWS 6
 #define MIN_DYNAMIC_EMOJI_ROWS 1
 #define MAX_DYNAMIC_EMOJI_ROWS 2
-#define MIN_CANVAS_HEIGHT_FOR_PALETTE_CALC (PALETTE_HEIGHT * 2) // Min canvas height to aim for when adjusting palette rows
 
-
-// Fisher-Yates shuffle moved to emoji_renderer.c
+// Min canvas height to aim for when adjusting palette rows
+#define MIN_CANVAS_HEIGHT_FOR_PALETTE_CALC (PALETTE_HEIGHT * 10) 
 
 // Helper function to convert HSV to RGB
 static SDL_Color hsv_to_rgb(float h, float s, float v) {
@@ -126,17 +124,12 @@ static void fill_palette_colors(Palette *p) {
     }
 }
 
-// allocate_and_shuffle_emoji_codepoints moved to emoji_renderer.c (as part of its create/shuffle logic)
-// palette_render_emoji_textures moved to emoji_renderer.c (as part of its shuffle_and_render_all logic)
-
-
 Palette *palette_create(SDL_Renderer *ren, int window_w, int window_h) {
     Palette *p = malloc(sizeof(Palette));
     if (!p) {
         SDL_Log("Failed to allocate Palette");
         return NULL;
     }
-    // p->ren_ref = ren; // No longer needed in Palette struct
     
     p->emoji_renderer_instance = emoji_renderer_create(ren);
     if (!p->emoji_renderer_instance) {

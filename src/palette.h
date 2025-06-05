@@ -9,13 +9,8 @@
 #include "emoji_renderer.h" // For EmojiRenderer type
 
 #define PALETTE_HEIGHT 50
-// NUM_COLOR_ROWS_INC_GRAYSCALE, NUM_EMOJI_ROWS, PALETTE_ROWS are now dynamic.
-// Min/Max dynamic rows are defined internally in palette.c logic.
 #define PALETTE_CELL_MIN_SIZE 50
 #define COLOR_EMOJI_SEPARATOR_HEIGHT 2
-
-// #define EMOJI_FONT_PATH "/usr/share/fonts/noto/NotoColorEmoji.ttf" // Moved to emoji_renderer.h
-// #define EMOJI_FONT_SIZE 48                 // Moved to emoji_renderer.h
 #define DEFAULT_EMOJI_CELL_PADDING 5       // Padding for emojis in palette cells
 
 typedef struct {
@@ -30,8 +25,6 @@ typedef struct {
     int total_cells;        // total_color_cells + total_emoji_cells_to_display
 
     EmojiRenderer* emoji_renderer_instance; // Manages emoji textures and data
-
-    // SDL_Renderer* ren_ref; // No longer needed here, EmojiRenderer manages its own
 } Palette;
 
 Palette *palette_create(SDL_Renderer *ren, int window_w, int window_h);
