@@ -24,3 +24,4 @@ int palette_hit_test(const Palette *p, int mx, int my, int window_w, int canvas_
 SDL_Color palette_get_color(const Palette *p, int index);
 
 #endif // PALETTE_H
+

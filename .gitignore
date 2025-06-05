@@ -1,20 +1,8 @@
-# Compiled object files
-*.o
-
-Executable
-
-main
-
-CMake specific files and directories
-
 build/
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 Makefile
 *.cbp
-
-OS generated files
-
 .DS_Store
 Thumbs.db

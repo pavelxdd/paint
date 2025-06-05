@@ -16,7 +16,7 @@ This project uses CMake.
     cmake ..
     make
     ```
-    The executable `main` will be created in the `build` directory.
+    The executable `paint` will be created in the `build` directory.
 
 ## Running
 

@@ -8,11 +8,6 @@ set(CMAKE_C_EXTENSIONS ON)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
-add_executable(${CMAKE_PROJECT_NAME}
-    main.c
-    draw.c
-    palette.c
-)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${SDL2_LIBRARIES} m)
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall -Wextra)
+add_subdirectory(src)

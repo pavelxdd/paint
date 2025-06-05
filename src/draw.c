@@ -43,3 +43,4 @@ void draw_hollow_circle(SDL_Renderer *r, int cx, int cy, int radius)
         }
     }
 }
+

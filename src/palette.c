@@ -164,3 +164,4 @@ SDL_Color palette_get_color(const Palette *p, int index)
     }
     return (SDL_Color){0, 0, 0, 255}; // Default to black
 }
+

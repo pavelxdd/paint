@@ -9,3 +9,4 @@ void draw_circle(SDL_Renderer *r, int cx, int cy, int radius);
 void draw_hollow_circle(SDL_Renderer *r, int cx, int cy, int radius);
 
 #endif // DRAW_H
+
