@@ -5,7 +5,6 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h> // Still needed as Palette uses EmojiRenderer which uses TTF
 #include "emoji_renderer.h" // For EmojiRenderer type
 
 #define PALETTE_HEIGHT 50
