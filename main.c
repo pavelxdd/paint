@@ -83,9 +83,11 @@ int main(void)
     SDL_SetRenderTarget(ren, NULL);
 
     int running = 1;
+    int needs_redraw = 1;
+    SDL_Event e;
     while (running) {
-        SDL_Event e;
-        while (SDL_PollEvent(&e)) {
+        if (SDL_WaitEventTimeout(&e, needs_redraw ? 16 : -1)) {
+            do {
             if (e.type == SDL_QUIT) {
                 running = 0;
             } else if (e.type == SDL_WINDOWEVENT &&
@@ -128,11 +130,22 @@ int main(void)
                         }
                     }
                 }
-
+                needs_redraw = 1;
             } else if (e.type == SDL_KEYDOWN) {
                 if (e.key.keysym.sym >= SDLK_1 && e.key.keysym.sym <= SDLK_9) {
                     radius = 5 * (e.key.keysym.sym - SDLK_1 + 1);
+                    if (radius > MAX_BRUSH_SIZE) radius = MAX_BRUSH_SIZE;
+                    if (radius < MIN_BRUSH_SIZE) radius = MIN_BRUSH_SIZE;
                 }
+            } else if (e.type == SDL_MOUSEWHEEL) {
+                if (e.wheel.y > 0) {
+                    radius += 2;
+                    if (radius > MAX_BRUSH_SIZE) radius = MAX_BRUSH_SIZE;
+                } else if (e.wheel.y < 0) {
+                    radius -= 2;
+                    if (radius < MIN_BRUSH_SIZE) radius = MIN_BRUSH_SIZE;
+                }
+                needs_redraw = 1;
             } else if (e.type == SDL_MOUSEWHEEL) {
                 if (e.wheel.y > 0) {
                     radius += 2;
@@ -152,11 +165,13 @@ int main(void)
                     int index = mx / (window_w / palette_cols);
                     if (index >= 0 && index < palette_cols)
                         current_color = palette[index];
+                    needs_redraw = 1;
                 } else if (middle) {
                     SDL_SetRenderTarget(ren, canvas);
                     SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
                     SDL_RenderClear(ren);
                     SDL_SetRenderTarget(ren, NULL);
+                    needs_redraw = 1;
                 } else if (left || right) {
                     SDL_SetRenderTarget(ren, canvas);
                     if (left) {
@@ -166,22 +181,30 @@ int main(void)
                     }
                     draw_circle(ren, mx, my, radius);
                     SDL_SetRenderTarget(ren, NULL);
+                    needs_redraw = 1;
                 }
             }
+        } while (SDL_PollEvent(&e));
+        } else {
+            // timeout without events
         }
 
-        SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
-        SDL_RenderClear(ren);
+        if (needs_redraw) {
+            SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+            SDL_RenderClear(ren);
 
-        SDL_RenderCopy(ren, canvas, NULL, NULL);
+            SDL_Rect dst = {0, 0, window_w, canvas_h};
+            SDL_RenderCopy(ren, canvas, NULL, &dst);
 
-        for (int i = 0; i < palette_cols; ++i) {
-            SDL_Rect r = { i * (window_w / palette_cols), canvas_h, window_w / palette_cols, PALETTE_HEIGHT };
-            SDL_SetRenderDrawColor(ren, palette[i].r, palette[i].g, palette[i].b, 255);
-            SDL_RenderFillRect(ren, &r);
+            for (int i = 0; i < palette_cols; ++i) {
+                SDL_Rect r = { i * (window_w / palette_cols), canvas_h, window_w / palette_cols, PALETTE_HEIGHT };
+                SDL_SetRenderDrawColor(ren, palette[i].r, palette[i].g, palette[i].b, 255);
+                SDL_RenderFillRect(ren, &r);
+            }
+
+            SDL_RenderPresent(ren);
+            needs_redraw = 0;
         }
-
-        SDL_RenderPresent(ren);
     }
 
     free(palette);
