@@ -131,7 +131,6 @@ int main(void)
                     }
                 }
                 needs_redraw = 1;
-
             } else if (e.type == SDL_KEYDOWN) {
                 if (e.key.keysym.sym >= SDLK_1 && e.key.keysym.sym <= SDLK_9) {
                     radius = 5 * (e.key.keysym.sym - SDLK_1 + 1);
@@ -147,6 +146,14 @@ int main(void)
                     if (radius < MIN_BRUSH_SIZE) radius = MIN_BRUSH_SIZE;
                 }
                 needs_redraw = 1;
+            } else if (e.type == SDL_MOUSEWHEEL) {
+                if (e.wheel.y > 0) {
+                    radius += 2;
+                    if (radius > MAX_BRUSH_SIZE) radius = MAX_BRUSH_SIZE;
+                } else if (e.wheel.y < 0) {
+                    radius -= 2;
+                    if (radius < MIN_BRUSH_SIZE) radius = MIN_BRUSH_SIZE;
+                }
             } else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEMOTION) {
                 int mx = e.button.x;
                 int my = e.button.y;
