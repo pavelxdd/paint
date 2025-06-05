@@ -3,7 +3,7 @@
 // isolate rendering concerns and keep palette logic/data separate.
 #include "palette.h"
 #include "draw.h"
-#include "app_context.h"   // For MIN_BRUSH_SIZE and CANVAS_PALETTE_SEPARATOR_HEIGHT
+#include "ui_constants.h"   // MIN_BRUSH_SIZE & CANVAS_PALETTE_SEPARATOR_HEIGHT
 #include <math.h>
 
 void palette_draw(const Palette *p,

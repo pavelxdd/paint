@@ -1,5 +1,5 @@
 #include "palette.h"
-#include "app_context.h"       // For CANVAS_PALETTE_SEPARATOR_HEIGHT
+#include "ui_constants.h"      /* layout constants */
 #include "emoji_renderer.h"
 
 #include <stdlib.h>

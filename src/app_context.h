@@ -9,10 +9,9 @@
 
 #define INITIAL_WINDOW_WIDTH 800
 #define INITIAL_WINDOW_HEIGHT 600
-#define MIN_BRUSH_SIZE 2
-// MAX_BRUSH_SIZE is dynamically calculated based on palette and window size.
+
 #define RESIZE_DEBOUNCE_MS 200 // Milliseconds for resize debouncing
-#define CANVAS_PALETTE_SEPARATOR_HEIGHT 2 // Height of the separator line
+#include "ui_constants.h"          // Shared UI layout constants
 
 typedef enum {
     TOOL_BRUSH,
