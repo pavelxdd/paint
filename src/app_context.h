@@ -5,7 +5,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-#include "palette.h" // For Palette struct and PALETTE_ROWS, PALETTE_HEIGHT
+#include "palette.h" // For Palette struct
 
 #define INITIAL_WINDOW_WIDTH 800
 #define INITIAL_WINDOW_HEIGHT 600
@@ -54,7 +54,7 @@ AppContext* app_context_create(SDL_Window *win, SDL_Renderer *ren);
 void app_context_destroy(AppContext *ctx);
 
 // State Modifiers & Operations
-void app_context_select_palette_tool(AppContext *ctx, int palette_idx); // Renamed for clarity
+void app_context_select_palette_tool(AppContext *ctx, int palette_idx);
 void app_context_set_background_and_clear_canvas(AppContext *ctx, SDL_Color color);
 void app_context_clear_canvas_with_current_bg(AppContext *ctx);
 void app_context_change_brush_radius(AppContext *ctx, int delta);
@@ -65,7 +65,8 @@ void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool
 // For window resize event notification
 void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h);
 
-// Helper to calculate canvas display height (called internally and by resize handler)
+// Helper to calculate canvas display height
 void app_context_update_canvas_display_height(AppContext *ctx);
 
-SDL_bool app_context_is_drawing_with_emoji(AppContext* ctx); // Helper
+// Helper to check current tool
+SDL_bool app_context_is_drawing_with_emoji(AppContext* ctx);

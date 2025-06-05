@@ -55,8 +55,7 @@ AppContext* app_context_create(SDL_Window *win, SDL_Renderer *ren) {
     ctx->window_h = INITIAL_WINDOW_HEIGHT;
     app_context_update_canvas_display_height(ctx);
 
-
-    ctx->palette = palette_create(ctx->ren, ctx->window_w); // Pass renderer for emoji textures
+    ctx->palette = palette_create(ctx->ren, ctx->window_w);
     if (!ctx->palette) {
         SDL_Log("Failed to create palette in AppContext");
         free(ctx);
@@ -66,7 +65,6 @@ AppContext* app_context_create(SDL_Window *win, SDL_Renderer *ren) {
     ctx->background_color = (SDL_Color){255, 255, 255, 255}; // Default white background
 
     // Default to the last color in the palette (usually black from grayscale row)
-    // Find last actual color index if palette has colors
     int default_selection_idx = 0;
     if (ctx->palette->total_color_cells > 0) {
         default_selection_idx = ctx->palette->total_color_cells - 1;
@@ -76,13 +74,15 @@ AppContext* app_context_create(SDL_Window *win, SDL_Renderer *ren) {
     // If palette is totally empty (should not happen with valid creation), default_selection_idx is 0.
 
     ctx->selected_palette_idx = default_selection_idx;
-    app_context_select_palette_tool(ctx, ctx->selected_palette_idx); // This sets current_tool and current_color
+    app_context_select_palette_tool(ctx, ctx->selected_palette_idx);
 
     ctx->brush_radius = 10; // Default brush radius
     app_context_recalculate_sizes_and_limits(ctx);
 
-    int initial_canvas_h = ctx->canvas_display_area_h; // canvas_display_area_h updated by update_canvas_display_height
-    if (initial_canvas_h < 1) initial_canvas_h = 1;
+    int initial_canvas_h = ctx->canvas_display_area_h; 
+    if (initial_canvas_h < 1) {
+        initial_canvas_h = 1;
+    }
     ctx->canvas_texture = NULL;
     init_canvas_texture(ctx, ctx->window_w, initial_canvas_h);
     if (!ctx->canvas_texture) {
@@ -99,7 +99,9 @@ AppContext* app_context_create(SDL_Window *win, SDL_Renderer *ren) {
 }
 
 void app_context_destroy(AppContext *ctx) {
-    if (!ctx) return;
+    if (!ctx) {
+        return;
+    }
     if (ctx->canvas_texture) {
         SDL_DestroyTexture(ctx->canvas_texture);
     }
@@ -114,7 +116,7 @@ void app_context_select_palette_tool(AppContext *ctx, int palette_idx) {
         ctx->selected_palette_idx = palette_idx;
         if (palette_is_emoji_index(ctx->palette, palette_idx)) {
             ctx->current_tool = TOOL_EMOJI;
-            // current_color is not used for TOOL_EMOJI, no need to change it
+            // current_color is not used for TOOL_EMOJI
         } else if (palette_is_color_index(ctx->palette, palette_idx)) {
             ctx->current_tool = TOOL_BRUSH;
             ctx->current_color = palette_get_color(ctx->palette, palette_idx);
@@ -122,7 +124,7 @@ void app_context_select_palette_tool(AppContext *ctx, int palette_idx) {
             // Should not happen if palette_idx is valid and maps to a cell type
             // Default to brush with black if something is wrong
             ctx->current_tool = TOOL_BRUSH;
-            ctx->current_color = (SDL_Color){0,0,0,255};
+            ctx->current_color = (SDL_Color){0, 0, 0, 255};
         }
         ctx->needs_redraw = SDL_TRUE;
     }
@@ -134,7 +136,9 @@ void app_context_set_background_and_clear_canvas(AppContext *ctx, SDL_Color colo
 }
 
 void app_context_clear_canvas_with_current_bg(AppContext *ctx) {
-    if (!ctx->canvas_texture) return;
+    if (!ctx->canvas_texture) {
+        return;
+    }
     SDL_SetRenderTarget(ctx->ren, ctx->canvas_texture);
     SDL_SetRenderDrawColor(ctx->ren, ctx->background_color.r, ctx->background_color.g, ctx->background_color.b, ctx->background_color.a);
     SDL_RenderClear(ctx->ren);
@@ -172,8 +176,9 @@ void app_context_recalculate_sizes_and_limits(AppContext *ctx) {
     if (ctx->palette && ctx->palette->cols > 0) {
         int min_cell_width = ctx->window_w / ctx->palette->cols;
         int min_cell_dim = (min_cell_width < PALETTE_HEIGHT) ? min_cell_width : PALETTE_HEIGHT;
-        ctx->max_brush_radius = min_cell_dim / 2; // For circle brush, radius is half of cell dim
-                                                 // For emojis, this radius translates to ~half cell height for preview
+        // For circle brush, radius is half of cell dim
+        // For emojis, this radius translates to ~half cell height for preview
+        ctx->max_brush_radius = min_cell_dim / 2; 
     } else {
         ctx->max_brush_radius = PALETTE_HEIGHT / 2;
     }
@@ -221,11 +226,15 @@ void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool
                     if (emoji_w > 0 && emoji_h > 0) {
                         float aspect_ratio = (float)emoji_w / emoji_h;
                         // brush_radius determines the base size, tripled for canvas drawing
-                        int render_h = ctx->brush_radius * 6; // Diameter based on brush radius, then tripled
-                        if (render_h < MIN_BRUSH_SIZE*6) render_h = MIN_BRUSH_SIZE*6; // Minimum sensible size (scaled)
+                        int render_h = ctx->brush_radius * 6; 
+                        if (render_h < MIN_BRUSH_SIZE * 6) {
+                             render_h = MIN_BRUSH_SIZE * 6; // Minimum sensible size (scaled)
+                        }
 
                         int render_w = roundf(render_h * aspect_ratio);
-                        if (render_w == 0) render_w = 1; // Ensure non-zero width
+                        if (render_w == 0) {
+                            render_w = 1; // Ensure non-zero width
+                        }
 
                         SDL_Rect dst_rect = {
                             roundf(final_draw_mx - render_w / 2.0f),

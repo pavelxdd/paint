@@ -60,14 +60,13 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout) {
                     int right_button_pressed = SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT);
 
                     if (left_button_pressed || right_button_pressed) {
-                        // Drawing logic is now in app_context_draw_stroke
-                        // It checks if mouse is within canvas display area and if area has positive height.
+                        // Drawing logic is in app_context_draw_stroke, which also checks if mouse is within canvas display area.
                         app_context_draw_stroke(ctx, mx, my, right_button_pressed); // true for erase (use_background_color)
                     }
                 }
             }
         } while (SDL_PollEvent(&e)); // Process all pending events
     } else {
-        // Timeout without events, SDL_WaitEventTimeout returned 0
+        // Timeout without events
     }
 }

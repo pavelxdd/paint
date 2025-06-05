@@ -8,8 +8,8 @@
 #include <SDL2/SDL_ttf.h>
 
 #define PALETTE_HEIGHT 50
-#define NUM_COLOR_ROWS_INC_GRAYSCALE 6 // Number of rows dedicated to colors + grayscale
-#define NUM_EMOJI_ROWS 2               // Number of rows dedicated to emojis
+#define NUM_COLOR_ROWS_INC_GRAYSCALE 6 // Number of rows for colors + grayscale
+#define NUM_EMOJI_ROWS 2               // Number of rows for emojis
 #define PALETTE_ROWS (NUM_COLOR_ROWS_INC_GRAYSCALE + NUM_EMOJI_ROWS)
 #define PALETTE_CELL_MIN_SIZE 50
 #define COLOR_EMOJI_SEPARATOR_HEIGHT 2
@@ -19,18 +19,18 @@
 #define DEFAULT_EMOJI_CELL_PADDING 5       // Padding for emojis in palette cells
 
 typedef struct {
-    SDL_Color *colors;      // For color rows
+    SDL_Color *colors;
     int cols;               // Number of columns, dynamically calculated
     int total_rows;         // PALETTE_ROWS
     int color_rows;         // NUM_COLOR_ROWS_INC_GRAYSCALE
     int emoji_rows;         // NUM_EMOJI_ROWS
 
     int total_color_cells;
-    int total_emoji_cells_to_display; // How many emoji cells are actually drawn based on cols and defined emojis
+    int total_emoji_cells_to_display; // Number of emoji cells actually displayed
     int total_cells;        // total_color_cells + total_emoji_cells_to_display
 
     TTF_Font* emoji_font;
-    const char** emoji_codepoints;  // Static list of available emoji UTF-8 strings
+    const char** emoji_codepoints;  // Shuffled list of available emoji UTF-8 strings
     SDL_Texture** emoji_textures;   // Rendered textures for each defined emoji
     SDL_Point* emoji_texture_dims;  // Original w,h for each emoji texture
     int num_defined_emojis;         // Count of emojis in emoji_codepoints array

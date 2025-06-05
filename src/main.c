@@ -12,7 +12,7 @@
 #include "palette.h"        // For palette_draw (used in render_scene)
 
 static void render_scene(AppContext *ctx) {
-    SDL_SetRenderDrawColor(ctx->ren, 255, 255, 255, 255); // Clear window to white
+    SDL_SetRenderDrawColor(ctx->ren, 255, 255, 255, 255); 
     SDL_RenderClear(ctx->ren);
 
     // canvas_display_area_h is already calculated and stored in ctx
@@ -36,8 +36,7 @@ static void render_scene(AppContext *ctx) {
     SDL_RenderPresent(ctx->ren);
 }
 
-int main(void)
-{
+int main(void) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_Log("SDL_Init error: %s", SDL_GetError());
         return EXIT_FAILURE;
@@ -80,7 +79,7 @@ int main(void)
             SDL_Log("Renderer supports target textures.");
         } else {
             SDL_Log("Error: Renderer does NOT support target textures. Application may not work correctly.");
-            // This is a critical error, consider exiting
+            // This is a critical error, consider exiting if absolutely necessary
         }
     }
 
