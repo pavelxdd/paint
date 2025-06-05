@@ -2,17 +2,26 @@
 // Handles creation (including loading emoji font, shuffling emojis, and rendering them to textures),
 // destruction, and recreation (including reshuffling and re-rendering emojis) of the palette.
 // Generates color rows systematically (HSV + grayscale) and emoji rows from a predefined, shuffled list.
+// Number of rows for colors and emojis are now dynamically calculated based on window height.
 // Provides functions for drawing the palette and performing hit tests for tool selection.
 // Depends on app_context.h for MIN_BRUSH_SIZE.
 #include "palette.h"
 #include "draw.h" // For draw_hollow_circle
-#include "app_context.h" // For MIN_BRUSH_SIZE
+#include "app_context.h" // For MIN_BRUSH_SIZE, CANVAS_PALETTE_SEPARATOR_HEIGHT
 #include "palette_emojis_data.h" // For emoji codepoints and count
 
 #include <stdlib.h>
 #include <string.h> // For strlen
 #include <math.h> // For fabsf, fmodf, roundf
 #include <time.h>   // For srand, rand (though main seeds it)
+
+// Constants for dynamic row calculation
+#define MIN_DYNAMIC_COLOR_ROWS 2
+#define MAX_DYNAMIC_COLOR_ROWS 6
+#define MIN_DYNAMIC_EMOJI_ROWS 1
+#define MAX_DYNAMIC_EMOJI_ROWS 2
+#define MIN_CANVAS_HEIGHT_FOR_PALETTE_CALC (PALETTE_HEIGHT * 2) // Min canvas height to aim for when adjusting palette rows
+
 
 // Fisher-Yates shuffle for an array of char pointers
 static void shuffle_char_pointers(char **array, int n) {
@@ -56,37 +65,71 @@ static SDL_Color hsv_to_rgb(float h, float s, float v) {
     return rgb_color;
 }
 
+static void palette_calculate_and_set_dynamic_rows(Palette *p, int window_h) {
+    // Iterate from max possible rows downwards to find the largest combination that fits
+    // Prioritize fitting more rows if possible.
+    for (int c_rows = MAX_DYNAMIC_COLOR_ROWS; c_rows >= MIN_DYNAMIC_COLOR_ROWS; c_rows--) {
+        for (int e_rows = MAX_DYNAMIC_EMOJI_ROWS; e_rows >= MIN_DYNAMIC_EMOJI_ROWS; e_rows--) {
+            int current_total_palette_rows = c_rows + e_rows;
+            int palette_content_h = current_total_palette_rows * PALETTE_HEIGHT;
+            
+            if (c_rows > 0 && e_rows > 0 && COLOR_EMOJI_SEPARATOR_HEIGHT > 0) {
+                palette_content_h += COLOR_EMOJI_SEPARATOR_HEIGHT;
+            }
+            
+            // This is the total height the palette UI (rows + main separator) would consume
+            int total_palette_ui_h = palette_content_h + CANVAS_PALETTE_SEPARATOR_HEIGHT;
+            int remaining_canvas_h = window_h - total_palette_ui_h;
+
+            if (remaining_canvas_h >= MIN_CANVAS_HEIGHT_FOR_PALETTE_CALC) {
+                p->color_rows = c_rows;
+                p->emoji_rows = e_rows;
+                p->total_rows = p->color_rows + p->emoji_rows;
+                return; 
+            }
+        }
+    }
+    // If loop finishes, it means even min_color_rows + min_emoji_rows didn't fit while reserving MIN_CANVAS_HEIGHT_FOR_PALETTE_CALC.
+    // Default to absolute minimums. Canvas height might become very small or zero.
+    p->color_rows = MIN_DYNAMIC_COLOR_ROWS;
+    p->emoji_rows = MIN_DYNAMIC_EMOJI_ROWS;
+    p->total_rows = p->color_rows + p->emoji_rows;
+}
+
+
 static void fill_palette_colors(Palette *p) {
-    if (p->color_rows == 0) {
+    if (p->color_rows == 0) { // Use dynamic p->color_rows
         return;
     }
-    const int num_hsv_palette_rows = p->color_rows - 1;
+    const int num_hsv_palette_rows = p->color_rows - 1; // p->color_rows includes one grayscale row
     const float V_DARK_START = 0.5f, V_VIVID = 1.0f, S_VIVID = 1.0f, S_PASTEL_END = 0.4f;
     int vivid_row_index = (num_hsv_palette_rows > 0) ? (num_hsv_palette_rows / 2) : -1;
+    
     for (int col = 0; col < p->cols; ++col) {
         float hue = (p->cols == 1) ? 0.0f : (360.0f * col / (p->cols - 1));
         if (p->cols <= 1) hue = 0;
-        for (int row = 0; row < p->color_rows; ++row) {
+        for (int row = 0; row < p->color_rows; ++row) { // Use dynamic p->color_rows
             int pos = row * p->cols + col;
-            if (num_hsv_palette_rows > 0 && row < num_hsv_palette_rows) {
+            if (num_hsv_palette_rows > 0 && row < num_hsv_palette_rows) { // This is an HSV row
                 float current_v = V_VIVID, current_s = S_VIVID;
                 if (num_hsv_palette_rows == 1) {
                     // Single HSV row, use vivid settings
                 } else {
-                    if (row < vivid_row_index) {
+                    if (row < vivid_row_index) { // Darker shades
                         current_s = S_VIVID;
                         if (vivid_row_index > 0) current_v = V_DARK_START + ((float)row / vivid_row_index) * (V_VIVID - V_DARK_START);
                         else current_v = V_DARK_START;
-                    } else if (row > vivid_row_index) {
+                    } else if (row > vivid_row_index) { // Lighter/Pastel shades
                         current_v = V_VIVID;
                         int num_pastel_steps = num_hsv_palette_rows - 1 - vivid_row_index;
-                        int current_pastel_step = row - vivid_row_index;
+                        int current_pastel_step = row - vivid_row_index; // Steps from vivid row towards pastels
                         if (num_pastel_steps > 0) current_s = S_VIVID - ((float)current_pastel_step / num_pastel_steps) * (S_VIVID - S_PASTEL_END);
                         else current_s = S_PASTEL_END;
                     }
+                    // else row == vivid_row_index, use default V_VIVID, S_VIVID
                 }
                 p->colors[pos] = hsv_to_rgb(hue, current_s, current_v);
-            } else { // Grayscale row
+            } else { // This is the grayscale row (last color row)
                 float t = (p->cols == 1) ? 0.0f : (float)col / (p->cols - 1);
                 int gray = (int)((1.0f - t) * 255.0f + 0.5f);
                 p->colors[pos].r = gray; p->colors[pos].g = gray; p->colors[pos].b = gray; p->colors[pos].a = 255;
@@ -99,11 +142,10 @@ static void fill_palette_colors(Palette *p) {
 static void allocate_and_shuffle_emoji_codepoints(Palette *p) {
     p->num_defined_emojis = NUM_DEFAULT_EMOJIS;
     if (p->num_defined_emojis == 0) {
-        p->emoji_codepoints = NULL; // Ensure it's NULL if no emojis
+        p->emoji_codepoints = NULL; 
         return;
     }
 
-    // Free existing if any (e.g. during recreate)
     free(p->emoji_codepoints);
     p->emoji_codepoints = malloc(sizeof(char*) * p->num_defined_emojis);
     if (!p->emoji_codepoints) {
@@ -120,9 +162,7 @@ static void allocate_and_shuffle_emoji_codepoints(Palette *p) {
 // Renders the current p->emoji_codepoints to textures
 void palette_render_emoji_textures(Palette *p) {
     if (!p->emoji_font || !p->ren_ref || p->num_defined_emojis == 0 || !p->emoji_codepoints) {
-        // Free existing textures if we can't render new ones
         if (p->emoji_textures) {
-            // Use p->num_defined_emojis for iteration as it should reflect the allocated size
             for (int i = 0; i < p->num_defined_emojis; ++i) { 
                 if (p->emoji_textures[i]) SDL_DestroyTexture(p->emoji_textures[i]);
             }
@@ -132,9 +172,7 @@ void palette_render_emoji_textures(Palette *p) {
         return;
     }
 
-    // Free existing textures and dims before creating new ones
     if (p->emoji_textures) {
-        // Iterate based on the current num_defined_emojis which should match the allocated size
         for (int i = 0; i < p->num_defined_emojis; ++i) {
             if (p->emoji_textures[i]) SDL_DestroyTexture(p->emoji_textures[i]);
         }
@@ -149,7 +187,6 @@ void palette_render_emoji_textures(Palette *p) {
         SDL_Log("Failed to allocate memory for emoji textures/dims.");
         free(p->emoji_textures); p->emoji_textures = NULL;
         free(p->emoji_texture_dims); p->emoji_texture_dims = NULL;
-        // num_defined_emojis remains, but textures are gone.
         return;
     }
 
@@ -177,7 +214,7 @@ void palette_render_emoji_textures(Palette *p) {
 }
 
 
-Palette *palette_create(SDL_Renderer *ren, int window_w) {
+Palette *palette_create(SDL_Renderer *ren, int window_w, int window_h) {
     Palette *p = malloc(sizeof(Palette));
     if (!p) {
         return NULL;
@@ -187,9 +224,7 @@ Palette *palette_create(SDL_Renderer *ren, int window_w) {
     if (!p->emoji_font) {
         SDL_Log("Failed to load emoji font '%s': %s", EMOJI_FONT_PATH, TTF_GetError());
     }
-    p->total_rows = PALETTE_ROWS;
-    p->color_rows = NUM_COLOR_ROWS_INC_GRAYSCALE;
-    p->emoji_rows = NUM_EMOJI_ROWS;
+    // color_rows, emoji_rows, total_rows will be set by palette_recreate
     p->colors = NULL;
     p->emoji_codepoints = NULL;
     p->emoji_textures = NULL;
@@ -197,8 +232,10 @@ Palette *palette_create(SDL_Renderer *ren, int window_w) {
     p->num_defined_emojis = 0;
 
     allocate_and_shuffle_emoji_codepoints(p);
-    palette_render_emoji_textures(p);
-    palette_recreate(p, window_w); // Calculates sizes and fills colors
+    // Render textures once after codepoints are set up
+    palette_render_emoji_textures(p); 
+    // Recreate will calculate dynamic rows and finish setup
+    palette_recreate(p, window_w, window_h); 
     return p;
 }
 
@@ -212,7 +249,6 @@ void palette_destroy(Palette *p) {
     }
 
     if (p->emoji_textures) {
-        // num_defined_emojis should be the count corresponding to allocated emoji_textures
         for (int i = 0; i < p->num_defined_emojis; ++i) {
             if (p->emoji_textures[i]) {
                 SDL_DestroyTexture(p->emoji_textures[i]);
@@ -224,18 +260,21 @@ void palette_destroy(Palette *p) {
     free(p->emoji_texture_dims);
     p->emoji_texture_dims = NULL; 
 
-    free(p->emoji_codepoints); // Free the shuffled pointer array
+    free(p->emoji_codepoints); 
     p->emoji_codepoints = NULL; 
     free(p);
 }
 
-void palette_recreate(Palette *p, int window_w) {
+void palette_recreate(Palette *p, int window_w, int window_h) {
+    // First, calculate and set the dynamic number of rows
+    palette_calculate_and_set_dynamic_rows(p, window_h);
+
     p->cols = window_w / PALETTE_CELL_MIN_SIZE;
     if (p->cols < 1) {
         p->cols = 1;
     }
 
-    p->total_color_cells = p->cols * p->color_rows;
+    p->total_color_cells = p->cols * p->color_rows; // Use dynamic p->color_rows
     if (p->color_rows > 0) {
         p->colors = realloc(p->colors, sizeof(SDL_Color) * p->total_color_cells);
         if (p->colors) {
@@ -250,11 +289,17 @@ void palette_recreate(Palette *p, int window_w) {
         p->total_color_cells = 0;
     }
 
-    int total_emoji_grid_cells = p->cols * p->emoji_rows;
+    int total_emoji_grid_cells = p->cols * p->emoji_rows; // Use dynamic p->emoji_rows
+    p->total_emoji_cells_to_display = total_emoji_grid_cells; // Assuming we display all grid cells for now
     p->total_cells = p->total_color_cells + total_emoji_grid_cells;
 
-    // Reshuffle and re-render emojis on recreate
-    if (p->emoji_codepoints && p->num_defined_emojis > 0) { // Only shuffle if codepoints were allocated
+    // Reshuffle and re-render emojis on recreate if they exist.
+    // Textures are rendered once in create, and then if shuffle happens again.
+    // If dynamic row calculation doesn't change num_defined_emojis, no need to re-render unless shuffled.
+    // Shuffling happens in allocate_and_shuffle_emoji_codepoints, which isn't called here unless num_defined_emojis changes.
+    // Let's ensure shuffling and re-rendering if content might change or for first time.
+    if (p->emoji_codepoints && p->num_defined_emojis > 0) {
+        // Shuffling is good on recreate to vary the emoji palette if desired.
         shuffle_char_pointers((char**)p->emoji_codepoints, p->num_defined_emojis);
         palette_render_emoji_textures(p); // Re-render with new shuffled order
     }
@@ -266,7 +311,7 @@ void palette_draw(const Palette *p, SDL_Renderer *ren, int palette_start_y, int 
     }
     int cell_width = window_w / p->cols, cell_width_rem = window_w % p->cols, current_y = palette_start_y;
 
-    for (int r = 0; r < p->color_rows; ++r) {
+    for (int r = 0; r < p->color_rows; ++r) { // Use dynamic p->color_rows
         int cx = 0;
         for (int c = 0; c < p->cols; ++c) {
             int w = cell_width + (c < cell_width_rem ? 1 : 0), f_idx = r * p->cols + c;
@@ -278,7 +323,7 @@ void palette_draw(const Palette *p, SDL_Renderer *ren, int palette_start_y, int 
                 SDL_SetRenderDrawColor(ren, 128, 128, 128, 255);
                 SDL_RenderFillRect(ren, &cell_r);
             }
-            if (f_idx == selected_idx) {
+            if (f_idx == selected_idx && palette_is_color_index(p, f_idx)) { // Check if selected is a color
                 Uint8 ir = 255 - p->colors[f_idx].r, ig = 255 - p->colors[f_idx].g, ib = 255 - p->colors[f_idx].b;
                 SDL_SetRenderDrawColor(ren, ir, ig, ib, 255);
                 SDL_RenderDrawRect(ren, &cell_r);
@@ -287,7 +332,7 @@ void palette_draw(const Palette *p, SDL_Renderer *ren, int palette_start_y, int 
                 int br_cx = cell_r.x + cell_r.w / 2, br_cy = cell_r.y + cell_r.h / 2, cr = brush_radius;
                 int max_cr = (cell_r.w < cell_r.h ? cell_r.w : cell_r.h) / 2 - 3;
                 if (cr > max_cr) cr = max_cr;
-                if (cr >= MIN_BRUSH_SIZE) { // Use MIN_BRUSH_SIZE for consistency
+                if (cr >= MIN_BRUSH_SIZE) { 
                     SDL_SetRenderDrawColor(ren, ir, ig, ib, 255);
                     draw_hollow_circle(ren, br_cx, br_cy, cr);
                 }
@@ -297,7 +342,7 @@ void palette_draw(const Palette *p, SDL_Renderer *ren, int palette_start_y, int 
         current_y += PALETTE_HEIGHT;
     }
 
-    if (p->emoji_rows > 0 && p->color_rows > 0 && COLOR_EMOJI_SEPARATOR_HEIGHT > 0) {
+    if (p->emoji_rows > 0 && p->color_rows > 0 && COLOR_EMOJI_SEPARATOR_HEIGHT > 0) { // Use dynamic counts
         SDL_SetRenderDrawColor(ren, 180, 180, 180, 255);
         SDL_Rect sep_r = {0, current_y, window_w, COLOR_EMOJI_SEPARATOR_HEIGHT};
         SDL_RenderFillRect(ren, &sep_r);
@@ -305,7 +350,7 @@ void palette_draw(const Palette *p, SDL_Renderer *ren, int palette_start_y, int 
     }
 
     SDL_Color chk1 = {220, 220, 220, 255}, chk2 = {235, 235, 235, 255};
-    for (int er = 0; er < p->emoji_rows; ++er) {
+    for (int er = 0; er < p->emoji_rows; ++er) { // Use dynamic p->emoji_rows
         int cx = 0;
         for (int c = 0; c < p->cols; ++c) {
             int w = cell_width + (c < cell_width_rem ? 1 : 0);
@@ -318,14 +363,13 @@ void palette_draw(const Palette *p, SDL_Renderer *ren, int palette_start_y, int 
             SDL_RenderFillRect(ren, &cell_r);
             int grid_emoji_idx = er * p->cols + c, f_idx = p->total_color_cells + grid_emoji_idx;
             if (p->num_defined_emojis > 0 && p->emoji_textures) {
-                int actual_emoji_idx = grid_emoji_idx % p->num_defined_emojis;
+                int actual_emoji_idx = grid_emoji_idx % p->num_defined_emojis; // Wrap around available emojis
                 SDL_Texture* tex = p->emoji_textures[actual_emoji_idx];
                 SDL_Point dim = p->emoji_texture_dims[actual_emoji_idx];
                 if (tex) {
                     SDL_Rect dst_r;
                     float asp = (dim.y == 0) ? 1.0f : (float)dim.x / dim.y;
                     
-                    // Draw all emojis (selected or not) at the default padded size
                     int defh = cell_r.h - 2 * DEFAULT_EMOJI_CELL_PADDING;
                     int defw = roundf(defh * asp);
                     if (defw > cell_r.w - 2 * DEFAULT_EMOJI_CELL_PADDING) {
@@ -337,13 +381,13 @@ void palette_draw(const Palette *p, SDL_Renderer *ren, int palette_start_y, int 
                     dst_r = (SDL_Rect){cell_r.x + (cell_r.w - defw) / 2, cell_r.y + (cell_r.h - defh) / 2, defw, defh};
                     SDL_RenderCopy(ren, tex, NULL, &dst_r);
 
-                    if (f_idx == selected_idx) { // If selected, draw border
+                    if (f_idx == selected_idx) { 
                         SDL_SetRenderDrawColor(ren, 0, 0, 255, 255);
                         SDL_RenderDrawRect(ren, &cell_r);
                         SDL_Rect r2 = {cell_r.x + 1, cell_r.y + 1, cell_r.w - 2, cell_r.h - 2};
                         SDL_RenderDrawRect(ren, &r2);
                     }
-                } else { // Fallback if texture failed to load for some reason
+                } else { 
                     SDL_SetRenderDrawColor(ren, 255, 0, 0, 255); 
                     SDL_RenderDrawLine(ren, cell_r.x + 5, cell_r.y + 5, cell_r.x + cell_r.w - 5, cell_r.y + cell_r.h - 5);
                     SDL_RenderDrawLine(ren, cell_r.x + cell_r.w - 5, cell_r.y + 5, cell_r.x + 5, cell_r.y + cell_r.h - 5);
@@ -359,13 +403,15 @@ int palette_hit_test(const Palette *p, int mx, int my, int window_w, int palette
     if (p->cols == 0) {
         return -1;
     }
-    int colors_h = p->color_rows * PALETTE_HEIGHT;
-    int sep_h = (p->emoji_rows > 0 && p->color_rows > 0) ? COLOR_EMOJI_SEPARATOR_HEIGHT : 0;
-    int emojis_h = p->emoji_rows * PALETTE_HEIGHT;
+    int colors_h = p->color_rows * PALETTE_HEIGHT; // Use dynamic p->color_rows
+    int sep_h = (p->emoji_rows > 0 && p->color_rows > 0) ? COLOR_EMOJI_SEPARATOR_HEIGHT : 0; // Use dynamic counts
+    int emojis_h = p->emoji_rows * PALETTE_HEIGHT; // Use dynamic p->emoji_rows
     int total_ui_h = colors_h + sep_h + emojis_h;
+
     if (my < palette_start_y || my >= palette_start_y + total_ui_h) {
         return -1;
     }
+
     int cell_w = window_w / p->cols, cell_w_rem = window_w % p->cols, cur_x_edge = 0, clicked_c = -1;
     for (int c_idx = 0; c_idx < p->cols; ++c_idx) {
         int w = cell_w + (c_idx < cell_w_rem ? 1 : 0);
@@ -375,21 +421,30 @@ int palette_hit_test(const Palette *p, int mx, int my, int window_w, int palette
         }
         cur_x_edge += w;
     }
+
     if (clicked_c == -1) {
         return -1;
     }
+
+    // Check color rows
     if (my < palette_start_y + colors_h) {
-        int r_in_cols = (my - palette_start_y) / PALETTE_HEIGHT;
-        if (r_in_cols >= 0 && r_in_cols < p->color_rows) {
-            return r_in_cols * p->cols + clicked_c;
+        int r_in_cols_region = (my - palette_start_y) / PALETTE_HEIGHT;
+        if (r_in_cols_region >= 0 && r_in_cols_region < p->color_rows) { // Use dynamic p->color_rows
+            return r_in_cols_region * p->cols + clicked_c;
         }
     }
-    int emoji_start_y = palette_start_y + colors_h + sep_h;
-    if (my >= emoji_start_y && my < emoji_start_y + emojis_h) {
-        if (p->num_defined_emojis > 0) {
-            int r_in_emojis = (my - emoji_start_y) / PALETTE_HEIGHT;
-            if (r_in_emojis >= 0 && r_in_emojis < p->emoji_rows) {
-                return p->total_color_cells + (r_in_emojis * p->cols + clicked_c);
+
+    // Check emoji rows
+    int emoji_region_start_y = palette_start_y + colors_h + sep_h;
+    if (my >= emoji_region_start_y && my < emoji_region_start_y + emojis_h) {
+        if (p->num_defined_emojis > 0) { // Check if emojis are available
+            int r_in_emojis_region = (my - emoji_region_start_y) / PALETTE_HEIGHT;
+            if (r_in_emojis_region >= 0 && r_in_emojis_region < p->emoji_rows) { // Use dynamic p->emoji_rows
+                 // Ensure the calculated index is within the total_cells bounds
+                int flat_idx = p->total_color_cells + (r_in_emojis_region * p->cols + clicked_c);
+                if (flat_idx < p->total_cells) {
+                    return flat_idx;
+                }
             }
         }
     }
@@ -400,7 +455,7 @@ SDL_Color palette_get_color(const Palette *p, int flat_index) {
     if (palette_is_color_index(p, flat_index) && p->colors) {
         return p->colors[flat_index];
     }
-    return (SDL_Color){0, 0, 0, 255}; // Default to black if out of bounds or no colors
+    return (SDL_Color){0, 0, 0, 255}; 
 }
 
 SDL_bool palette_get_emoji_info(const Palette *p, int flat_index, SDL_Texture** tex, int* w, int* h) {
@@ -408,8 +463,8 @@ SDL_bool palette_get_emoji_info(const Palette *p, int flat_index, SDL_Texture** 
         return SDL_FALSE;
     }
     int grid_emoji_idx = flat_index - p->total_color_cells;
-    int actual_emoji_idx = grid_emoji_idx % p->num_defined_emojis;
-    if (p->emoji_textures[actual_emoji_idx]) {
+    int actual_emoji_idx = grid_emoji_idx % p->num_defined_emojis; // Wrap around if grid_emoji_idx >= num_defined_emojis
+    if (actual_emoji_idx < p->num_defined_emojis && p->emoji_textures[actual_emoji_idx]) { // Check bounds for safety
         *tex = p->emoji_textures[actual_emoji_idx];
         *w = p->emoji_texture_dims[actual_emoji_idx].x;
         *h = p->emoji_texture_dims[actual_emoji_idx].y;
@@ -423,6 +478,7 @@ SDL_bool palette_is_color_index(const Palette *p, int flat_index) {
 }
 
 SDL_bool palette_is_emoji_index(const Palette *p, int flat_index) {
+    // p->total_cells is total_color_cells + (cols * emoji_rows)
     return (flat_index >= p->total_color_cells && flat_index < p->total_cells);
 }
 
@@ -430,5 +486,8 @@ int palette_get_emoji_array_idx_from_flat_idx(const Palette* p, int flat_index) 
     if (!palette_is_emoji_index(p, flat_index) || p->num_defined_emojis == 0) {
         return -1;
     }
-    return (flat_index - p->total_color_cells) % p->num_defined_emojis;
+    // The index into the p->emoji_textures array (which has size p->num_defined_emojis)
+    // is based on the position in the visible grid, modulo the number of actual emojis.
+    int grid_emoji_idx = flat_index - p->total_color_cells;
+    return grid_emoji_idx % p->num_defined_emojis;
 }

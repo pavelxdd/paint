@@ -1,16 +1,15 @@
 // AI Summary: Defines the Palette structure and related constants for managing
 // color and emoji selection. Handles palette creation, drawing (including color
 // swatches and emoji rendering with scaled previews), and hit testing.
-// Requires SDL_ttf for emoji rendering.
+// Requires SDL_ttf for emoji rendering. Row counts are now dynamic.
 #pragma once
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
 #define PALETTE_HEIGHT 50
-#define NUM_COLOR_ROWS_INC_GRAYSCALE 6 // Number of rows for colors + grayscale
-#define NUM_EMOJI_ROWS 2               // Number of rows for emojis
-#define PALETTE_ROWS (NUM_COLOR_ROWS_INC_GRAYSCALE + NUM_EMOJI_ROWS)
+// NUM_COLOR_ROWS_INC_GRAYSCALE, NUM_EMOJI_ROWS, PALETTE_ROWS are now dynamic.
+// Min/Max dynamic rows are defined internally in palette.c logic.
 #define PALETTE_CELL_MIN_SIZE 50
 #define COLOR_EMOJI_SEPARATOR_HEIGHT 2
 
@@ -21,9 +20,9 @@
 typedef struct {
     SDL_Color *colors;
     int cols;               // Number of columns, dynamically calculated
-    int total_rows;         // PALETTE_ROWS
-    int color_rows;         // NUM_COLOR_ROWS_INC_GRAYSCALE
-    int emoji_rows;         // NUM_EMOJI_ROWS
+    int total_rows;         // Dynamically calculated: color_rows + emoji_rows
+    int color_rows;         // Dynamically calculated number of color rows
+    int emoji_rows;         // Dynamically calculated number of emoji rows
 
     int total_color_cells;
     int total_emoji_cells_to_display; // Number of emoji cells actually displayed
@@ -38,9 +37,9 @@ typedef struct {
     SDL_Renderer* ren_ref; // Reference to renderer for creating textures
 } Palette;
 
-Palette *palette_create(SDL_Renderer *ren, int window_w);
+Palette *palette_create(SDL_Renderer *ren, int window_w, int window_h);
 void palette_destroy(Palette *p);
-void palette_recreate(Palette *p, int window_w);
+void palette_recreate(Palette *p, int window_w, int window_h);
 void palette_draw(const Palette *p, SDL_Renderer *ren, int palette_start_y, int window_w, int selected_idx, int brush_radius);
 int palette_hit_test(const Palette *p, int mx, int my, int window_w, int palette_start_y);
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-#include "palette.h" // For Palette struct
+#include "palette.h" // For Palette struct and PALETTE_HEIGHT
 
 #define INITIAL_WINDOW_WIDTH 800
 #define INITIAL_WINDOW_HEIGHT 600
