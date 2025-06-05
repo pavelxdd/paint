@@ -1,3 +1,8 @@
+// AI Summary: Main application logic for a simple paint program using SDL2.
+// Handles window creation, rendering, event processing (mouse, keyboard, window),
+// canvas management, palette interaction, brush controls, and dynamic background color.
+// Core components: SDL_Window, SDL_Renderer, SDL_Texture (for canvas), main event loop.
+// Interacts with draw.c for shape drawing and palette.c for color management.
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 
@@ -57,6 +62,7 @@ int main(void)
     if (radius > max_brush_radius) radius = max_brush_radius;
     if (radius < MIN_BRUSH_SIZE) radius = MIN_BRUSH_SIZE;
 
+    SDL_Color default_bg_color = {255, 255, 255, 255}; // Default background: white
     int selected_palette_idx = palette->total - 1; // bottom-right (last) palette cell: black
     SDL_Color current_color = palette_get_color(palette, selected_palette_idx);
 
@@ -64,7 +70,7 @@ int main(void)
     SDL_Texture *canvas = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888,
                                             SDL_TEXTUREACCESS_TARGET, window_w, canvas_h);
     SDL_SetRenderTarget(ren, canvas);
-    SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(ren, default_bg_color.r, default_bg_color.g, default_bg_color.b, default_bg_color.a);
     SDL_RenderClear(ren);
     SDL_SetRenderTarget(ren, NULL);
 
@@ -100,7 +106,7 @@ int main(void)
                     SDL_Texture *new_canvas = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888,
                                                                 SDL_TEXTUREACCESS_TARGET, window_w, canvas_h);
                     SDL_SetRenderTarget(ren, new_canvas);
-                    SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+                    SDL_SetRenderDrawColor(ren, default_bg_color.r, default_bg_color.g, default_bg_color.b, default_bg_color.a);
                     SDL_RenderClear(ren);
                     SDL_Rect src = {0,0, old_w, old_h};
                     SDL_RenderCopy(ren, canvas, &src, &src);
@@ -126,39 +132,62 @@ int main(void)
                     }
                     needs_redraw = 1;
                 } else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEMOTION) {
-                    int mx = e.button.x;
-                    int my = e.button.y;
-
-                    if (e.type == SDL_MOUSEBUTTONDOWN) {
-                        int idx = palette_hit_test(palette, mx, my, window_w, canvas_h);
-                        if (idx != -1) {
-                            selected_palette_idx = idx;
-                            current_color = palette_get_color(palette, idx);
-                            needs_redraw = 1;
-                        }
-                    }
-
-                    int left = SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT);
-                    int right = SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT);
-                    int middle = SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_MIDDLE);
-
-                    if (middle) {
-                        SDL_SetRenderTarget(ren, canvas);
-                        SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
-                        SDL_RenderClear(ren);
-                        SDL_SetRenderTarget(ren, NULL);
-                        needs_redraw = 1;
-                    } else if (left || right) {
-                        if (my < canvas_h) {
+                    if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_MIDDLE) {
+                        int mx = e.button.x;
+                        int my = e.button.y;
+                        int palette_idx = palette_hit_test(palette, mx, my, window_w, canvas_h);
+                        if (palette_idx != -1) { // Middle-clicked on a palette color
+                            default_bg_color = palette_get_color(palette, palette_idx);
                             SDL_SetRenderTarget(ren, canvas);
-                            if (left) {
-                                SDL_SetRenderDrawColor(ren, current_color.r, current_color.g, current_color.b, 255);
-                            } else {
-                                SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
-                            }
-                            draw_circle(ren, mx, my, radius);
+                            SDL_SetRenderDrawColor(ren, default_bg_color.r, default_bg_color.g, default_bg_color.b, default_bg_color.a);
+                            SDL_RenderClear(ren);
                             SDL_SetRenderTarget(ren, NULL);
                             needs_redraw = 1;
+                        } else if (my < canvas_h) { // Middle-clicked on canvas (not palette)
+                            SDL_SetRenderTarget(ren, canvas);
+                            SDL_SetRenderDrawColor(ren, default_bg_color.r, default_bg_color.g, default_bg_color.b, default_bg_color.a);
+                            SDL_RenderClear(ren);
+                            SDL_SetRenderTarget(ren, NULL);
+                            needs_redraw = 1;
+                        }
+                    } else {
+                        // Handle LMB/RMB down/drag, and LMB palette selection on down.
+                        // Excludes MMB down events which are handled above.
+                        int mx, my;
+                        if (e.type == SDL_MOUSEBUTTONDOWN) {
+                            mx = e.button.x;
+                            my = e.button.y;
+
+                            // Palette selection on LMB down
+                            if (e.button.button == SDL_BUTTON_LEFT) {
+                                int idx = palette_hit_test(palette, mx, my, window_w, canvas_h);
+                                if (idx != -1) {
+                                    selected_palette_idx = idx;
+                                    current_color = palette_get_color(palette, idx);
+                                    needs_redraw = 1;
+                                }
+                            }
+                        } else { // SDL_MOUSEMOTION
+                            mx = e.motion.x;
+                            my = e.motion.y;
+                        }
+
+                        // Drawing logic if LMB or RMB is pressed (works for both DOWN and MOTION)
+                        int left_button_pressed = SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT);
+                        int right_button_pressed = SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT);
+
+                        if (left_button_pressed || right_button_pressed) {
+                            if (my < canvas_h) { // If on canvas
+                                SDL_SetRenderTarget(ren, canvas);
+                                if (left_button_pressed) {
+                                    SDL_SetRenderDrawColor(ren, current_color.r, current_color.g, current_color.b, 255);
+                                } else { // right_button_pressed (eraser)
+                                    SDL_SetRenderDrawColor(ren, default_bg_color.r, default_bg_color.g, default_bg_color.b, default_bg_color.a);
+                                }
+                                draw_circle(ren, mx, my, radius);
+                                SDL_SetRenderTarget(ren, NULL);
+                                needs_redraw = 1;
+                            }
                         }
                     }
                 }
