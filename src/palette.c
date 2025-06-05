@@ -1,8 +1,6 @@
-// AI Summary: Implements color palette management for the paint program.
-// Handles palette creation, dynamic resizing based on window width, color generation (HSV and grayscale),
-// rendering the palette, and processing clicks for color selection.
 #include "palette.h"
 #include "draw.h"
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -164,4 +162,3 @@ SDL_Color palette_get_color(const Palette *p, int index)
     }
     return (SDL_Color){0, 0, 0, 255}; // Default to black
 }
-

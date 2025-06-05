@@ -1,6 +1,3 @@
-// AI Summary: Main application for an SDL2 paint program. It handles window creation,
-// the main event loop (input, window events), canvas management, and orchestrates
-// drawing and palette UI updates.
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 
@@ -191,4 +188,3 @@ int main(void)
     SDL_Quit();
     return 0;
 }
-

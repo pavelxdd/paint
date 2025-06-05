@@ -1,7 +1,4 @@
-// AI Summary: Implements primitive drawing functions for circles.
-// Provides implementations for drawing filled and hollow circles using SDL_Renderer.
 #include "draw.h"
-#include <math.h>
 
 // Draw filled circle (for painting on canvas)
 void draw_circle(SDL_Renderer *r, int cx, int cy, int radius)
@@ -43,4 +40,3 @@ void draw_hollow_circle(SDL_Renderer *r, int cx, int cy, int radius)
         }
     }
 }
-
