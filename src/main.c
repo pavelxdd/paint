@@ -18,11 +18,19 @@ static void render_scene(AppContext *ctx) {
     SDL_Rect canvas_dst_rect_in_window = {0, 0, ctx->window_w, ctx->canvas_display_area_h};
     
     // Only render canvas if its display area is positive and texture exists
-    if (ctx->canvas_display_area_h > 0 && ctx->canvas_texture) { 
+    if (ctx->canvas_display_area_h > 0 && ctx->canvas_texture) {
         SDL_RenderCopy(ctx->ren, ctx->canvas_texture, NULL, &canvas_dst_rect_in_window);
     }
+
+    // Draw separator line
+    if (CANVAS_PALETTE_SEPARATOR_HEIGHT > 0) {
+        SDL_SetRenderDrawColor(ctx->ren, 237, 237, 237, 255); // #ededed
+        SDL_Rect sep_rect = {0, ctx->canvas_display_area_h, ctx->window_w, CANVAS_PALETTE_SEPARATOR_HEIGHT};
+        SDL_RenderFillRect(ctx->ren, &sep_rect);
+    }
     
-    palette_draw(ctx->palette, ctx->ren, ctx->canvas_display_area_h, ctx->window_w, ctx->selected_palette_idx, ctx->brush_radius);
+    int palette_start_y = ctx->canvas_display_area_h + CANVAS_PALETTE_SEPARATOR_HEIGHT;
+    palette_draw(ctx->palette, ctx->ren, palette_start_y, ctx->window_w, ctx->selected_palette_idx, ctx->brush_radius);
 
     SDL_RenderPresent(ctx->ren);
 }

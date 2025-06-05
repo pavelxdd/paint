@@ -12,6 +12,7 @@
 #define MIN_BRUSH_SIZE 2
 // MAX_BRUSH_SIZE is dynamically calculated based on palette and window size.
 #define RESIZE_DEBOUNCE_MS 200 // Milliseconds for resize debouncing
+#define CANVAS_PALETTE_SEPARATOR_HEIGHT 2 // Height of the separator line
 
 typedef struct {
     SDL_Window *win;

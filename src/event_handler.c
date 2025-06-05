@@ -31,7 +31,8 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout) {
                     int mx = e.button.x;
                     int my = e.button.y;
                     
-                    int palette_idx = palette_hit_test(ctx->palette, mx, my, ctx->window_w, ctx->canvas_display_area_h);
+                    int palette_interaction_start_y = ctx->canvas_display_area_h + CANVAS_PALETTE_SEPARATOR_HEIGHT;
+                    int palette_idx = palette_hit_test(ctx->palette, mx, my, ctx->window_w, palette_interaction_start_y);
                     if (palette_idx != -1) { // Middle-clicked on a palette color
                         SDL_Color new_bg_color = palette_get_color(ctx->palette, palette_idx);
                         app_context_set_background_and_clear_canvas(ctx, new_bg_color);
@@ -44,7 +45,8 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout) {
                         mx = e.button.x;
                         my = e.button.y;
                         if (e.button.button == SDL_BUTTON_LEFT) {
-                            int palette_idx = palette_hit_test(ctx->palette, mx, my, ctx->window_w, ctx->canvas_display_area_h);
+                            int palette_interaction_start_y = ctx->canvas_display_area_h + CANVAS_PALETTE_SEPARATOR_HEIGHT;
+                            int palette_idx = palette_hit_test(ctx->palette, mx, my, ctx->window_w, palette_interaction_start_y);
                             if (palette_idx != -1) {
                                 app_context_select_palette_color(ctx, palette_idx);
                             }

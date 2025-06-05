@@ -30,7 +30,7 @@ static void init_canvas_texture(AppContext *ctx, int width, int height) {
 }
 
 void app_context_update_canvas_display_height(AppContext *ctx) {
-    ctx->canvas_display_area_h = ctx->window_h - (PALETTE_HEIGHT * PALETTE_ROWS);
+    ctx->canvas_display_area_h = ctx->window_h - (PALETTE_HEIGHT * PALETTE_ROWS) - CANVAS_PALETTE_SEPARATOR_HEIGHT;
     if (ctx->canvas_display_area_h < 0) {
         ctx->canvas_display_area_h = 0;
     }
