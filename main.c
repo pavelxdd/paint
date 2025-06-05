@@ -1,12 +1,15 @@
+// AI Summary: SDL2-based paint program with 2-row color palette at the window bottom.
+// Core features: canvas resizing, unique palette colors, brush/eraser, brush size selection, palette color picking.
+
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <time.h>
-
 #include <math.h>
 
 #define INITIAL_WINDOW_WIDTH 800
 #define INITIAL_WINDOW_HEIGHT 600
 #define PALETTE_HEIGHT 50
+#define PALETTE_ROWS 2
 #define PALETTE_CELL_SIZE 50
 #define MIN_BRUSH_SIZE 2
 #define MAX_BRUSH_SIZE 100
@@ -51,8 +54,9 @@ int main(void)
     srand((unsigned)time(NULL));
 
     int palette_cols = window_w / PALETTE_CELL_SIZE;
-    SDL_Color *palette = malloc(sizeof(SDL_Color) * palette_cols);
-    for (int i = 0; i < palette_cols; ++i) {
+    int palette_total = palette_cols * PALETTE_ROWS;
+    SDL_Color *palette = malloc(sizeof(SDL_Color) * palette_total);
+    for (int i = 0; i < palette_total; ++i) {
         int unique = 0;
         while (!unique) {
             palette[i].r = rand() % 256;
@@ -74,7 +78,7 @@ int main(void)
     int radius = 10;
 
     int canvas_w = window_w;
-    int canvas_h = window_h - PALETTE_HEIGHT;
+    int canvas_h = window_h - (PALETTE_HEIGHT * PALETTE_ROWS);
     SDL_Texture *canvas = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888,
                                            SDL_TEXTUREACCESS_TARGET, canvas_w, canvas_h);
     SDL_SetRenderTarget(ren, canvas);
@@ -97,7 +101,7 @@ int main(void)
                 window_w = e.window.data1;
                 window_h = e.window.data2;
                 canvas_w = window_w;
-                canvas_h = window_h - PALETTE_HEIGHT;
+                canvas_h = window_h - (PALETTE_HEIGHT * PALETTE_ROWS);
 
                 SDL_Texture *new_canvas = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888,
                                                            SDL_TEXTUREACCESS_TARGET, canvas_w, canvas_h);
@@ -111,8 +115,9 @@ int main(void)
                 canvas = new_canvas;
 
                 palette_cols = window_w / PALETTE_CELL_SIZE;
-                palette = realloc(palette, sizeof(SDL_Color) * palette_cols);
-                for (int i = 0; i < palette_cols; ++i) {
+                palette_total = palette_cols * PALETTE_ROWS;
+                palette = realloc(palette, sizeof(SDL_Color) * palette_total);
+                for (int i = 0; i < palette_total; ++i) {
                     int unique = 0;
                     while (!unique) {
                         palette[i].r = rand() % 256;
@@ -146,14 +151,6 @@ int main(void)
                     if (radius < MIN_BRUSH_SIZE) radius = MIN_BRUSH_SIZE;
                 }
                 needs_redraw = 1;
-            } else if (e.type == SDL_MOUSEWHEEL) {
-                if (e.wheel.y > 0) {
-                    radius += 2;
-                    if (radius > MAX_BRUSH_SIZE) radius = MAX_BRUSH_SIZE;
-                } else if (e.wheel.y < 0) {
-                    radius -= 2;
-                    if (radius < MIN_BRUSH_SIZE) radius = MIN_BRUSH_SIZE;
-                }
             } else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEMOTION) {
                 int mx = e.button.x;
                 int my = e.button.y;
@@ -161,9 +158,14 @@ int main(void)
                 int right = SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT);
                 int middle = SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_MIDDLE);
 
-                if (my >= canvas_h && e.type == SDL_MOUSEBUTTONDOWN) {
-                    int index = mx / (window_w / palette_cols);
-                    if (index >= 0 && index < palette_cols)
+                int palette_area_top = canvas_h;
+                int palette_area_bottom = window_h;
+
+                if (my >= palette_area_top && my < palette_area_bottom && e.type == SDL_MOUSEBUTTONDOWN) {
+                    int row = (my - palette_area_top) / PALETTE_HEIGHT;
+                    int col = mx / (window_w / palette_cols);
+                    int index = row * palette_cols + col;
+                    if (index >= 0 && index < palette_total)
                         current_color = palette[index];
                     needs_redraw = 1;
                 } else if (middle) {
@@ -173,15 +175,17 @@ int main(void)
                     SDL_SetRenderTarget(ren, NULL);
                     needs_redraw = 1;
                 } else if (left || right) {
-                    SDL_SetRenderTarget(ren, canvas);
-                    if (left) {
-                        SDL_SetRenderDrawColor(ren, current_color.r, current_color.g, current_color.b, 255);
-                    } else {
-                        SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+                    if (my < canvas_h) {
+                        SDL_SetRenderTarget(ren, canvas);
+                        if (left) {
+                            SDL_SetRenderDrawColor(ren, current_color.r, current_color.g, current_color.b, 255);
+                        } else {
+                            SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+                        }
+                        draw_circle(ren, mx, my, radius);
+                        SDL_SetRenderTarget(ren, NULL);
+                        needs_redraw = 1;
                     }
-                    draw_circle(ren, mx, my, radius);
-                    SDL_SetRenderTarget(ren, NULL);
-                    needs_redraw = 1;
                 }
             }
         } while (SDL_PollEvent(&e));
@@ -196,10 +200,21 @@ int main(void)
             SDL_Rect dst = {0, 0, window_w, canvas_h};
             SDL_RenderCopy(ren, canvas, NULL, &dst);
 
-            for (int i = 0; i < palette_cols; ++i) {
-                SDL_Rect r = { i * (window_w / palette_cols), canvas_h, window_w / palette_cols, PALETTE_HEIGHT };
-                SDL_SetRenderDrawColor(ren, palette[i].r, palette[i].g, palette[i].b, 255);
-                SDL_RenderFillRect(ren, &r);
+            // Draw palette (2 rows)
+            for (int row = 0; row < PALETTE_ROWS; ++row) {
+                for (int col = 0; col < palette_cols; ++col) {
+                    int i = row * palette_cols + col;
+                    if (i >= palette_total)
+                        continue;
+                    SDL_Rect r = {
+                        col * (window_w / palette_cols),
+                        canvas_h + row * PALETTE_HEIGHT,
+                        window_w / palette_cols,
+                        PALETTE_HEIGHT
+                    };
+                    SDL_SetRenderDrawColor(ren, palette[i].r, palette[i].g, palette[i].b, 255);
+                    SDL_RenderFillRect(ren, &r);
+                }
             }
 
             SDL_RenderPresent(ren);
