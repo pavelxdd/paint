@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 
 #define PALETTE_HEIGHT 50
-#define PALETTE_ROWS 5
+#define PALETTE_ROWS 6
 #define PALETTE_CELL_MIN_SIZE 50
 
 typedef struct {
