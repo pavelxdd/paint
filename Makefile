@@ -1,16 +1,20 @@
 CC=gcc
 CFLAGS=`pkg-config --cflags sdl2` -Wall -Wextra -std=gnu17
-LDFLAGS=`pkg-config --libs sdl2`
+LDFLAGS=`pkg-config --libs sdl2` -lm
 
-all: main
+SRCS=main.c draw.c palette.c
+OBJS=$(SRCS:.c=.o)
+TARGET=main
 
-main: main.o
-	$(CC) -o $@ $^ $(LDFLAGS) -lm
+all: $(TARGET)
 
-main.o: main.c
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f main.o main
+	rm -f $(OBJS) $(TARGET)
 
 .PHONY: all clean
