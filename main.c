@@ -10,7 +10,6 @@
 #define INITIAL_WINDOW_WIDTH 800
 #define INITIAL_WINDOW_HEIGHT 600
 #define MIN_BRUSH_SIZE 2
-#define MAX_BRUSH_SIZE 100
 
 int main(void)
 {
@@ -38,6 +37,8 @@ int main(void)
         return 1;
     }
 
+    int max_brush_radius;
+
     Palette *palette = palette_create(window_w);
     if (!palette) {
         SDL_Log("Failed to create palette");
@@ -48,7 +49,17 @@ int main(void)
     }
 
     // Default brush color: black (from palette), select bottom-right square at startup.
+    {
+        int min_cell_width = window_w / palette->cols;
+        int min_cell_dim = (min_cell_width < PALETTE_HEIGHT) ? min_cell_width : PALETTE_HEIGHT;
+        max_brush_radius = min_cell_dim / 2;
+        if (max_brush_radius < MIN_BRUSH_SIZE) max_brush_radius = MIN_BRUSH_SIZE;
+    }
+
     int radius = 10;
+    if (radius > max_brush_radius) radius = max_brush_radius;
+    if (radius < MIN_BRUSH_SIZE) radius = MIN_BRUSH_SIZE;
+
     int selected_palette_idx = palette->total - 1; // bottom-right (last) palette cell: black
     SDL_Color current_color = palette_get_color(palette, selected_palette_idx);
 
@@ -80,6 +91,15 @@ int main(void)
                     selected_palette_idx = palette->total - 1; // Reset selection to bottom-right (black) on resize
                     current_color = palette_get_color(palette, selected_palette_idx);
 
+                    {
+                        int min_cell_width = window_w / palette->cols;
+                        int min_cell_dim = (min_cell_width < PALETTE_HEIGHT) ? min_cell_width : PALETTE_HEIGHT;
+                        max_brush_radius = min_cell_dim / 2;
+                        if (max_brush_radius < MIN_BRUSH_SIZE) max_brush_radius = MIN_BRUSH_SIZE;
+                    }
+
+                    if (radius > max_brush_radius) radius = max_brush_radius;
+
                     SDL_Texture *new_canvas = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888,
                                                                 SDL_TEXTUREACCESS_TARGET, window_w, canvas_h);
                     SDL_SetRenderTarget(ren, new_canvas);
@@ -95,14 +115,14 @@ int main(void)
                 } else if (e.type == SDL_KEYDOWN) {
                     if (e.key.keysym.sym >= SDLK_1 && e.key.keysym.sym <= SDLK_9) {
                         radius = 5 * (e.key.keysym.sym - SDLK_1 + 1);
-                        if (radius > MAX_BRUSH_SIZE) radius = MAX_BRUSH_SIZE;
+                        if (radius > max_brush_radius) radius = max_brush_radius;
                         if (radius < MIN_BRUSH_SIZE) radius = MIN_BRUSH_SIZE;
                         needs_redraw = 1;
                     }
                 } else if (e.type == SDL_MOUSEWHEEL) {
                     if (e.wheel.y > 0) {
                         radius += 2;
-                        if (radius > MAX_BRUSH_SIZE) radius = MAX_BRUSH_SIZE;
+                        if (radius > max_brush_radius) radius = max_brush_radius;
                     } else if (e.wheel.y < 0) {
                         radius -= 2;
                         if (radius < MIN_BRUSH_SIZE) radius = MIN_BRUSH_SIZE;
