@@ -1,11 +1,11 @@
 // AI Summary: Implements SDL event polling (using SDL_WaitEventTimeout) and processing
 // for the paint application. It checks for various event types like quit, window
 // resize, key presses (for brush size), mouse wheel (for brush size), and mouse
-// button/motion events for drawing, color picking, and background changes.
+// button/motion events for drawing, tool/color picking, and background changes.
 // Interacts with AppContext to modify application state based on events.
 #include "event_handler.h"
 #include "app_context.h" // For AppContext and its manipulation functions
-#include "palette.h"     // For palette_hit_test and palette_get_color
+#include "palette.h"     // For palette_hit_test, palette_get_color, palette_is_emoji_index etc.
 
 void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout) {
     SDL_Event e;
@@ -26,11 +26,11 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout) {
                 }
             } else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEMOTION) {
                 // canvas_display_area_h is already up-to-date in ctx
-                
+
                 if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_MIDDLE) {
                     int mx = e.button.x;
                     int my = e.button.y;
-                    
+
                     int palette_interaction_start_y = ctx->canvas_display_area_h + CANVAS_PALETTE_SEPARATOR_HEIGHT;
                     int palette_idx = palette_hit_test(ctx->palette, mx, my, ctx->window_w, palette_interaction_start_y);
                     if (palette_idx != -1) { // Middle-clicked on a palette color
@@ -48,7 +48,7 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout) {
                             int palette_interaction_start_y = ctx->canvas_display_area_h + CANVAS_PALETTE_SEPARATOR_HEIGHT;
                             int palette_idx = palette_hit_test(ctx->palette, mx, my, ctx->window_w, palette_interaction_start_y);
                             if (palette_idx != -1) {
-                                app_context_select_palette_color(ctx, palette_idx);
+                                app_context_select_palette_tool(ctx, palette_idx);
                             }
                         }
                     } else { // SDL_MOUSEMOTION

@@ -1,5 +1,5 @@
 // AI Summary: Defines the AppContext structure holding the application's global state
-// for the paint program. Manages window/renderer, canvas, palette, brush, colors,
+// for the paint program. Manages window/renderer, canvas, palette, brush, colors, active tool (brush/emoji),
 // and flags for UI updates and resize handling. Provides functions for
 // initializing, destroying, and modifying this state.
 #pragma once
@@ -14,6 +14,11 @@
 #define RESIZE_DEBOUNCE_MS 200 // Milliseconds for resize debouncing
 #define CANVAS_PALETTE_SEPARATOR_HEIGHT 2 // Height of the separator line
 
+typedef enum {
+    TOOL_BRUSH,
+    TOOL_EMOJI
+} ActiveTool;
+
 typedef struct {
     SDL_Window *win;
     SDL_Renderer *ren;
@@ -26,8 +31,9 @@ typedef struct {
 
 
     Palette *palette;
-    int selected_palette_idx;
-    SDL_Color current_color;    // Current drawing color
+    int selected_palette_idx;   // Flat index in the palette (can be color or emoji)
+    ActiveTool current_tool;    // Current drawing tool (brush or emoji)
+    SDL_Color current_color;    // Current drawing color (if current_tool is TOOL_BRUSH)
     SDL_Color background_color; // Current canvas background color
 
     int brush_radius;
@@ -48,7 +54,7 @@ AppContext* app_context_create(SDL_Window *win, SDL_Renderer *ren);
 void app_context_destroy(AppContext *ctx);
 
 // State Modifiers & Operations
-void app_context_select_palette_color(AppContext *ctx, int palette_idx);
+void app_context_select_palette_tool(AppContext *ctx, int palette_idx); // Renamed for clarity
 void app_context_set_background_and_clear_canvas(AppContext *ctx, SDL_Color color);
 void app_context_clear_canvas_with_current_bg(AppContext *ctx);
 void app_context_change_brush_radius(AppContext *ctx, int delta);
@@ -61,3 +67,5 @@ void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h);
 
 // Helper to calculate canvas display height (called internally and by resize handler)
 void app_context_update_canvas_display_height(AppContext *ctx);
+
+SDL_bool app_context_is_drawing_with_emoji(AppContext* ctx); // Helper

@@ -1,10 +1,10 @@
 // AI Summary: Implements the debounced window resize handling for the paint application.
 // When a resize is pending and the debounce time has passed, it recreates the
-// color palette, recalculates brush size limits, and creates a new canvas texture
-// of the appropriate size, copying over the content from the old canvas.
+// palette (colors and emojis, including reshuffling emojis), recalculates brush size limits,
+// and creates a new canvas texture of the appropriate size, copying over the content from the old canvas.
 #include "resize_handler.h"
-#include "app_context.h" // For AppContext, RESIZE_DEBOUNCE_MS, PALETTE_ROWS, PALETTE_HEIGHT
-#include "palette.h"     // For palette_recreate, palette_get_color
+#include "app_context.h" // For AppContext, RESIZE_DEBOUNCE_MS, etc.
+#include "palette.h"     // For palette_recreate
 
 void process_debounced_resize(AppContext *ctx) {
     if (ctx->resize_pending && (SDL_GetTicks() - ctx->last_resize_timestamp >= RESIZE_DEBOUNCE_MS)) {
@@ -14,10 +14,22 @@ void process_debounced_resize(AppContext *ctx) {
         int target_canvas_texture_h = ctx->canvas_display_area_h; // Use the calculated display height
         if (target_canvas_texture_h < 1) target_canvas_texture_h = 1;
 
-        palette_recreate(ctx->palette, ctx->window_w);
-        // Reset selection to bottom-right (black) on resize, or maintain current if possible
-        // Current behavior: reset to black
-        app_context_select_palette_color(ctx, ctx->palette->total - 1); 
+        palette_recreate(ctx->palette, ctx->window_w); // This now handles emoji reshuffling & re-rendering
+
+        // Try to maintain selection or reset to a default color/tool
+        // If the old selected_palette_idx is still valid within the new total_cells, keep it.
+        // Otherwise, try to select the last color, or the first tool if no colors.
+        int new_selection_idx = ctx->selected_palette_idx;
+        if (new_selection_idx >= ctx->palette->total_cells || new_selection_idx < 0) { // If old selection is out of bounds
+            if (ctx->palette->total_color_cells > 0) {
+                new_selection_idx = ctx->palette->total_color_cells - 1; // Default to last color
+            } else if (ctx->palette->total_cells > 0) {
+                new_selection_idx = 0; // Default to first available tool (emoji)
+            } else {
+                new_selection_idx = 0; // Palette is completely empty (error case)
+            }
+        }
+        app_context_select_palette_tool(ctx, new_selection_idx);
 
         app_context_recalculate_sizes_and_limits(ctx); // Recalculates max_brush_radius and clamps brush_radius
 
@@ -33,11 +45,11 @@ void process_debounced_resize(AppContext *ctx) {
             if (ctx->canvas_texture) { // Only copy if old texture exists
                 SDL_Rect src_rect = {0, 0, ctx->canvas_texture_w, ctx->canvas_texture_h};
                 SDL_Rect dst_rect_on_new_tex = {0, 0, ctx->canvas_texture_w, ctx->canvas_texture_h};
-                
+
                 // Clip destination rect to new texture bounds if old texture was larger
                 if(dst_rect_on_new_tex.w > target_texture_w) dst_rect_on_new_tex.w = target_texture_w;
                 if(dst_rect_on_new_tex.h > target_canvas_texture_h) dst_rect_on_new_tex.h = target_canvas_texture_h;
-                
+
                 // Ensure source rect is also clipped if it's larger than what can be drawn on dest
                 if(src_rect.w > dst_rect_on_new_tex.w) src_rect.w = dst_rect_on_new_tex.w;
                 if(src_rect.h > dst_rect_on_new_tex.h) src_rect.h = dst_rect_on_new_tex.h;

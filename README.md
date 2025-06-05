@@ -8,6 +8,7 @@ This project uses CMake.
 
 * CMake (e.g., `sudo apt install cmake` on Debian/Ubuntu, `brew install cmake` on macOS)
 * SDL2 development libraries (e.g., `sudo apt install libsdl2-dev` on Debian/Ubuntu, `brew install sdl2` on macOS)
+* SDL2_ttf development libraries (e.g., `sudo apt install libsdl2-ttf-dev` on Debian/Ubuntu, `brew install sdl2_ttf` on macOS)
 
 ### Compile
 
