@@ -16,10 +16,18 @@ add_executable(${CMAKE_PROJECT_NAME}
     tool_selectors.c
 )
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+find_package(SDL2 REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${SDL2_INCLUDE_DIRS}
+    ${SDL2_TTF_INCLUDE_DIRS}
+)
+
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
-    SDL2::SDL2          # Use imported target for SDL2
-    SDL2_ttf::SDL2_ttf  # Use imported target for SDL2_ttf
-    m                   # Math library
+    SDL2::SDL2
+    SDL2_ttf::SDL2_ttf
+    m
 )
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall -Wextra)
