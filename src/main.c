@@ -1,18 +1,10 @@
 // AI Summary: Initializes SDL and SDL_ttf, creates the main application window and renderer,
 // and sets up the AppContext. Runs the main application loop, orchestrating
-// event handling, debounced resize processing, and scene rendering (including emojis).
-// Delegates specific logic to app_context, event_handler, and resize_handler modules.
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h> // For TTF_Init, TTF_Quit
-#include <stdlib.h> // For EXIT_SUCCESS, EXIT_FAILURE
-
-// AI Summary: Initializes SDL and SDL_ttf, creates the main application window and renderer,
-// and sets up the AppContext. Runs the main application loop, orchestrating
 // event handling, debounced resize processing, and scene rendering (including the tool selectors and palettes).
 // Delegates specific logic to app_context, event_handler, and resize_handler modules.
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h> // For TTF_Init, TTF_Quit
-#include <stdlib.h> // For EXIT_SUCCESS, EXIT_FAILURE
+#include <stdlib.h>       // For EXIT_SUCCESS, EXIT_FAILURE
 
 #include "app_context.h"    // For AppContext, INITIAL_WINDOW_WIDTH, RESIZE_DEBOUNCE_MS, etc.
 #include "event_handler.h"  // For handle_events

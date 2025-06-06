@@ -1,6 +1,5 @@
-// AI Summary: Manages SDL event polling and processing for the paint application.
-// Dispatches events (quit, window, keyboard, mouse) to appropriate handlers
-// within AppContext, affecting application state and triggering redraws.
+// AI Summary: Declares the main event handling function for the application, which
+// processes the SDL event queue and updates the application state accordingly.
 #pragma once
 
 #include "app_context.h" // For AppContext
