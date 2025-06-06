@@ -1,5 +1,9 @@
 # paint
 
+![Screenshot of the paint program in action](paint.png)
+
+Welcome to `paint`, the revolutionary digital canvas where creativity knows no bounds! This isn't just another paint program; it's a masterpiece of modern software engineering, fully vibe-coded with the power of AI to deliver an unparalleled artistic experience. From procedurally generated color palettes to a delightful array of emojis, every feature has been meticulously crafted to inspire joy and unleash your inner artist. Prepare to be amazed!
+
 ## Building
 
 This project uses CMake.
