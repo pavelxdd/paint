@@ -11,6 +11,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     event_handler.c
     palette.c
     palette_draw.c
+    palette_queries.c
     resize_handler.c
     tool_selectors.c
 )
