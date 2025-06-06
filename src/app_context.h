@@ -1,6 +1,6 @@
 // AI Summary: Defines the AppContext structure holding the application's global state
 // for the paint program. Manages window/renderer, canvas, palette, brush, colors, active tool (brush/emoji),
-// and flags for UI updates and resize handling. Provides functions for
+// palette visibility, and flags for UI updates and resize handling. Provides functions for
 // initializing, destroying, and modifying this state.
 #pragma once
 
@@ -46,6 +46,10 @@ typedef struct {
     // For resize debouncing
     SDL_bool resize_pending;
     Uint32 last_resize_timestamp;
+
+    // UI visibility state
+    SDL_bool show_color_palette;
+    SDL_bool show_emoji_palette;
 } AppContext;
 
 // Initialization and Cleanup
@@ -56,6 +60,8 @@ void app_context_destroy(AppContext *ctx);
 void app_context_select_palette_tool(AppContext *ctx, int palette_idx);
 void app_context_set_background_and_clear_canvas(AppContext *ctx, SDL_Color color);
 void app_context_clear_canvas_with_current_bg(AppContext *ctx);
+void app_context_toggle_color_palette(AppContext *ctx);
+void app_context_toggle_emoji_palette(AppContext *ctx);
 void app_context_change_brush_radius(AppContext *ctx, int delta);
 void app_context_set_brush_radius_from_key(AppContext *ctx, SDL_Keycode keycode);
 void app_context_recalculate_sizes_and_limits(AppContext *ctx);
@@ -64,8 +70,9 @@ void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool
 // For window resize event notification
 void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h);
 
-// Helper to calculate canvas display height
+// Internal helpers
 void app_context_update_canvas_display_height(AppContext *ctx);
+void app_context_recreate_canvas_texture(AppContext* ctx);
 
 // Helper to check current tool
 SDL_bool app_context_is_drawing_with_emoji(AppContext* ctx);

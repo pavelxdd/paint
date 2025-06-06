@@ -1,21 +1,13 @@
 // AI Summary: Implements the EmojiRenderer for the paint application.
 // Manages the lifecycle of an emoji font, a list of emoji codepoints (shuffled from
-// a predefined set), and their corresponding rendered SDL_Textures.
+// a predefined set), and their corresponding rendered SDL_Textures. It also manages
+// a separate default emoji for UI purposes.
 // Provides functions to create, destroy, and access rendered emoji data.
 #include "emoji_data.h" // For ORIGINAL_DEFAULT_EMOJI_CODEPOINTS and NUM_DEFAULT_EMOJIS
 #include "emoji_renderer.h"
 #include <stdlib.h>
 #include <string.h> // For strlen
 #include <time.h>   // For srand, rand (though main seeds it typically)
-
-struct EmojiRenderer {
-    TTF_Font* emoji_font;
-    const char** emoji_codepoints_shuffled; // Shuffled copy of original codepoints
-    SDL_Texture** emoji_textures;
-    SDL_Point* emoji_texture_dims;
-    int num_defined_emojis;
-    SDL_Renderer* ren_ref;
-};
 
 // Fisher-Yates shuffle for an array of char pointers
 static void shuffle_char_pointers(const char **array, int n) {
@@ -88,6 +80,24 @@ EmojiRenderer* emoji_renderer_create(SDL_Renderer* ren) {
         }
         emoji_renderer_shuffle_and_render_all(er); // Initial shuffle and render
     }
+
+    er->default_emoji_texture = NULL;
+    er->default_emoji_texture_dims = (SDL_Point){0,0};
+    const char* default_emoji_codepoint = "🙂";
+    SDL_Color fg_color_default = {0,0,0,255};
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(er->emoji_font, default_emoji_codepoint, fg_color_default);
+    if (surface) {
+        er->default_emoji_texture = SDL_CreateTextureFromSurface(er->ren_ref, surface);
+        if (er->default_emoji_texture) {
+            er->default_emoji_texture_dims = (SDL_Point){surface->w, surface->h};
+        } else {
+             SDL_Log("Failed to create default emoji texture: %s", SDL_GetError());
+        }
+        SDL_FreeSurface(surface);
+    } else {
+        SDL_Log("Failed to render default emoji: %s", TTF_GetError());
+    }
+
     return er;
 }
 
@@ -99,6 +109,10 @@ void emoji_renderer_destroy(EmojiRenderer* er) {
     free(er->emoji_textures);
     free(er->emoji_texture_dims);
     free(er->emoji_codepoints_shuffled); // Free the array of pointers, not the strings themselves
+
+    if (er->default_emoji_texture) {
+        SDL_DestroyTexture(er->default_emoji_texture);
+    }
 
     if (er->emoji_font) {
         TTF_CloseFont(er->emoji_font);
@@ -152,6 +166,17 @@ SDL_bool emoji_renderer_get_texture_info(const EmojiRenderer* er, int emoji_arra
     *tex = er->emoji_textures[emoji_array_idx];
     *w = er->emoji_texture_dims[emoji_array_idx].x;
     *h = er->emoji_texture_dims[emoji_array_idx].y;
+    return SDL_TRUE;
+}
+
+SDL_bool emoji_renderer_get_default_texture_info(const EmojiRenderer* er, SDL_Texture** tex, int* w, int* h) {
+    if (!er || !tex || !w || !h || !er->default_emoji_texture) {
+        if (tex) *tex = NULL;
+        return SDL_FALSE;
+    }
+    *tex = er->default_emoji_texture;
+    *w = er->default_emoji_texture_dims.x;
+    *h = er->default_emoji_texture_dims.y;
     return SDL_TRUE;
 }
 

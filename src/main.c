@@ -6,32 +6,50 @@
 #include <SDL2/SDL_ttf.h> // For TTF_Init, TTF_Quit
 #include <stdlib.h> // For EXIT_SUCCESS, EXIT_FAILURE
 
+// AI Summary: Initializes SDL and SDL_ttf, creates the main application window and renderer,
+// and sets up the AppContext. Runs the main application loop, orchestrating
+// event handling, debounced resize processing, and scene rendering (including the tool selectors and palettes).
+// Delegates specific logic to app_context, event_handler, and resize_handler modules.
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h> // For TTF_Init, TTF_Quit
+#include <stdlib.h> // For EXIT_SUCCESS, EXIT_FAILURE
+
 #include "app_context.h"    // For AppContext, INITIAL_WINDOW_WIDTH, RESIZE_DEBOUNCE_MS, etc.
 #include "event_handler.h"  // For handle_events
 #include "resize_handler.h" // For process_debounced_resize
 #include "palette.h"        // For palette_draw (used in render_scene)
+#include "tool_selectors.h" // For drawing the tool toggles
 
 static void render_scene(AppContext *ctx) {
-    SDL_SetRenderDrawColor(ctx->ren, 255, 255, 255, 255); 
+    SDL_SetRenderDrawColor(ctx->ren, 255, 255, 255, 255);
     SDL_RenderClear(ctx->ren);
 
-    // canvas_display_area_h is already calculated and stored in ctx
-    SDL_Rect canvas_dst_rect_in_window = {0, 0, ctx->window_w, ctx->canvas_display_area_h};
-
-    // Only render canvas if its display area is positive and texture exists
-    if (ctx->canvas_display_area_h > 0 && ctx->canvas_texture) {
-        SDL_RenderCopy(ctx->ren, ctx->canvas_texture, NULL, &canvas_dst_rect_in_window);
+    // 1. Render the canvas texture to the entire window first.
+    if (ctx->canvas_texture) {
+        SDL_RenderCopy(ctx->ren, ctx->canvas_texture, NULL, NULL);
     }
 
-    // Draw separator line
-    if (CANVAS_PALETTE_SEPARATOR_HEIGHT > 0) {
+    // --- UI drawing from top to bottom, overlaid on the canvas ---
+
+    // 2. Tool selectors "float" over the canvas, just above the main UI panel.
+    // Their Y position is calculated from the top of the main UI block.
+    int tool_selectors_y = ctx->canvas_display_area_h - TOOL_SELECTOR_AREA_HEIGHT;
+    tool_selectors_draw(ctx, tool_selectors_y);
+
+    // 3. The main UI block (palette and its separator) starts at canvas_display_area_h.
+    int current_y = ctx->canvas_display_area_h;
+
+    // 4. Separator between canvas/selectors and palette (if palette is visible)
+    SDL_bool is_palette_content_visible = (ctx->show_color_palette && ctx->palette->color_rows > 0) || (ctx->show_emoji_palette && ctx->palette->emoji_rows > 0);
+    if (is_palette_content_visible && TOOL_SELECTOR_SEPARATOR_HEIGHT > 0) {
         SDL_SetRenderDrawColor(ctx->ren, 68, 71, 90, 255); // Dracula 'Current Line'
-        SDL_Rect sep_rect = {0, ctx->canvas_display_area_h, ctx->window_w, CANVAS_PALETTE_SEPARATOR_HEIGHT};
+        SDL_Rect sep_rect = {0, current_y, ctx->window_w, TOOL_SELECTOR_SEPARATOR_HEIGHT};
         SDL_RenderFillRect(ctx->ren, &sep_rect);
+        current_y += TOOL_SELECTOR_SEPARATOR_HEIGHT;
     }
 
-    int palette_start_y = ctx->canvas_display_area_h + CANVAS_PALETTE_SEPARATOR_HEIGHT;
-    palette_draw(ctx->palette, ctx->ren, palette_start_y, ctx->window_w, ctx->selected_palette_idx, ctx->brush_radius);
+    // 5. Palette (conditionally visible rows)
+    palette_draw(ctx->palette, ctx->ren, current_y, ctx->window_w, ctx->selected_palette_idx, ctx->show_color_palette, ctx->show_emoji_palette);
 
     SDL_RenderPresent(ctx->ren);
 }

@@ -33,8 +33,13 @@ static void palette_calculate_and_set_dynamic_rows(Palette *p, int window_h)
             if (c_rows && e_rows && COLOR_EMOJI_SEPARATOR_HEIGHT)
                 palette_h += COLOR_EMOJI_SEPARATOR_HEIGHT;
 
-            int total_ui_h      = palette_h + CANVAS_PALETTE_SEPARATOR_HEIGHT;
-            int remaining_canvas_h = window_h - total_ui_h;
+            // The main UI block is the palette plus a separator above it.
+            // The tool selectors float on the canvas and don't reduce the "drawable" area for this calculation.
+            int total_palette_ui_h = palette_h;
+            if (palette_h > 0) {
+                total_palette_ui_h += TOOL_SELECTOR_SEPARATOR_HEIGHT;
+            }
+            int remaining_canvas_h = window_h - total_palette_ui_h;
 
             if (remaining_canvas_h >= MIN_CANVAS_HEIGHT_FOR_PALETTE_CALC) {
                 p->color_rows = c_rows;
@@ -158,14 +163,14 @@ void palette_recreate(Palette *p, int window_w, int window_h)
    Interaction & queries
    -------------------------------------------------------------------------- */
 
-int palette_hit_test(const Palette *p, int mx, int my, int window_w, int palette_start_y)
+int palette_hit_test(const Palette *p, int mx, int my, int window_w, int palette_start_y, SDL_bool show_colors, SDL_bool show_emojis)
 {
     if (p->cols == 0)
         return -1;
 
-    int colors_h = p->color_rows * PALETTE_HEIGHT;
-    int sep_h    = (p->emoji_rows && p->color_rows) ? COLOR_EMOJI_SEPARATOR_HEIGHT : 0;
-    int emojis_h = p->emoji_rows * PALETTE_HEIGHT;
+    int colors_h = show_colors ? p->color_rows * PALETTE_HEIGHT : 0;
+    int sep_h    = (show_colors && show_emojis && p->color_rows > 0 && p->emoji_rows > 0) ? COLOR_EMOJI_SEPARATOR_HEIGHT : 0;
+    int emojis_h = show_emojis ? p->emoji_rows * PALETTE_HEIGHT : 0;
     int total_h  = colors_h + sep_h + emojis_h;
 
     if (my < palette_start_y || my >= palette_start_y + total_h)
@@ -184,14 +189,14 @@ int palette_hit_test(const Palette *p, int mx, int my, int window_w, int palette
     if (clicked_c == -1) return -1;
 
     /* colour rows */
-    if (my < palette_start_y + colors_h) {
+    if (show_colors && my < palette_start_y + colors_h) {
         int r = (my - palette_start_y) / PALETTE_HEIGHT;
         return r * p->cols + clicked_c;
     }
 
     /* emoji rows */
     int emoji_start_y = palette_start_y + colors_h + sep_h;
-    if (my >= emoji_start_y && my < emoji_start_y + emojis_h) {
+    if (show_emojis && my >= emoji_start_y && my < emoji_start_y + emojis_h) {
         int grid_idx = (my - emoji_start_y) / PALETTE_HEIGHT * p->cols + clicked_c;
         int flat_idx = p->total_color_cells + grid_idx;
         if (flat_idx < p->total_cells) return flat_idx;

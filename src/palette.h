@@ -27,12 +27,13 @@ void     palette_recreate(Palette *p, int window_w, int window_h);
 
 /* Rendering ---------------------------------------------------------------- */
 void palette_draw(const Palette *p, SDL_Renderer *ren,
-                  int palette_start_y, int window_w,
-                  int selected_idx, int brush_radius);
+                  int palette_start_y, int window_w, int selected_idx,
+                  SDL_bool show_colors, SDL_bool show_emojis);
 
 /* Interaction helpers ------------------------------------------------------ */
 int       palette_hit_test(const Palette *p, int mx, int my,
-                           int window_w, int palette_start_y);
+                           int window_w, int palette_start_y,
+                           SDL_bool show_colors, SDL_bool show_emojis);
 
 SDL_Color palette_get_color(const Palette *p, int flat_index);
 

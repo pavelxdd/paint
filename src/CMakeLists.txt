@@ -9,6 +9,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     palette.c
     palette_draw.c
     resize_handler.c
+    tool_selectors.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
