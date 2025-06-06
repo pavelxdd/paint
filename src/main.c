@@ -25,7 +25,7 @@ static void render_scene(AppContext *ctx) {
 
     // Draw separator line
     if (CANVAS_PALETTE_SEPARATOR_HEIGHT > 0) {
-        SDL_SetRenderDrawColor(ctx->ren, 237, 237, 237, 255); // #ededed
+        SDL_SetRenderDrawColor(ctx->ren, 68, 71, 90, 255); // Dracula 'Current Line'
         SDL_Rect sep_rect = {0, ctx->canvas_display_area_h, ctx->window_w, CANVAS_PALETTE_SEPARATOR_HEIGHT};
         SDL_RenderFillRect(ctx->ren, &sep_rect);
     }

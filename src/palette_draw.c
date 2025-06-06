@@ -73,15 +73,16 @@ void palette_draw(const Palette *p,
 
     /* ---------- separator between colours and emojis ---------- */
     if (p->emoji_rows > 0 && p->color_rows > 0 && COLOR_EMOJI_SEPARATOR_HEIGHT > 0) {
-        SDL_SetRenderDrawColor(ren, 180, 180, 180, 255);
+        SDL_SetRenderDrawColor(ren, 68, 71, 90, 255); // Dracula 'Current Line'
         SDL_Rect sep_r = { 0, current_y, window_w, COLOR_EMOJI_SEPARATOR_HEIGHT };
         SDL_RenderFillRect(ren, &sep_r);
         current_y += COLOR_EMOJI_SEPARATOR_HEIGHT;
     }
 
     /* ---------- emoji rows ---------- */
-    SDL_Color chk1 = { 220, 220, 220, 255 };
-    SDL_Color chk2 = { 235, 235, 235, 255 };
+    // Dracula theme checkered background
+    SDL_Color chk1 = { 40, 42, 54, 255 }; // Dracula 'Background'
+    SDL_Color chk2 = { 68, 71, 90, 255 }; // Dracula 'Current Line'
 
     int num_available_emojis = emoji_renderer_get_num_emojis(p->emoji_renderer_instance);
 
@@ -128,7 +129,7 @@ void palette_draw(const Palette *p,
 
                     /* selection rectangle around emoji */
                     if (f_idx == selected_idx && palette_is_emoji_index(p, f_idx)) {
-                        SDL_SetRenderDrawColor(ren, 0, 0, 255, 255);
+                        SDL_SetRenderDrawColor(ren, 189, 147, 249, 255); // Dracula 'Purple'
                         SDL_RenderDrawRect(ren, &cell_r);
                         SDL_Rect r2 = { cell_r.x + 1, cell_r.y + 1,
                                         cell_r.w - 2, cell_r.h - 2 };
