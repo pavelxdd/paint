@@ -1,25 +1,14 @@
 // AI Summary: Encapsulates canvas-related operations previously embedded in
 // app_context.c. Functions manage clearing, drawing (brush & emoji), erasing,
-// and safe texture recreation during window resizes.
+// and safe texture recreation during window resizes. It also handles stroke-buffering
+// for tools like the water-marker to ensure proper transparency.
 #include "app_context.h"
 #include "draw.h"
 #include "palette.h"
 #include "ui_constants.h"
 #include <math.h>
 
-/* ----------------------- Internal helpers ----------------------- */
-
-static SDL_bool is_drawing_with_emoji(const AppContext *ctx)
-{
-    return ctx->current_tool == TOOL_EMOJI;
-}
-
 /* ----------------------- Public API ----------------------------- */
-
-SDL_bool app_context_is_drawing_with_emoji(AppContext *ctx)
-{
-    return is_drawing_with_emoji(ctx);
-}
 
 void app_context_clear_canvas_with_current_bg(AppContext *ctx)
 {
@@ -48,7 +37,15 @@ void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool
         return;
     }
 
-    SDL_SetRenderTarget(ctx->ren, ctx->canvas_texture);
+    SDL_Texture *target_texture = ctx->canvas_texture;
+    if (ctx->current_tool == TOOL_WATER_MARKER && !use_background_color) {
+        if (!ctx->water_marker_stroke_active || !ctx->stroke_buffer) {
+            return; // Not in a stroke, do nothing
+        }
+        target_texture = ctx->stroke_buffer;
+    }
+
+    SDL_SetRenderTarget(ctx->ren, target_texture);
 
     if (use_background_color) {
         SDL_SetRenderDrawColor(ctx->ren,
@@ -57,11 +54,20 @@ void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool
                                ctx->background_color.b,
                                ctx->background_color.a);
         draw_circle(ctx->ren, mouse_x, mouse_y, ctx->brush_radius);
-    } else if (is_drawing_with_emoji(ctx)) {
+    } else if (ctx->current_tool == TOOL_WATER_MARKER) {
+        SDL_SetRenderDrawColor(ctx->ren,
+                               ctx->water_marker_color.r,
+                               ctx->water_marker_color.g,
+                               ctx->water_marker_color.b,
+                               255); // Opaque on buffer
+        int side = lroundf(ctx->brush_radius * 2 * 1.5f);
+        SDL_Rect rect = {mouse_x - side / 2, mouse_y - side / 2, side, side};
+        SDL_RenderFillRect(ctx->ren, &rect);
+    } else if (ctx->current_tool == TOOL_EMOJI) {
         SDL_Texture *emoji_tex = NULL;
         int ew = 0, eh = 0;
         if (palette_get_emoji_info(
-                ctx->palette, ctx->selected_palette_idx, &emoji_tex, &ew, &eh) &&
+                ctx->palette, ctx->emoji_selected_palette_idx, &emoji_tex, &ew, &eh) &&
             emoji_tex) {
             float asp = (eh == 0) ? 1.0f : (float)ew / eh;
             int h = ctx->brush_radius * 6;
@@ -76,7 +82,7 @@ void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool
             SDL_Rect dst = {mouse_x - w / 2, mouse_y - h / 2, w, h};
             SDL_RenderCopy(ctx->ren, emoji_tex, NULL, &dst);
         }
-    } else {
+    } else { // TOOL_BRUSH
         SDL_SetRenderDrawColor(ctx->ren,
                                ctx->current_color.r,
                                ctx->current_color.g,
@@ -114,20 +120,8 @@ void app_context_recreate_canvas_texture(AppContext *ctx)
                            ctx->background_color.a);
     SDL_RenderClear(ctx->ren);
 
-    /* copy old content if possible */
+    /* Destroy old canvas texture, no content is preserved on resize */
     if (ctx->canvas_texture) {
-        SDL_Rect src = {0, 0, ctx->canvas_texture_w, ctx->canvas_texture_h};
-        SDL_Rect dst = src;
-        if (dst.w > w) {
-            dst.w = w;
-        }
-        if (dst.h > h) {
-            dst.h = h;
-        }
-        if (src.w > 0 && src.h > 0 && dst.w > 0 && dst.h > 0) {
-            SDL_RenderCopy(ctx->ren, ctx->canvas_texture, &src, &dst);
-        }
-
         SDL_DestroyTexture(ctx->canvas_texture);
     }
 
@@ -135,5 +129,59 @@ void app_context_recreate_canvas_texture(AppContext *ctx)
     ctx->canvas_texture = new_tex;
     ctx->canvas_texture_w = w;
     ctx->canvas_texture_h = h;
+
+    // Recreate stroke buffer as well
+    if (ctx->stroke_buffer) {
+        SDL_DestroyTexture(ctx->stroke_buffer);
+    }
+    ctx->stroke_buffer = SDL_CreateTexture(
+        ctx->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+    if (!ctx->stroke_buffer) {
+        SDL_Log("Failed to create stroke buffer texture: %s", SDL_GetError());
+    } else {
+        SDL_SetTextureBlendMode(ctx->stroke_buffer, SDL_BLENDMODE_BLEND);
+        // Clear it to transparent
+        SDL_SetRenderTarget(ctx->ren, ctx->stroke_buffer);
+        SDL_SetRenderDrawBlendMode(ctx->ren, SDL_BLENDMODE_NONE);
+        SDL_SetRenderDrawColor(ctx->ren, 0, 0, 0, 0);
+        SDL_RenderClear(ctx->ren);
+        SDL_SetRenderTarget(ctx->ren, NULL);
+    }
+
+    ctx->needs_redraw = SDL_TRUE;
+}
+
+void app_context_begin_water_marker_stroke(AppContext *ctx)
+{
+    if (!ctx || !ctx->stroke_buffer) {
+        return;
+    }
+    ctx->water_marker_stroke_active = SDL_TRUE;
+
+    // Clear the buffer to be fully transparent for the new stroke
+    SDL_SetRenderTarget(ctx->ren, ctx->stroke_buffer);
+    SDL_SetRenderDrawBlendMode(ctx->ren, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(ctx->ren, 0, 0, 0, 0);
+    SDL_RenderClear(ctx->ren);
+    SDL_SetRenderTarget(ctx->ren, NULL);
+}
+
+void app_context_end_water_marker_stroke(AppContext *ctx)
+{
+    if (!ctx || !ctx->stroke_buffer || !ctx->water_marker_stroke_active) {
+        return;
+    }
+
+    // Blend the completed stroke from the buffer onto the main canvas
+    SDL_SetRenderTarget(ctx->ren, ctx->canvas_texture);
+    SDL_SetTextureBlendMode(ctx->stroke_buffer, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureAlphaMod(ctx->stroke_buffer, 128); // 50% alpha
+    SDL_RenderCopy(ctx->ren, ctx->stroke_buffer, NULL, NULL);
+
+    // Reset texture properties and renderer target
+    SDL_SetTextureAlphaMod(ctx->stroke_buffer, 255);
+    SDL_SetRenderTarget(ctx->ren, NULL);
+
+    ctx->water_marker_stroke_active = SDL_FALSE;
     ctx->needs_redraw = SDL_TRUE;
 }

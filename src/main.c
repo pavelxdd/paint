@@ -22,17 +22,24 @@ static void render_scene(AppContext *ctx)
         SDL_RenderCopy(ctx->ren, ctx->canvas_texture, NULL, NULL);
     }
 
+    // 2. If a water-marker stroke is in progress, render it semi-transparently for live preview.
+    if (ctx->water_marker_stroke_active && ctx->stroke_buffer) {
+        SDL_SetTextureAlphaMod(ctx->stroke_buffer, 128);
+        SDL_RenderCopy(ctx->ren, ctx->stroke_buffer, NULL, NULL);
+        SDL_SetTextureAlphaMod(ctx->stroke_buffer, 255); // Reset for other potential uses
+    }
+
     // --- UI drawing from top to bottom, overlaid on the canvas ---
 
-    // 2. Tool selectors "float" over the canvas, just above the main UI panel.
+    // 3. Tool selectors "float" over the canvas, just above the main UI panel.
     // Their Y position is calculated from the top of the main UI block.
     int tool_selectors_y = ctx->canvas_display_area_h - TOOL_SELECTOR_AREA_HEIGHT;
     tool_selectors_draw(ctx, tool_selectors_y);
 
-    // 3. The main UI block (palette and its separator) starts at canvas_display_area_h.
+    // 4. The main UI block (palette and its separator) starts at canvas_display_area_h.
     int current_y = ctx->canvas_display_area_h;
 
-    // 4. Separator between canvas/selectors and palette (if palette is visible)
+    // 5. Separator between canvas/selectors and palette (if palette is visible)
     SDL_bool is_palette_content_visible =
         (ctx->show_color_palette && ctx->palette->color_rows > 0) ||
         (ctx->show_emoji_palette && ctx->palette->emoji_rows > 0);
@@ -43,12 +50,24 @@ static void render_scene(AppContext *ctx)
         current_y += TOOL_SELECTOR_SEPARATOR_HEIGHT;
     }
 
-    // 5. Palette (conditionally visible rows)
+    // 6. Palette (conditionally visible rows)
+    int active_palette_idx = -1;
+    switch (ctx->current_tool) {
+    case TOOL_BRUSH:
+        active_palette_idx = ctx->brush_selected_palette_idx;
+        break;
+    case TOOL_WATER_MARKER:
+        active_palette_idx = ctx->water_marker_selected_palette_idx;
+        break;
+    case TOOL_EMOJI:
+        active_palette_idx = ctx->emoji_selected_palette_idx;
+        break;
+    }
     palette_draw(ctx->palette,
                  ctx->ren,
                  current_y,
                  ctx->window_w,
-                 ctx->selected_palette_idx,
+                 active_palette_idx,
                  ctx->show_color_palette,
                  ctx->show_emoji_palette);
 

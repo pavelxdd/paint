@@ -15,7 +15,8 @@
 
 typedef enum {
     TOOL_BRUSH,
-    TOOL_EMOJI
+    TOOL_EMOJI,
+    TOOL_WATER_MARKER
 } ActiveTool;
 
 typedef struct {
@@ -28,11 +29,17 @@ typedef struct {
     // Calculated height of the canvas display area in the window
     int canvas_display_area_h;
 
+    SDL_Texture *stroke_buffer; // For tools that need to be blended as a whole stroke
+
     Palette *palette;
-    int selected_palette_idx;   // Flat index in the palette (can be color or emoji)
-    ActiveTool current_tool;    // Current drawing tool (brush or emoji)
-    SDL_Color current_color;    // Current drawing color (if current_tool is TOOL_BRUSH)
-    SDL_Color background_color; // Current canvas background color
+    int brush_selected_palette_idx;
+    int water_marker_selected_palette_idx;
+    int emoji_selected_palette_idx;
+    ActiveTool current_tool;    // Current drawing tool (brush, emoji, or water-marker)
+    ActiveTool last_color_tool; // Remembers brush vs water-marker when switching to emoji
+    SDL_Color current_color;      // Current drawing color (if current_tool is TOOL_BRUSH)
+    SDL_Color water_marker_color; // Current drawing color for water-marker tool
+    SDL_Color background_color;   // Current canvas background color
 
     int brush_radius;
     int max_brush_radius; // Max allowed brush radius, dynamically calculated
@@ -49,6 +56,9 @@ typedef struct {
     // UI visibility state
     SDL_bool show_color_palette;
     SDL_bool show_emoji_palette;
+
+    // Stroke state
+    SDL_bool water_marker_stroke_active;
 } AppContext;
 
 // Initialization and Cleanup
@@ -70,9 +80,10 @@ void app_context_draw_stroke(
 // For window resize event notification
 void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h);
 
+// Stroke management (for water-marker tool)
+void app_context_begin_water_marker_stroke(AppContext *ctx);
+void app_context_end_water_marker_stroke(AppContext *ctx);
+
 // Internal helpers
 void app_context_update_canvas_display_height(AppContext *ctx);
 void app_context_recreate_canvas_texture(AppContext *ctx);
-
-// Helper to check current tool
-SDL_bool app_context_is_drawing_with_emoji(AppContext *ctx);

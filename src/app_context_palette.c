@@ -59,14 +59,25 @@ void app_context_select_palette_tool(AppContext *ctx, int flat_idx)
         return;
     }
 
-    ctx->selected_palette_idx = flat_idx;
-
     if (palette_is_emoji_index(ctx->palette, flat_idx)) {
         ctx->current_tool = TOOL_EMOJI;
-        ctx->current_color = (SDL_Color){40, 42, 54, 255};
+        ctx->emoji_selected_palette_idx = flat_idx;
     } else {
-        ctx->current_tool = TOOL_BRUSH;
-        ctx->current_color = palette_get_color(ctx->palette, flat_idx);
+        // A color was picked.
+        // If current tool is emoji, switch to the last used color tool.
+        if (ctx->current_tool == TOOL_EMOJI) {
+            ctx->current_tool = ctx->last_color_tool;
+        }
+
+        SDL_Color selected_color = palette_get_color(ctx->palette, flat_idx);
+
+        if (ctx->current_tool == TOOL_WATER_MARKER) {
+            ctx->water_marker_color = selected_color;
+            ctx->water_marker_selected_palette_idx = flat_idx;
+        } else { // Must be TOOL_BRUSH
+            ctx->current_color = selected_color;
+            ctx->brush_selected_palette_idx = flat_idx;
+        }
     }
     ctx->needs_redraw = SDL_TRUE;
 }

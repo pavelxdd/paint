@@ -6,36 +6,6 @@
 #include <stdlib.h>
 
 /* ---------------------------------------------------------------------------
- * Internal helpers
- * --------------------------------------------------------------------------*/
-static void init_canvas_texture(AppContext *ctx, int width, int height)
-{
-    if (ctx->canvas_texture) {
-        SDL_DestroyTexture(ctx->canvas_texture);
-    }
-
-    ctx->canvas_texture = SDL_CreateTexture(
-        ctx->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
-    if (!ctx->canvas_texture) {
-        SDL_Log("Failed to create canvas texture: %s", SDL_GetError());
-        ctx->canvas_texture_w = ctx->canvas_texture_h = 0;
-        return;
-    }
-
-    ctx->canvas_texture_w = width;
-    ctx->canvas_texture_h = height;
-
-    SDL_SetRenderTarget(ctx->ren, ctx->canvas_texture);
-    SDL_SetRenderDrawColor(ctx->ren,
-                           ctx->background_color.r,
-                           ctx->background_color.g,
-                           ctx->background_color.b,
-                           ctx->background_color.a);
-    SDL_RenderClear(ctx->ren);
-    SDL_SetRenderTarget(ctx->ren, NULL);
-}
-
-/* ---------------------------------------------------------------------------
  * Lifecycle
  * --------------------------------------------------------------------------*/
 AppContext *app_context_create(SDL_Window *win, SDL_Renderer *ren)
@@ -63,19 +33,42 @@ AppContext *app_context_create(SDL_Window *win, SDL_Renderer *ren)
 
     app_context_update_canvas_display_height(ctx);
 
-    ctx->selected_palette_idx =
+    // Set default colors and tool
+    ctx->current_tool = TOOL_BRUSH;
+    ctx->last_color_tool = TOOL_BRUSH;
+
+    // Default water-marker to red (top-left)
+    ctx->water_marker_selected_palette_idx = 0;
+    if (ctx->palette->total_color_cells > 0) {
+        ctx->water_marker_color =
+            palette_get_color(ctx->palette, ctx->water_marker_selected_palette_idx);
+    } else {
+        ctx->water_marker_color = (SDL_Color){255, 0, 0, 255}; // Fallback red
+    }
+
+    // Default brush to black (bottom-right)
+    ctx->brush_selected_palette_idx =
         ctx->palette->total_color_cells ? ctx->palette->total_color_cells - 1 : 0;
-    app_context_select_palette_tool(ctx, ctx->selected_palette_idx);
+    if (ctx->palette->total_color_cells > 0) {
+        ctx->current_color = palette_get_color(ctx->palette, ctx->brush_selected_palette_idx);
+    } else {
+        ctx->current_color = (SDL_Color){0, 0, 0, 255}; // Fallback black
+    }
+
+    // Default emoji to first one
+    ctx->emoji_selected_palette_idx = ctx->palette->total_color_cells;
 
     ctx->brush_radius = 10;
     app_context_recalculate_sizes_and_limits(ctx);
 
     ctx->canvas_texture = NULL;
-    init_canvas_texture(ctx, ctx->window_w, ctx->window_h);
+    ctx->stroke_buffer = NULL;
+    app_context_recreate_canvas_texture(ctx);
 
     ctx->needs_redraw = SDL_TRUE;
     ctx->resize_pending = SDL_FALSE;
     ctx->last_resize_timestamp = 0;
+    ctx->water_marker_stroke_active = SDL_FALSE;
 
     return ctx;
 
@@ -94,6 +87,9 @@ void app_context_destroy(AppContext *ctx)
     }
     if (ctx->canvas_texture) {
         SDL_DestroyTexture(ctx->canvas_texture);
+    }
+    if (ctx->stroke_buffer) {
+        SDL_DestroyTexture(ctx->stroke_buffer);
     }
     palette_destroy(ctx->palette);
     free(ctx);

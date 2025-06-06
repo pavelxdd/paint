@@ -11,11 +11,13 @@ void process_debounced_resize(AppContext *ctx)
 {
     if (ctx->resize_pending &&
         (SDL_GetTicks() - ctx->last_resize_timestamp >= RESIZE_DEBOUNCE_MS)) {
-        // Before palette is recreated, check if the last color (black) was selected.
-        SDL_bool was_black_selected = SDL_FALSE;
-        if (ctx->palette->total_color_cells > 0 &&
-            ctx->selected_palette_idx == ctx->palette->total_color_cells - 1) {
-            was_black_selected = SDL_TRUE;
+        // Before palette is recreated, check for special cases to preserve them.
+        SDL_bool brush_was_top_left = (ctx->brush_selected_palette_idx == 0);
+        SDL_bool water_marker_was_top_left = (ctx->water_marker_selected_palette_idx == 0);
+        SDL_bool water_marker_was_bottom_right = SDL_FALSE;
+        if (ctx->palette->total_color_cells > 0) {
+            water_marker_was_bottom_right =
+                (ctx->water_marker_selected_palette_idx == ctx->palette->total_color_cells - 1);
         }
 
         // 1. Recreate palette: recalculates rows, columns, colors, and shuffles emojis
@@ -24,24 +26,31 @@ void process_debounced_resize(AppContext *ctx)
         // 2. Update canvas display height based on new window height and new palette layout
         app_context_update_canvas_display_height(ctx);
 
-        // 3. Try to maintain selection or reset to a default color/tool
-        int new_selection_idx;
-        if (was_black_selected && ctx->palette->total_color_cells > 0) {
-            new_selection_idx = ctx->palette->total_color_cells - 1;
+        // 3. Reset selections and colors, preserving special cases.
+        // Brush: stays top-left if it was, otherwise defaults to bottom-right.
+        if (brush_was_top_left) {
+            ctx->brush_selected_palette_idx = 0;
         } else {
-            // Fallback for other colors/emojis, which might not be preserved correctly.
-            new_selection_idx = ctx->selected_palette_idx;
-            if (new_selection_idx >= ctx->palette->total_cells || new_selection_idx < 0) {
-                if (ctx->palette->total_color_cells > 0) {
-                    new_selection_idx = ctx->palette->total_color_cells - 1; // Default to black
-                } else if (ctx->palette->total_cells > 0) {
-                    new_selection_idx = 0; // Default to first emoji
-                } else {
-                    new_selection_idx = 0; // Should not happen
-                }
-            }
+            ctx->brush_selected_palette_idx =
+                ctx->palette->total_color_cells > 0 ? ctx->palette->total_color_cells - 1 : 0;
         }
-        app_context_select_palette_tool(ctx, new_selection_idx);
+
+        // Water-marker: stays top-left or bottom-right if it was, otherwise defaults to top-left.
+        if (water_marker_was_top_left) {
+            ctx->water_marker_selected_palette_idx = 0;
+        } else if (water_marker_was_bottom_right) {
+            ctx->water_marker_selected_palette_idx =
+                ctx->palette->total_color_cells > 0 ? ctx->palette->total_color_cells - 1 : 0;
+        } else {
+            ctx->water_marker_selected_palette_idx = 0; // Default to top-left
+        }
+
+        // Update colors from new palette
+        ctx->current_color = palette_get_color(ctx->palette, ctx->brush_selected_palette_idx);
+        ctx->water_marker_color =
+            palette_get_color(ctx->palette, ctx->water_marker_selected_palette_idx);
+
+        ctx->emoji_selected_palette_idx = ctx->palette->total_color_cells;
 
         // 4. Recalculate brush size limits based on new layout
         app_context_recalculate_sizes_and_limits(ctx);

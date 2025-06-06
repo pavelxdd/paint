@@ -5,7 +5,7 @@
 #include "event_handler.h"
 #include "app_context.h"    // For AppContext and its manipulation functions
 #include "palette.h"        // For palette_hit_test, palette_get_color, etc.
-#include "tool_selectors.h" // For hit testing the new tool toggles
+#include "tool_selectors.h" // For hit testing the new tool toggles and constants
 #include "ui_constants.h"   // For layout constants
 
 static void handle_mouse_down(AppContext *ctx, const SDL_MouseButtonEvent *e)
@@ -20,10 +20,18 @@ static void handle_mouse_down(AppContext *ctx, const SDL_MouseButtonEvent *e)
     int tool_selectors_y = ctx->canvas_display_area_h - TOOL_SELECTOR_AREA_HEIGHT;
     int hit_tool = tool_selectors_hit_test(ctx, mx, my, tool_selectors_y);
 
-    if (hit_tool >= 0) {
+    if (hit_tool != -1) { // Hit test returns -1 for miss
         // Click was on a tool selector
         if (e->button == SDL_BUTTON_LEFT) {
             if (hit_tool == TOOL_BRUSH) {
+                ctx->current_tool = TOOL_BRUSH;
+                ctx->last_color_tool = TOOL_BRUSH;
+                ctx->needs_redraw = SDL_TRUE;
+            } else if (hit_tool == TOOL_WATER_MARKER) {
+                ctx->current_tool = TOOL_WATER_MARKER;
+                ctx->last_color_tool = TOOL_WATER_MARKER;
+                ctx->needs_redraw = SDL_TRUE;
+            } else if (hit_tool == HIT_TEST_COLOR_PALETTE_TOGGLE) {
                 app_context_toggle_color_palette(ctx);
             } else if (hit_tool == TOOL_EMOJI) {
                 app_context_toggle_emoji_palette(ctx);
@@ -58,6 +66,9 @@ static void handle_mouse_down(AppContext *ctx, const SDL_MouseButtonEvent *e)
     } else {
         // 3. Click is on the canvas
         if (e->button == SDL_BUTTON_LEFT) {
+            if (ctx->current_tool == TOOL_WATER_MARKER) {
+                app_context_begin_water_marker_stroke(ctx);
+            }
             app_context_draw_stroke(ctx, mx, my, SDL_FALSE); // Draw with current tool
         } else if (e->button == SDL_BUTTON_RIGHT) {
             app_context_draw_stroke(ctx, mx, my, SDL_TRUE); // Erase with background color
@@ -102,6 +113,11 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 handle_mouse_down(ctx, &e.button);
+                break;
+            case SDL_MOUSEBUTTONUP:
+                if (e.button.button == SDL_BUTTON_LEFT && ctx->water_marker_stroke_active) {
+                    app_context_end_water_marker_stroke(ctx);
+                }
                 break;
             }
         } while (SDL_PollEvent(&e)); // Process all pending events
