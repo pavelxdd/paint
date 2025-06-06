@@ -1,13 +1,15 @@
-// AI Summary: Defines the EmojiRenderer interface for managing and rendering emoji assets.
-// Handles loading the emoji font, shuffling emoji codepoints, rendering them to SDL_Textures,
-// and providing access to these textures and their properties.
+// AI Summary: Defines the EmojiRenderer interface for managing and rendering
+// emoji assets. Handles loading the emoji font, shuffling emoji codepoints,
+// rendering them to SDL_Textures, and providing access to these textures and
+// their properties.
 #pragma once
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-#define EMOJI_FONT_PATH "/usr/share/fonts/noto/NotoColorEmoji.ttf" // Ensure this font is available
-#define EMOJI_FONT_SIZE 48                 // Font size for rendering emojis to texture
+// Ensure this font is available
+#define EMOJI_FONT_PATH "/usr/share/fonts/noto/NotoColorEmoji.ttf"
+#define EMOJI_FONT_SIZE 48 // Font size for rendering emojis to texture
 
 typedef struct EmojiRenderer {
     TTF_Font *emoji_font;

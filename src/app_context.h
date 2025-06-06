@@ -1,7 +1,8 @@
-// AI Summary: Defines the AppContext structure holding the application's global state
-// for the paint program. Manages window/renderer, canvas, palette, brush, colors, active tool (brush/emoji),
-// palette visibility, and flags for UI updates and resize handling. Provides functions for
-// initializing, destroying, and modifying this state.
+// AI Summary: Defines the AppContext structure holding the application's global
+// state for the paint program. Manages window/renderer, canvas, palette, brush,
+// colors, active tool (brush/emoji), palette visibility, and flags for UI
+// updates and resize handling. Provides functions for initializing, destroying,
+// and modifying this state.
 #pragma once
 
 #include "palette.h" // For Palette struct and PALETTE_HEIGHT
@@ -79,6 +80,7 @@ void app_context_draw_stroke(
 
 // For window resize event notification
 void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h);
+void app_context_process_debounced_resize(AppContext *ctx);
 
 // Stroke management (for water-marker tool)
 void app_context_begin_water_marker_stroke(AppContext *ctx);

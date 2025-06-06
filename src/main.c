@@ -9,7 +9,6 @@
 #include "app_context.h"    // For AppContext, INITIAL_WINDOW_WIDTH, RESIZE_DEBOUNCE_MS, etc.
 #include "event_handler.h"  // For handle_events
 #include "palette.h"        // For palette_draw (used in render_scene)
-#include "resize_handler.h" // For process_debounced_resize
 #include "tool_selectors.h" // For drawing the tool toggles
 
 static void render_scene(AppContext *ctx)
@@ -147,7 +146,7 @@ int main(void)
         }
 
         handle_events(app_ctx, &running, wait_timeout);
-        process_debounced_resize(app_ctx);
+        app_context_process_debounced_resize(app_ctx);
 
         if (app_ctx->needs_redraw) {
             render_scene(app_ctx);

@@ -163,42 +163,68 @@ void tool_selectors_draw(AppContext *ctx, int start_y)
     // Left container
     SDL_Rect left_toolbar_area = {0, start_y, 2 * TOOL_SELECTOR_SIZE, TOOL_SELECTOR_AREA_HEIGHT};
     SDL_RenderDrawRect(ctx->ren, &left_toolbar_area);
-    SDL_Rect r_inner_left = {left_toolbar_area.x + 1, left_toolbar_area.y + 1, left_toolbar_area.w - 2, left_toolbar_area.h - 2};
-    if (r_inner_left.w > 0 && r_inner_left.h > 0) SDL_RenderDrawRect(ctx->ren, &r_inner_left);
+    SDL_Rect r_inner_left = {left_toolbar_area.x + 1,
+                             left_toolbar_area.y + 1,
+                             left_toolbar_area.w - 2,
+                             left_toolbar_area.h - 2};
+    if (r_inner_left.w > 0 && r_inner_left.h > 0) {
+        SDL_RenderDrawRect(ctx->ren, &r_inner_left);
+    }
     SDL_Rect sep_line_left = {TOOL_SELECTOR_SIZE - 1, start_y, 2, TOOL_SELECTOR_AREA_HEIGHT};
     SDL_RenderFillRect(ctx->ren, &sep_line_left);
 
     // Right container
-    SDL_Rect right_toolbar_area = {ctx->window_w - 2 * TOOL_SELECTOR_SIZE, start_y, 2 * TOOL_SELECTOR_SIZE, TOOL_SELECTOR_AREA_HEIGHT};
+    SDL_Rect right_toolbar_area = {ctx->window_w - 2 * TOOL_SELECTOR_SIZE,
+                                   start_y,
+                                   2 * TOOL_SELECTOR_SIZE,
+                                   TOOL_SELECTOR_AREA_HEIGHT};
     SDL_RenderDrawRect(ctx->ren, &right_toolbar_area);
-    SDL_Rect r_inner_right = {right_toolbar_area.x + 1, right_toolbar_area.y + 1, right_toolbar_area.w - 2, right_toolbar_area.h - 2};
-    if (r_inner_right.w > 0 && r_inner_right.h > 0) SDL_RenderDrawRect(ctx->ren, &r_inner_right);
-    SDL_Rect sep_line_right = {ctx->window_w - TOOL_SELECTOR_SIZE - 1, start_y, 2, TOOL_SELECTOR_AREA_HEIGHT};
+    SDL_Rect r_inner_right = {right_toolbar_area.x + 1,
+                              right_toolbar_area.y + 1,
+                              right_toolbar_area.w - 2,
+                              right_toolbar_area.h - 2};
+    if (r_inner_right.w > 0 && r_inner_right.h > 0) {
+        SDL_RenderDrawRect(ctx->ren, &r_inner_right);
+    }
+    SDL_Rect sep_line_right = {
+        ctx->window_w - TOOL_SELECTOR_SIZE - 1, start_y, 2, TOOL_SELECTOR_AREA_HEIGHT};
     SDL_RenderFillRect(ctx->ren, &sep_line_right);
 
     // Active highlights
     if (ctx->current_tool == TOOL_BRUSH) {
         SDL_SetRenderDrawColor(ctx->ren, ir, ig, ib, 255);
         SDL_RenderDrawRect(ctx->ren, &brush_toggle_rect);
-        SDL_Rect r2 = {brush_toggle_rect.x + 1, brush_toggle_rect.y + 1, brush_toggle_rect.w - 2, brush_toggle_rect.h - 2};
+        SDL_Rect r2 = {brush_toggle_rect.x + 1,
+                       brush_toggle_rect.y + 1,
+                       brush_toggle_rect.w - 2,
+                       brush_toggle_rect.h - 2};
         SDL_RenderDrawRect(ctx->ren, &r2);
     }
     if (ctx->current_tool == TOOL_WATER_MARKER) {
         SDL_SetRenderDrawColor(ctx->ren, w_ir, w_ig, w_ib, 255);
         SDL_RenderDrawRect(ctx->ren, &water_marker_toggle_rect);
-        SDL_Rect r2 = {water_marker_toggle_rect.x + 1, water_marker_toggle_rect.y + 1, water_marker_toggle_rect.w - 2, water_marker_toggle_rect.h - 2};
+        SDL_Rect r2 = {water_marker_toggle_rect.x + 1,
+                       water_marker_toggle_rect.y + 1,
+                       water_marker_toggle_rect.w - 2,
+                       water_marker_toggle_rect.h - 2};
         SDL_RenderDrawRect(ctx->ren, &r2);
     }
     if (ctx->current_tool == TOOL_EMOJI) {
         SDL_SetRenderDrawColor(ctx->ren, 189, 147, 249, 255); // Dracula 'Purple'
         SDL_RenderDrawRect(ctx->ren, &emoji_toggle_rect);
-        SDL_Rect r2 = {emoji_toggle_rect.x + 1, emoji_toggle_rect.y + 1, emoji_toggle_rect.w - 2, emoji_toggle_rect.h - 2};
+        SDL_Rect r2 = {emoji_toggle_rect.x + 1,
+                       emoji_toggle_rect.y + 1,
+                       emoji_toggle_rect.w - 2,
+                       emoji_toggle_rect.h - 2};
         SDL_RenderDrawRect(ctx->ren, &r2);
     }
     if (ctx->show_color_palette) {
-        SDL_SetRenderDrawColor(ctx->ren, 248, 248, 242, 255); // Dracula 'Foreground'
+        SDL_SetRenderDrawColor(ctx->ren, 68, 71, 90, 255); // Dracula 'Current Line'
         SDL_RenderDrawRect(ctx->ren, &color_toggle_rect);
-        SDL_Rect r2 = {color_toggle_rect.x + 1, color_toggle_rect.y + 1, color_toggle_rect.w - 2, color_toggle_rect.h - 2};
+        SDL_Rect r2 = {color_toggle_rect.x + 1,
+                       color_toggle_rect.y + 1,
+                       color_toggle_rect.w - 2,
+                       color_toggle_rect.h - 2};
         SDL_RenderDrawRect(ctx->ren, &r2);
     }
 }
