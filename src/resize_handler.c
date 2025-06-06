@@ -7,8 +7,10 @@
 #include "app_context.h" // For AppContext, RESIZE_DEBOUNCE_MS, etc.
 #include "palette.h"     // For palette_recreate
 
-void process_debounced_resize(AppContext *ctx) {
-    if (ctx->resize_pending && (SDL_GetTicks() - ctx->last_resize_timestamp >= RESIZE_DEBOUNCE_MS)) {
+void process_debounced_resize(AppContext *ctx)
+{
+    if (ctx->resize_pending &&
+        (SDL_GetTicks() - ctx->last_resize_timestamp >= RESIZE_DEBOUNCE_MS)) {
         // Before palette is recreated, check if the last color (black) was selected.
         SDL_bool was_black_selected = SDL_FALSE;
         if (ctx->palette->total_color_cells > 0 &&

@@ -3,8 +3,8 @@
 // switch statement. Complex logic like mouse clicks is handled in helper functions
 // to improve readability. Interacts with AppContext to modify application state.
 #include "event_handler.h"
-#include "app_context.h" // For AppContext and its manipulation functions
-#include "palette.h"     // For palette_hit_test, palette_get_color, etc.
+#include "app_context.h"    // For AppContext and its manipulation functions
+#include "palette.h"        // For palette_hit_test, palette_get_color, etc.
 #include "tool_selectors.h" // For hit testing the new tool toggles
 #include "ui_constants.h"   // For layout constants
 
@@ -18,27 +18,39 @@ static void handle_mouse_down(AppContext *ctx, const SDL_MouseButtonEvent *e)
 
     // 1. Check for tool selector hit first, as they float over the canvas
     int tool_selectors_y = ctx->canvas_display_area_h - TOOL_SELECTOR_AREA_HEIGHT;
-    int hit_tool         = tool_selectors_hit_test(ctx, mx, my, tool_selectors_y);
+    int hit_tool = tool_selectors_hit_test(ctx, mx, my, tool_selectors_y);
 
     if (hit_tool >= 0) {
         // Click was on a tool selector
         if (e->button == SDL_BUTTON_LEFT) {
-            if (hit_tool == TOOL_BRUSH) app_context_toggle_color_palette(ctx);
-            else if (hit_tool == TOOL_EMOJI) app_context_toggle_emoji_palette(ctx);
+            if (hit_tool == TOOL_BRUSH) {
+                app_context_toggle_color_palette(ctx);
+            } else if (hit_tool == TOOL_EMOJI) {
+                app_context_toggle_emoji_palette(ctx);
+            }
         }
     } else if (my >= ctx->canvas_display_area_h) {
         // 2. Click is on the main palette UI area (below the canvas)
-        int      palette_start_y          = ctx->canvas_display_area_h;
-        SDL_bool is_palette_content_visible = (ctx->show_color_palette && ctx->palette->color_rows > 0) || (ctx->show_emoji_palette && ctx->palette->emoji_rows > 0);
+        int palette_start_y = ctx->canvas_display_area_h;
+        SDL_bool is_palette_content_visible =
+            (ctx->show_color_palette && ctx->palette->color_rows > 0) ||
+            (ctx->show_emoji_palette && ctx->palette->emoji_rows > 0);
         if (is_palette_content_visible) {
             palette_start_y += TOOL_SELECTOR_SEPARATOR_HEIGHT;
         }
 
-        int palette_idx = palette_hit_test(ctx->palette, mx, my, ctx->window_w, palette_start_y, ctx->show_color_palette, ctx->show_emoji_palette);
+        int palette_idx = palette_hit_test(ctx->palette,
+                                           mx,
+                                           my,
+                                           ctx->window_w,
+                                           palette_start_y,
+                                           ctx->show_color_palette,
+                                           ctx->show_emoji_palette);
         if (palette_idx != -1) {
             if (e->button == SDL_BUTTON_LEFT) {
                 app_context_select_palette_tool(ctx, palette_idx);
-            } else if (e->button == SDL_BUTTON_MIDDLE && !palette_is_emoji_index(ctx->palette, palette_idx)) {
+            } else if (e->button == SDL_BUTTON_MIDDLE &&
+                       !palette_is_emoji_index(ctx->palette, palette_idx)) {
                 SDL_Color new_bg_color = palette_get_color(ctx->palette, palette_idx);
                 app_context_set_background_and_clear_canvas(ctx, new_bg_color);
             }
@@ -81,8 +93,11 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
                 break;
             case SDL_MOUSEMOTION:
                 if (e.motion.state & (SDL_BUTTON_LMASK | SDL_BUTTON_RMASK)) {
-                    app_context_draw_stroke(ctx, e.motion.x, e.motion.y,
-                                            (e.motion.state & SDL_BUTTON_RMASK) ? SDL_TRUE : SDL_FALSE);
+                    app_context_draw_stroke(
+                        ctx,
+                        e.motion.x,
+                        e.motion.y,
+                        (e.motion.state & SDL_BUTTON_RMASK) ? SDL_TRUE : SDL_FALSE);
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:

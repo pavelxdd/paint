@@ -4,13 +4,13 @@
 // initializing, destroying, and modifying this state.
 #pragma once
 
-#include <SDL2/SDL.h>
 #include "palette.h" // For Palette struct and PALETTE_HEIGHT
+#include <SDL2/SDL.h>
 
 #define INITIAL_WINDOW_WIDTH 800
 #define INITIAL_WINDOW_HEIGHT 600
 
-#define RESIZE_DEBOUNCE_MS 200 // Milliseconds for resize debouncing
+#define RESIZE_DEBOUNCE_MS 200     // Milliseconds for resize debouncing
 #include "ui_constants.h"          // Shared UI layout constants
 
 typedef enum {
@@ -28,7 +28,6 @@ typedef struct {
     // Calculated height of the canvas display area in the window
     int canvas_display_area_h;
 
-
     Palette *palette;
     int selected_palette_idx;   // Flat index in the palette (can be color or emoji)
     ActiveTool current_tool;    // Current drawing tool (brush or emoji)
@@ -36,7 +35,7 @@ typedef struct {
     SDL_Color background_color; // Current canvas background color
 
     int brush_radius;
-    int max_brush_radius;       // Max allowed brush radius, dynamically calculated
+    int max_brush_radius; // Max allowed brush radius, dynamically calculated
 
     int window_w;
     int window_h;
@@ -53,7 +52,7 @@ typedef struct {
 } AppContext;
 
 // Initialization and Cleanup
-AppContext* app_context_create(SDL_Window *win, SDL_Renderer *ren);
+AppContext *app_context_create(SDL_Window *win, SDL_Renderer *ren);
 void app_context_destroy(AppContext *ctx);
 
 // State Modifiers & Operations
@@ -65,14 +64,15 @@ void app_context_toggle_emoji_palette(AppContext *ctx);
 void app_context_change_brush_radius(AppContext *ctx, int delta);
 void app_context_set_brush_radius_from_key(AppContext *ctx, SDL_Keycode keycode);
 void app_context_recalculate_sizes_and_limits(AppContext *ctx);
-void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool use_background_color);
+void app_context_draw_stroke(
+    AppContext *ctx, int mouse_x, int mouse_y, SDL_bool use_background_color);
 
 // For window resize event notification
 void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h);
 
 // Internal helpers
 void app_context_update_canvas_display_height(AppContext *ctx);
-void app_context_recreate_canvas_texture(AppContext* ctx);
+void app_context_recreate_canvas_texture(AppContext *ctx);
 
 // Helper to check current tool
-SDL_bool app_context_is_drawing_with_emoji(AppContext* ctx);
+SDL_bool app_context_is_drawing_with_emoji(AppContext *ctx);

@@ -4,7 +4,7 @@
 
 // Predefined list of emojis - curated for a children's painting application.
 // This list is shuffled on startup.
-const char* ORIGINAL_DEFAULT_EMOJI_CODEPOINTS[] = {
+const char *ORIGINAL_DEFAULT_EMOJI_CODEPOINTS[] = {
     // -- Faces & People --
     "😀", "😂", "😍", "🥳", "😊", "🥺", "🤩", "🤪", "🤠", "🤡", "👻", "👽", "🤖", "😇", "🎃", // Fun faces
     "🦸", "🦸‍♀️", "🦸‍♂️", "🦹", "🦹‍♀️", "🦹‍♂️", // Superheroes
@@ -40,4 +40,5 @@ const char* ORIGINAL_DEFAULT_EMOJI_CODEPOINTS[] = {
     "❤️", "🧡", "💛", "💚", "💙", "💜", "💖", "❤️‍🔥", "💯", // Hearts & Symbols
     "💡", "💣", "🔑", "🛡️", "🧸", "🪁" // Misc Objects
 };
-const int NUM_DEFAULT_EMOJIS = sizeof(ORIGINAL_DEFAULT_EMOJI_CODEPOINTS) / sizeof(ORIGINAL_DEFAULT_EMOJI_CODEPOINTS[0]);
+const int NUM_DEFAULT_EMOJIS =
+    sizeof(ORIGINAL_DEFAULT_EMOJI_CODEPOINTS) / sizeof(ORIGINAL_DEFAULT_EMOJI_CODEPOINTS[0]);

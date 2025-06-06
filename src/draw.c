@@ -1,7 +1,8 @@
 #include "draw.h"
 
 // Draw filled circle (for painting on canvas)
-void draw_circle(SDL_Renderer *r, int cx, int cy, int radius) {
+void draw_circle(SDL_Renderer *r, int cx, int cy, int radius)
+{
     for (int w = -radius; w <= radius; ++w) {
         for (int h = -radius; h <= radius; ++h) {
             if (w * w + h * h <= radius * radius) {
@@ -12,7 +13,8 @@ void draw_circle(SDL_Renderer *r, int cx, int cy, int radius) {
 }
 
 // Draw hollow (outline only) circle (for preview)
-void draw_hollow_circle(SDL_Renderer *r, int cx, int cy, int radius) {
+void draw_hollow_circle(SDL_Renderer *r, int cx, int cy, int radius)
+{
     const int thickness = 2;
 
     if (radius < 1) {

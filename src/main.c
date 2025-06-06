@@ -8,11 +8,12 @@
 
 #include "app_context.h"    // For AppContext, INITIAL_WINDOW_WIDTH, RESIZE_DEBOUNCE_MS, etc.
 #include "event_handler.h"  // For handle_events
-#include "resize_handler.h" // For process_debounced_resize
 #include "palette.h"        // For palette_draw (used in render_scene)
+#include "resize_handler.h" // For process_debounced_resize
 #include "tool_selectors.h" // For drawing the tool toggles
 
-static void render_scene(AppContext *ctx) {
+static void render_scene(AppContext *ctx)
+{
     SDL_SetRenderDrawColor(ctx->ren, 255, 255, 255, 255);
     SDL_RenderClear(ctx->ren);
 
@@ -32,7 +33,9 @@ static void render_scene(AppContext *ctx) {
     int current_y = ctx->canvas_display_area_h;
 
     // 4. Separator between canvas/selectors and palette (if palette is visible)
-    SDL_bool is_palette_content_visible = (ctx->show_color_palette && ctx->palette->color_rows > 0) || (ctx->show_emoji_palette && ctx->palette->emoji_rows > 0);
+    SDL_bool is_palette_content_visible =
+        (ctx->show_color_palette && ctx->palette->color_rows > 0) ||
+        (ctx->show_emoji_palette && ctx->palette->emoji_rows > 0);
     if (is_palette_content_visible && TOOL_SELECTOR_SEPARATOR_HEIGHT > 0) {
         SDL_SetRenderDrawColor(ctx->ren, 68, 71, 90, 255); // Dracula 'Current Line'
         SDL_Rect sep_rect = {0, current_y, ctx->window_w, TOOL_SELECTOR_SEPARATOR_HEIGHT};
@@ -41,12 +44,19 @@ static void render_scene(AppContext *ctx) {
     }
 
     // 5. Palette (conditionally visible rows)
-    palette_draw(ctx->palette, ctx->ren, current_y, ctx->window_w, ctx->selected_palette_idx, ctx->show_color_palette, ctx->show_emoji_palette);
+    palette_draw(ctx->palette,
+                 ctx->ren,
+                 current_y,
+                 ctx->window_w,
+                 ctx->selected_palette_idx,
+                 ctx->show_color_palette,
+                 ctx->show_emoji_palette);
 
     SDL_RenderPresent(ctx->ren);
 }
 
-int main(void) {
+int main(void)
+{
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_Log("SDL_Init error: %s", SDL_GetError());
         return EXIT_FAILURE;
@@ -59,8 +69,10 @@ int main(void) {
     }
 
     SDL_Window *win = SDL_CreateWindow("Simple Paint",
-                                       SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                       INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT,
+                                       SDL_WINDOWPOS_CENTERED,
+                                       SDL_WINDOWPOS_CENTERED,
+                                       INITIAL_WINDOW_WIDTH,
+                                       INITIAL_WINDOW_HEIGHT,
                                        SDL_WINDOW_RESIZABLE);
     if (!win) {
         SDL_Log("CreateWindow error: %s", SDL_GetError());
@@ -83,12 +95,14 @@ int main(void) {
         if (info.flags & SDL_RENDERER_ACCELERATED) {
             SDL_Log("Renderer is accelerated.");
         } else {
-            SDL_Log("Warning: Renderer is NOT accelerated. Performance may be poor.");
+            SDL_Log("Warning: Renderer is NOT accelerated. "
+                    "Performance may be poor.");
         }
         if (info.flags & SDL_RENDERER_TARGETTEXTURE) {
             SDL_Log("Renderer supports target textures.");
         } else {
-            SDL_Log("Error: Renderer does NOT support target textures. Application may not work correctly.");
+            SDL_Log("Error: Renderer does NOT support target textures. "
+                    "Application may not work correctly.");
             // This is a critical error, consider exiting if absolutely necessary
         }
     }
@@ -104,7 +118,14 @@ int main(void) {
 
     int running = 1;
     while (running) {
-        Uint32 wait_timeout = app_ctx->needs_redraw ? 16 : (app_ctx->resize_pending ? (RESIZE_DEBOUNCE_MS / 4) : (Uint32)-1);
+        Uint32 wait_timeout;
+        if (app_ctx->needs_redraw) {
+            wait_timeout = 16;
+        } else if (app_ctx->resize_pending) {
+            wait_timeout = RESIZE_DEBOUNCE_MS / 4;
+        } else {
+            wait_timeout = (Uint32)-1;
+        }
 
         handle_events(app_ctx, &running, wait_timeout);
         process_debounced_resize(app_ctx);
