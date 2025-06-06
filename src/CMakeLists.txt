@@ -1,12 +1,13 @@
 add_executable(${CMAKE_PROJECT_NAME}
     main.c
+    app_context.c
+    color_utils.c
     draw.c
-    palette.c
-    palette_draw.c
     emoji_data.c
     emoji_renderer.c
-    app_context.c
     event_handler.c
+    palette.c
+    palette_draw.c
     resize_handler.c
 )
 

@@ -1,6 +1,10 @@
+// AI Summary: Implements the data and logic for the color/emoji palette. Handles
+// creation, destruction, dynamic layout calculation based on window size, procedural
+// color generation, and hit-testing for selection.
 #include "palette.h"
 #include "ui_constants.h"      /* layout constants */
 #include "emoji_renderer.h"
+#include "color_utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -17,43 +21,6 @@
 
 /* Keep reasonable canvas height when adjusting palette rows */
 #define MIN_CANVAS_HEIGHT_FOR_PALETTE_CALC (PALETTE_HEIGHT * 10)
-
-/* HSV→RGB conversion (0 ≤ h < 360) */
-static SDL_Color hsv_to_rgb(float h, float s, float v)
-{
-    SDL_Color rgb = { 0, 0, 0, 255 };
-
-    if (s < 0.0f) s = 0.0f;
-    if (s > 1.0f) s = 1.0f;
-    if (v < 0.0f) v = 0.0f;
-    if (v > 1.0f) v = 1.0f;
-
-    if (s == 0.0f) {          /* gray */
-        rgb.r = rgb.g = rgb.b = lroundf(v * 255.0f);
-        return rgb;
-    }
-
-    float c       = v * s;
-    float h_prime = fmodf(h / 60.0f, 6.0f);
-    if (h_prime < 0) h_prime += 6.0f;
-    float x_val   = c * (1.0f - fabsf(fmodf(h_prime, 2.0f) - 1.0f));
-
-    float r1 = 0, g1 = 0, b1 = 0;
-    if      (h_prime < 1) { r1 = c; g1 = x_val; }
-    else if (h_prime < 2) { r1 = x_val; g1 = c; }
-    else if (h_prime < 3) { g1 = c; b1 = x_val; }
-    else if (h_prime < 4) { g1 = x_val; b1 = c; }
-    else if (h_prime < 5) { r1 = x_val; b1 = c; }
-    else                  { r1 = c;            b1 = x_val; }
-
-    float m = v - c;
-    r1 += m; g1 += m; b1 += m;
-
-    rgb.r = lroundf(r1 * 255.0f);
-    rgb.g = lroundf(g1 * 255.0f);
-    rgb.b = lroundf(b1 * 255.0f);
-    return rgb;
-}
 
 /* Decide how many colour / emoji rows fit given current window height. */
 static void palette_calculate_and_set_dynamic_rows(Palette *p, int window_h)
