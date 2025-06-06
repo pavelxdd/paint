@@ -66,13 +66,15 @@ void tool_selectors_draw(AppContext *ctx, int start_y)
     SDL_RenderFillRect(ctx->ren, &emoji_toggle_rect);
 
     // Color Palette Toggle (Colorful Checkerboard)
-    static const SDL_Color checker_colors[] = {{160, 70, 100, 255},  // Dark Mauve
-                                               {180, 100, 100, 255}, // Dark Red
-                                               {175, 130, 80, 255},  // Dark Peach
-                                               {190, 170, 130, 255}, // Dark Yellow
-                                               {125, 170, 120, 255}, // Dark Green
-                                               {100, 165, 175, 255}, // Dark Sky
-                                               {135, 140, 190, 255}}; // Dark Lavender
+    static const SDL_Color checker_colors[] = {
+        {190, 100, 130, 255},  // Brighter Mauve
+        {210, 130, 130, 255},  // Brighter Red
+        {205, 160, 110, 255},  // Brighter Peach
+        {220, 200, 160, 255},  // Brighter Yellow
+        {155, 200, 150, 255},  // Brighter Green
+        {130, 195, 205, 255},  // Brighter Sky
+        {165, 170, 220, 255}   // Brighter Lavender
+    };
     const int num_checker_colors = sizeof(checker_colors) / sizeof(checker_colors[0]);
     int num_checkers = 5;
     int checker_size = TOOL_SELECTOR_SIZE / num_checkers;
