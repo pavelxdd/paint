@@ -93,7 +93,34 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
                 }
                 break;
             case SDL_KEYDOWN:
-                app_context_set_brush_radius_from_key(ctx, e.key.keysym.sym);
+                // Handle tool selection by number keys
+                if (e.key.keysym.sym == SDLK_0) {
+                    ctx->current_tool = TOOL_EMOJI;
+                    ctx->needs_redraw = SDL_TRUE;
+                } else if (e.key.keysym.sym == SDLK_1) {
+                    ctx->current_tool = TOOL_BRUSH;
+                    ctx->last_color_tool = TOOL_BRUSH;
+                    ctx->needs_redraw = SDL_TRUE;
+                } else if (e.key.keysym.sym == SDLK_2) {
+                    ctx->current_tool = TOOL_WATER_MARKER;
+                    ctx->last_color_tool = TOOL_WATER_MARKER;
+                    ctx->needs_redraw = SDL_TRUE;
+                } else if (e.key.keysym.sym == SDLK_F1) {
+                    app_context_toggle_color_palette(ctx);
+                    ctx->needs_redraw = SDL_TRUE;
+                } else if (e.key.keysym.sym == SDLK_F2) {
+                    app_context_toggle_emoji_palette(ctx);
+                    ctx->needs_redraw = SDL_TRUE;
+                } else if (e.key.keysym.sym == SDLK_UP ||
+                           e.key.keysym.sym == SDLK_DOWN ||
+                           e.key.keysym.sym == SDLK_LEFT ||
+                           e.key.keysym.sym == SDLK_RIGHT) {
+                    app_context_move_palette_selection(ctx, e.key.keysym.sym);
+                    ctx->needs_redraw = SDL_TRUE;
+                } else {
+                    // Only allow non-number keys for brush size adjustment
+                    app_context_set_brush_radius_from_key(ctx, e.key.keysym.sym);
+                }
                 break;
             case SDL_MOUSEWHEEL:
                 if (e.wheel.y > 0) { // Scroll up

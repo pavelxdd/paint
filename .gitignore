@@ -1,3 +1,7 @@
+/.*
+!.gitignore
+!.gitattributes
+!.editorconfig
 build*/
 CMakeCache.txt
 CMakeFiles/

@@ -85,6 +85,7 @@ void app_context_process_debounced_resize(AppContext *ctx);
 // Stroke management (for water-marker tool)
 void app_context_begin_water_marker_stroke(AppContext *ctx);
 void app_context_end_water_marker_stroke(AppContext *ctx);
+void app_context_move_palette_selection(AppContext *ctx, SDL_Keycode key);
 
 // Internal helpers
 void app_context_update_canvas_display_height(AppContext *ctx);
