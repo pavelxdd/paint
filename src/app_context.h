@@ -60,11 +60,11 @@ typedef struct {
     int last_stroke_y;
 } AppContext;
 
-// --- Lifecycle ---
+/* --- Lifecycle (app_context.c) --- */
 AppContext *app_context_create(SDL_Window *win, SDL_Renderer *ren);
 void app_context_destroy(AppContext *ctx);
 
-// --- Event Handling ---
+/* --- Event Handling (app_context_keyboard.c, app_context_mouse.c) --- */
 void app_context_handle_keydown(AppContext *ctx, const SDL_KeyboardEvent *key_event);
 void app_context_handle_keyup(AppContext *ctx, const SDL_KeyboardEvent *key_event);
 void app_context_handle_mousedown(AppContext *ctx, const SDL_MouseButtonEvent *mouse_event);
@@ -72,7 +72,14 @@ void app_context_handle_mouseup(AppContext *ctx, const SDL_MouseButtonEvent *mou
 void app_context_handle_mousewheel(
     AppContext *ctx, const SDL_MouseWheelEvent *wheel_event, int mouse_x, int mouse_y);
 
-// --- Drawing & Canvas ---
+/* --- State & Toggles (app_context_state.c) --- */
+void app_context_toggle_line_mode(AppContext *ctx);
+SDL_bool app_context_is_straight_line_mode(const AppContext *ctx);
+void app_context_toggle_fullscreen(AppContext *ctx);
+void app_context_toggle_color_palette(AppContext *ctx);
+void app_context_toggle_emoji_palette(AppContext *ctx);
+
+/* --- Drawing & Canvas (app_context_draw.c, app_context_canvas.c) --- */
 void app_context_draw_stroke(
     AppContext *ctx, int mouse_x, int mouse_y, SDL_bool use_background_color);
 void app_context_clear_canvas_with_current_bg(AppContext *ctx);
@@ -81,25 +88,20 @@ void app_context_recreate_canvas_texture(AppContext *ctx);
 void app_context_begin_water_marker_stroke(AppContext *ctx);
 void app_context_end_water_marker_stroke(AppContext *ctx);
 
-// --- Brush ---
+/* --- Brush (app_context_brush.c) --- */
 void app_context_change_brush_radius(AppContext *ctx, int delta);
 void app_context_set_brush_radius_from_key(AppContext *ctx, SDL_Keycode keycode);
 
-// --- Palette & Tools ---
+/* --- Palette & Tool Selection (app_context_palette.c) --- */
 void app_context_select_palette_tool(AppContext *ctx, int palette_idx);
-void app_context_toggle_color_palette(AppContext *ctx);
-void app_context_toggle_emoji_palette(AppContext *ctx);
 void app_context_move_palette_selection(AppContext *ctx, SDL_Keycode key);
 void app_context_cycle_palette_selection(AppContext *ctx, int delta, int palette_type);
 int app_context_get_current_palette_selection(AppContext *ctx);
 
-// --- Window & State Management ---
-void app_context_toggle_line_mode(AppContext *ctx);
-SDL_bool app_context_is_straight_line_mode(const AppContext *ctx);
-void app_context_toggle_fullscreen(AppContext *ctx);
+/* --- Window & Resize (app_context_resize.c) --- */
 void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h);
 void app_context_process_debounced_resize(AppContext *ctx);
 
-// --- Internal helpers (used across multiple app_context files) ---
+/* --- Layout & Sizing (app_context_layout.c) --- */
 void app_context_recalculate_sizes_and_limits(AppContext *ctx);
 void app_context_update_canvas_display_height(AppContext *ctx);
