@@ -1,4 +1,4 @@
-#include "app_context.h"
+#include "app.h"
 
 void app_context_handle_keydown(AppContext *ctx, const SDL_KeyboardEvent *key_event)
 {

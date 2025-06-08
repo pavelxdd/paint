@@ -1,4 +1,4 @@
-#include "app_context.h"
+#include "app.h"
 #include "palette.h"
 
 void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h)

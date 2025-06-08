@@ -1,4 +1,4 @@
-#include "app_context.h"
+#include "app.h"
 
 void app_context_clear_canvas_with_current_bg(AppContext *ctx)
 {

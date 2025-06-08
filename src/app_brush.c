@@ -1,4 +1,4 @@
-#include "app_context.h"
+#include "app.h"
 #include "ui_constants.h"
 
 void app_context_change_brush_radius(AppContext *ctx, int delta)

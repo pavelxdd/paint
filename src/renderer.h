@@ -1,6 +1,6 @@
 #pragma once
 
-#include "app_context.h"
+#include "app.h"
 
 /**
  * @brief Renders the entire application scene.

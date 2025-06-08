@@ -1,4 +1,4 @@
-#include "app_context.h"
+#include "app.h"
 #include "palette.h"
 #include "ui_constants.h"
 

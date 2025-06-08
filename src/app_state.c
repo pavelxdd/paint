@@ -1,4 +1,4 @@
-#include "app_context.h"
+#include "app.h"
 
 /* ------------ State Toggles & Queries ------------ */
 

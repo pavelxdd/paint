@@ -1,6 +1,6 @@
 #pragma once
 
-#include "app_context.h"
+#include "app.h"
 
 #define HIT_TEST_COLOR_PALETTE_TOGGLE 100 // Values that won't conflict with ActiveTool enum
 #define HIT_TEST_LINE_MODE_TOGGLE     101

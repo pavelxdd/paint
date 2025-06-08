@@ -1,5 +1,5 @@
 #include "event_handler.h"
-#include "app_context.h" // For AppContext and its manipulation functions
+#include "app.h" // For AppContext and its manipulation functions
 
 void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
 {

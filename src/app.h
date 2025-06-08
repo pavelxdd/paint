@@ -60,7 +60,7 @@ typedef struct {
     int last_stroke_y;
 } AppContext;
 
-/* --- Lifecycle (app_context.c) --- */
+/* --- Lifecycle (app.c) --- */
 AppContext *app_context_create(SDL_Window *win, SDL_Renderer *ren);
 void app_context_destroy(AppContext *ctx);
 

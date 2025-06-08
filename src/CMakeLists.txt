@@ -1,14 +1,14 @@
 add_executable(${CMAKE_PROJECT_NAME}
-    app_context.c
-    app_context_brush.c
-    app_context_canvas.c
-    app_context_draw.c
-    app_context_keyboard.c
-    app_context_layout.c
-    app_context_mouse.c
-    app_context_palette.c
-    app_context_resize.c
-    app_context_state.c
+    app.c
+    app_brush.c
+    app_canvas.c
+    app_draw.c
+    app_keyboard.c
+    app_layout.c
+    app_mouse.c
+    app_palette.c
+    app_resize.c
+    app_state.c
     color_utils.c
     draw.c
     emoji_data.c
