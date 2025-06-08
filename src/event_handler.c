@@ -218,6 +218,15 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
                            e.key.keysym.sym == SDLK_RIGHT) {
                     app_context_move_palette_selection(ctx, e.key.keysym.sym);
                     ctx->needs_redraw = SDL_TRUE;
+                } else if (e.key.keysym.sym == SDLK_f) {
+                    // Toggle fullscreen mode
+                    Uint32 flags = SDL_GetWindowFlags(ctx->win);
+                    if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+                        SDL_SetWindowFullscreen(ctx->win, 0);
+                    } else {
+                        SDL_SetWindowFullscreen(ctx->win, SDL_WINDOW_FULLSCREEN_DESKTOP);
+                    }
+                    ctx->needs_redraw = SDL_TRUE;
                 } else {
                     // Only allow non-number keys for brush size adjustment
                     app_context_set_brush_radius_from_key(ctx, e.key.keysym.sym);
