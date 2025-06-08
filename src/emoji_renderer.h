@@ -35,11 +35,8 @@ void emoji_renderer_shuffle_and_render_all(EmojiRenderer *er);
 // Gets a specific emoji texture and its original dimensions.
 // The index is into the shuffled list of available emojis.
 // Returns SDL_FALSE if the index is invalid or texture is not available.
-SDL_bool emoji_renderer_get_texture_info(const EmojiRenderer *er,
-                                         int                  emoji_array_idx,
-                                         SDL_Texture **       tex,
-                                         int *                w,
-                                         int *                h);
+SDL_bool emoji_renderer_get_texture_info(
+    const EmojiRenderer *er, int emoji_array_idx, SDL_Texture **tex, int *w, int *h);
 
 // Gets the texture info for the default "blank face" emoji.
 SDL_bool

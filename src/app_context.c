@@ -150,7 +150,8 @@ void app_context_process_debounced_resize(AppContext *ctx)
                 ctx->palette->total_color_cells > 0 ? ctx->palette->total_color_cells - 1 : 0;
         }
 
-        // Water-marker: stays top-left or bottom-right if it was, otherwise defaults to top-left.
+        // Water-marker: stays top-left or bottom-right if it was, otherwise defaults to
+        // top-left.
         if (water_marker_was_top_left) {
             ctx->water_marker_selected_palette_idx = 0;
         } else if (water_marker_was_bottom_right) {

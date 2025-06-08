@@ -6,8 +6,9 @@
 // Returns SDL_TRUE if my is inside palette area, and sets out_palette_start_y.
 static SDL_bool is_point_in_palette_ui(AppContext *ctx, int my, int *out_palette_start_y)
 {
-    if (!ctx || !ctx->palette)
+    if (!ctx || !ctx->palette) {
         return SDL_FALSE;
+    }
 
     int palette_start_y = ctx->canvas_display_area_h;
     SDL_bool is_palette_content_visible =
@@ -25,19 +26,23 @@ static SDL_bool is_point_in_palette_ui(AppContext *ctx, int my, int *out_palette
     int emojis_h = ctx->show_emoji_palette ? ctx->palette->emoji_rows * PALETTE_HEIGHT : 0;
     int total_h = colors_h + sep_h + emojis_h;
 
-    if (out_palette_start_y)
+    if (out_palette_start_y) {
         *out_palette_start_y = palette_start_y;
-    if (my >= palette_start_y && my < palette_start_y + total_h)
+    }
+    if (my >= palette_start_y && my < palette_start_y + total_h) {
         return SDL_TRUE;
+    }
     return SDL_FALSE;
 }
 
-// Handle mouse wheel over palette: cycles current palette selection (color or emoji) with wraparound.
+// Handle mouse wheel over palette: cycles current palette selection (color or emoji) with
+// wraparound.
 static SDL_bool handle_palette_mousewheel(AppContext *ctx, int mx, int my, int yscroll)
 {
     int palette_start_y = 0;
-    if (!is_point_in_palette_ui(ctx, my, &palette_start_y))
+    if (!is_point_in_palette_ui(ctx, my, &palette_start_y)) {
         return SDL_FALSE; // Not in palette area
+    }
 
     int palette_idx = palette_hit_test(ctx->palette,
                                        mx,
@@ -46,8 +51,9 @@ static SDL_bool handle_palette_mousewheel(AppContext *ctx, int mx, int my, int y
                                        palette_start_y,
                                        ctx->show_color_palette,
                                        ctx->show_emoji_palette);
-    if (palette_idx == -1)
+    if (palette_idx == -1) {
         return SDL_FALSE;
+    }
 
     // Only respond if hovering over a *valid* palette cell
     // Always cycle the palette corresponding to the active tool,
@@ -139,8 +145,7 @@ void app_context_handle_mousedown(AppContext *ctx, const SDL_MouseButtonEvent *m
                 ctx->current_tool == TOOL_WATER_MARKER) {
                 app_context_begin_water_marker_stroke(ctx);
             }
-            app_context_draw_stroke(
-                ctx, mx, my, (mouse_event->button == SDL_BUTTON_RIGHT));
+            app_context_draw_stroke(ctx, mx, my, (mouse_event->button == SDL_BUTTON_RIGHT));
         } else if (mouse_event->button == SDL_BUTTON_MIDDLE) {
             app_context_clear_canvas_with_current_bg(ctx);
         }
@@ -159,8 +164,10 @@ void app_context_handle_mouseup(AppContext *ctx, const SDL_MouseButtonEvent *mou
     ctx->last_stroke_y = -1;
 }
 
-void app_context_handle_mousewheel(
-    AppContext *ctx, const SDL_MouseWheelEvent *wheel_event, int mouse_x, int mouse_y)
+void app_context_handle_mousewheel(AppContext *ctx,
+                                   const SDL_MouseWheelEvent *wheel_event,
+                                   int mouse_x,
+                                   int mouse_y)
 {
     // Mouse wheel events are delivered globally, not per-window region.
     // To implement cycling palette, must check if mouse is in palette area.

@@ -84,36 +84,46 @@ void app_context_select_palette_tool(AppContext *ctx, int flat_idx)
 // palette_type: 0 = color, 1 = emoji
 void app_context_cycle_palette_selection(AppContext *ctx, int delta, int palette_type)
 {
-    if (!ctx || !ctx->palette)
+    if (!ctx || !ctx->palette) {
         return;
+    }
 
     if (palette_type == 1) {
         // Emoji
         int n = ctx->palette->total_emoji_cells_to_display;
-        if (n <= 0) return;
+        if (n <= 0) {
+            return;
+        }
         int base = ctx->palette->total_color_cells;
         int cur = ctx->emoji_selected_palette_idx;
         int rel = cur - base;
-        if (rel < 0 || rel >= n) rel = 0;
+        if (rel < 0 || rel >= n) {
+            rel = 0;
+        }
         rel = (rel + delta + n) % n;
         ctx->emoji_selected_palette_idx = base + rel;
         ctx->current_tool = TOOL_EMOJI;
     } else {
         // Color (for brush or water-marker)
         int n = ctx->palette->total_color_cells;
-        if (n <= 0) return;
+        if (n <= 0) {
+            return;
+        }
         int *sel_idx = (ctx->current_tool == TOOL_WATER_MARKER)
                            ? &ctx->water_marker_selected_palette_idx
                            : &ctx->brush_selected_palette_idx;
         int cur = *sel_idx;
         int rel = cur;
-        if (rel < 0 || rel >= n) rel = 0;
+        if (rel < 0 || rel >= n) {
+            rel = 0;
+        }
         rel = (rel + delta + n) % n;
         *sel_idx = rel;
-        if (ctx->current_tool == TOOL_WATER_MARKER)
+        if (ctx->current_tool == TOOL_WATER_MARKER) {
             ctx->water_marker_color = palette_get_color(ctx->palette, *sel_idx);
-        else
+        } else {
             ctx->current_color = palette_get_color(ctx->palette, *sel_idx);
+        }
     }
 }
 
@@ -212,12 +222,14 @@ void app_context_move_palette_selection(AppContext *ctx, SDL_Keycode key)
 
 int app_context_get_current_palette_selection(AppContext *ctx)
 {
-    if (!ctx || !ctx->palette)
+    if (!ctx || !ctx->palette) {
         return -1;
-    if (ctx->current_tool == TOOL_EMOJI)
+    }
+    if (ctx->current_tool == TOOL_EMOJI) {
         return ctx->emoji_selected_palette_idx;
-    else if (ctx->current_tool == TOOL_WATER_MARKER)
+    } else if (ctx->current_tool == TOOL_WATER_MARKER) {
         return ctx->water_marker_selected_palette_idx;
-    else
+    } else {
         return ctx->brush_selected_palette_idx;
+    }
 }

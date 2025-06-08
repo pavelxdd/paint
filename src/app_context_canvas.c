@@ -11,32 +11,46 @@ static void draw_dab_at_point(AppContext *ctx, int x, int y, SDL_bool use_backgr
     }
 
     SDL_Texture *target_texture = ctx->canvas_texture;
-    if (ctx->current_tool == TOOL_WATER_MARKER && !use_background_color) {
-        if (!ctx->water_marker_stroke_active || !ctx->stroke_buffer) {
-            return; // Not in a stroke, do nothing
-        }
-        target_texture = ctx->stroke_buffer;
-    }
-
-    SDL_SetRenderTarget(ctx->ren, target_texture);
 
     if (use_background_color) {
+        SDL_SetRenderTarget(ctx->ren, target_texture);
         SDL_SetRenderDrawColor(ctx->ren,
                                ctx->background_color.r,
                                ctx->background_color.g,
                                ctx->background_color.b,
                                ctx->background_color.a);
         draw_circle(ctx->ren, x, y, ctx->brush_radius);
-    } else if (ctx->current_tool == TOOL_WATER_MARKER) {
+        SDL_SetRenderTarget(ctx->ren, NULL);
+        ctx->needs_redraw = SDL_TRUE;
+        return;
+    }
+
+    switch (ctx->current_tool) {
+    case TOOL_BRUSH: {
+        SDL_SetRenderTarget(ctx->ren, target_texture);
         SDL_SetRenderDrawColor(ctx->ren,
-                               ctx->water_marker_color.r,
-                               ctx->water_marker_color.g,
-                               ctx->water_marker_color.b,
-                               255); // Opaque on buffer
+                               ctx->current_color.r,
+                               ctx->current_color.g,
+                               ctx->current_color.b,
+                               255);
+        draw_circle(ctx->ren, x, y, ctx->brush_radius);
+    } break;
+
+    case TOOL_WATER_MARKER: {
+        if (!ctx->water_marker_stroke_active || !ctx->stroke_buffer) {
+            return; // Not in a stroke, do nothing
+        }
+        target_texture = ctx->stroke_buffer;
+        SDL_SetRenderTarget(ctx->ren, target_texture);
+        SDL_SetRenderDrawColor(
+            ctx->ren, ctx->water_marker_color.r, ctx->water_marker_color.g, ctx->water_marker_color.b, 255);
         int side = lroundf(ctx->brush_radius * 2 * 1.5f);
         SDL_Rect rect = {x - side / 2, y - side / 2, side, side};
         SDL_RenderFillRect(ctx->ren, &rect);
-    } else if (ctx->current_tool == TOOL_EMOJI) {
+    } break;
+
+    case TOOL_EMOJI: {
+        SDL_SetRenderTarget(ctx->ren, target_texture);
         SDL_Texture *emoji_tex = NULL;
         int ew = 0, eh = 0;
         SDL_bool has_emoji = palette_get_emoji_info(
@@ -55,13 +69,10 @@ static void draw_dab_at_point(AppContext *ctx, int x, int y, SDL_bool use_backgr
             SDL_Rect dst = {x - w / 2, y - h / 2, w, h};
             SDL_RenderCopy(ctx->ren, emoji_tex, NULL, &dst);
         }
-    } else { // TOOL_BRUSH
-        SDL_SetRenderDrawColor(ctx->ren,
-                               ctx->current_color.r,
-                               ctx->current_color.g,
-                               ctx->current_color.b,
-                               255);
-        draw_circle(ctx->ren, x, y, ctx->brush_radius);
+    } break;
+
+    default:
+        return; // Should not happen
     }
 
     SDL_SetRenderTarget(ctx->ren, NULL);
@@ -87,8 +98,10 @@ void app_context_clear_canvas_with_current_bg(AppContext *ctx)
     ctx->needs_redraw = SDL_TRUE;
 }
 
-void app_context_draw_stroke(
-    AppContext *ctx, int mouse_x, int mouse_y, SDL_bool use_background_color)
+void app_context_draw_stroke(AppContext *ctx,
+                             int mouse_x,
+                             int mouse_y,
+                             SDL_bool use_background_color)
 {
     if (!ctx || !ctx->canvas_texture) {
         return;
@@ -145,8 +158,8 @@ void app_context_recreate_canvas_texture(AppContext *ctx)
     const int w = ctx->window_w;
     const int h = ctx->window_h;
 
-    SDL_Texture *new_tex = SDL_CreateTexture(
-        ctx->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+    SDL_Texture *new_tex =
+        SDL_CreateTexture(ctx->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
     if (!new_tex) {
         SDL_Log("Failed to resize canvas texture: %s", SDL_GetError());
         return;
@@ -175,8 +188,8 @@ void app_context_recreate_canvas_texture(AppContext *ctx)
     if (ctx->stroke_buffer) {
         SDL_DestroyTexture(ctx->stroke_buffer);
     }
-    ctx->stroke_buffer = SDL_CreateTexture(
-        ctx->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+    ctx->stroke_buffer =
+        SDL_CreateTexture(ctx->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
     if (!ctx->stroke_buffer) {
         SDL_Log("Failed to create stroke buffer texture: %s", SDL_GetError());
     } else {

@@ -163,17 +163,16 @@ void emoji_renderer_shuffle_and_render_all(EmojiRenderer *er)
 }
 
 SDL_bool emoji_renderer_get_texture_info(const EmojiRenderer *er,
-                                         int                  emoji_array_idx,
-                                         SDL_Texture **       tex,
-                                         int *                w,
-                                         int *                h)
+                                         int emoji_array_idx,
+                                         SDL_Texture **tex,
+                                         int *w,
+                                         int *h)
 {
     if (!er || !tex || !w || !h || emoji_array_idx < 0 ||
         emoji_array_idx >= er->num_defined_emojis) {
         return SDL_FALSE;
     }
-    if (!er->emoji_textures || !er->emoji_texture_dims ||
-        !er->emoji_textures[emoji_array_idx]) {
+    if (!er->emoji_textures || !er->emoji_texture_dims || !er->emoji_textures[emoji_array_idx]) {
         return SDL_FALSE;
     }
     *tex = er->emoji_textures[emoji_array_idx];
@@ -182,8 +181,10 @@ SDL_bool emoji_renderer_get_texture_info(const EmojiRenderer *er,
     return SDL_TRUE;
 }
 
-SDL_bool
-emoji_renderer_get_default_texture_info(const EmojiRenderer *er, SDL_Texture **tex, int *w, int *h)
+SDL_bool emoji_renderer_get_default_texture_info(const EmojiRenderer *er,
+                                                 SDL_Texture **tex,
+                                                 int *w,
+                                                 int *h)
 {
     if (!er || !tex || !w || !h || !er->default_emoji_texture) {
         if (tex) {

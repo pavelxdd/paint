@@ -4,7 +4,7 @@
 
 /**
  * @brief Converts a color from HSV to RGB color space.
- * 
+ *
  * @param h Hue, in degrees [0, 360).
  * @param s Saturation, [0, 1].
  * @param v Value, [0, 1].

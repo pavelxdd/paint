@@ -26,11 +26,8 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
                 break;
             case SDL_MOUSEMOTION:
                 if (ctx->is_drawing) {
-                    app_context_draw_stroke(ctx,
-                                            e.motion.x,
-                                            e.motion.y,
-                                            (e.motion.state & SDL_BUTTON_RMASK) ? SDL_TRUE
-                                                                                : SDL_FALSE);
+                    app_context_draw_stroke(
+                        ctx, e.motion.x, e.motion.y, (e.motion.state & SDL_BUTTON_RMASK) ? SDL_TRUE : SDL_FALSE);
                 }
                 // Update mouse position tracking for next mouse wheel event
                 last_mouse_x = e.motion.x;

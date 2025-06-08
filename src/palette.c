@@ -1,6 +1,5 @@
 #include "palette.h"
 #include "color_utils.h"
-#include "emoji_renderer.h"
 #include "ui_constants.h" /* layout constants */
 
 #include <math.h>

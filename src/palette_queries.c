@@ -1,10 +1,4 @@
 #include "palette.h"
-#include "emoji_renderer.h"
-#include "ui_constants.h"
-
-/* --------------------------------------------------------------------------
-   Interaction & queries
-   -------------------------------------------------------------------------- */
 
 int palette_hit_test(const Palette *p,
                      int mx,
@@ -66,9 +60,10 @@ int palette_hit_test(const Palette *p,
 
 SDL_Color palette_get_color(const Palette *p, int flat_index)
 {
-    return palette_is_color_index(p, flat_index) && p->colors
-               ? p->colors[flat_index]
-               : (SDL_Color){0, 0, 0, 255};
+    if (palette_is_color_index(p, flat_index) && p->colors) {
+        return p->colors[flat_index];
+    }
+    return (SDL_Color){0, 0, 0, 255};
 }
 
 SDL_bool

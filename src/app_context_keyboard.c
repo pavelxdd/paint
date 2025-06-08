@@ -4,24 +4,23 @@ void app_context_handle_keydown(AppContext *ctx, const SDL_KeyboardEvent *key_ev
 {
     // Handle specific keys that are not modifiers for other actions.
     switch (key_event->keysym.sym) {
-    case SDLK_TAB:
+    case SDLK_TAB: {
         // Cycle tools: TAB forward, CTRL+TAB backward
-        {
-            int count = __TOOL_COUNT;
-            int idx = (int)ctx->current_tool;
+        int count = __TOOL_COUNT;
+        int idx = (int)ctx->current_tool;
 
-            if (key_event->keysym.mod & KMOD_CTRL) {
-                idx = (idx - 1 + count) % count;
-            } else {
-                idx = (idx + 1) % count;
-            }
-            ctx->current_tool = (ActiveTool)idx;
-            if (ctx->current_tool == TOOL_BRUSH || ctx->current_tool == TOOL_WATER_MARKER) {
-                ctx->last_color_tool = ctx->current_tool;
-            }
-            ctx->needs_redraw = SDL_TRUE;
+        if (key_event->keysym.mod & KMOD_CTRL) {
+            idx = (idx - 1 + count) % count;
+        } else {
+            idx = (idx + 1) % count;
         }
+        ctx->current_tool = (ActiveTool)idx;
+        if (ctx->current_tool == TOOL_BRUSH || ctx->current_tool == TOOL_WATER_MARKER) {
+            ctx->last_color_tool = ctx->current_tool;
+        }
+        ctx->needs_redraw = SDL_TRUE;
         break;
+    }
     case SDLK_0:
         ctx->current_tool = TOOL_EMOJI;
         ctx->needs_redraw = SDL_TRUE;
