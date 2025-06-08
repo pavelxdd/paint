@@ -91,3 +91,8 @@ void app_context_move_palette_selection(AppContext *ctx, SDL_Keycode key);
 // Internal helpers
 void app_context_update_canvas_display_height(AppContext *ctx);
 void app_context_recreate_canvas_texture(AppContext *ctx);
+
+// Palette cycling and access helpers (for mouse wheel support)
+void app_context_cycle_palette_selection(AppContext *ctx, int delta, int palette_type);
+int app_context_get_current_palette_selection(AppContext *ctx);
+

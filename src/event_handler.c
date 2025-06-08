@@ -78,9 +78,88 @@ static void handle_mouse_down(AppContext *ctx, const SDL_MouseButtonEvent *e)
     }
 }
 
+ // Returns SDL_TRUE if my is inside palette area, and sets out_palette_start_y.
+static SDL_bool is_point_in_palette_ui(AppContext *ctx, int my, int *out_palette_start_y)
+{
+    if (!ctx || !ctx->palette) return SDL_FALSE;
+
+    int palette_start_y = ctx->canvas_display_area_h;
+    SDL_bool is_palette_content_visible =
+        (ctx->show_color_palette && ctx->palette->color_rows > 0) ||
+        (ctx->show_emoji_palette && ctx->palette->emoji_rows > 0);
+    if (is_palette_content_visible) {
+        palette_start_y += TOOL_SELECTOR_SEPARATOR_HEIGHT;
+    }
+
+    int colors_h = ctx->show_color_palette ? ctx->palette->color_rows * PALETTE_HEIGHT : 0;
+    int sep_h = (ctx->show_color_palette && ctx->show_emoji_palette &&
+                 ctx->palette->color_rows > 0 && ctx->palette->emoji_rows > 0)
+                    ? COLOR_EMOJI_SEPARATOR_HEIGHT
+                    : 0;
+    int emojis_h = ctx->show_emoji_palette ? ctx->palette->emoji_rows * PALETTE_HEIGHT : 0;
+    int total_h = colors_h + sep_h + emojis_h;
+
+    if (out_palette_start_y) *out_palette_start_y = palette_start_y;
+    if (my >= palette_start_y && my < palette_start_y + total_h)
+        return SDL_TRUE;
+    return SDL_FALSE;
+}
+
+// Handle mouse wheel over palette: cycles current palette selection (color or emoji) with wraparound.
+static SDL_bool handle_palette_mousewheel(AppContext *ctx, int mx, int my, int yscroll)
+{
+    int palette_start_y = 0;
+    if (!is_point_in_palette_ui(ctx, my, &palette_start_y))
+        return SDL_FALSE; // Not in palette area
+
+    int palette_idx = palette_hit_test(ctx->palette,
+                                       mx,
+                                       my,
+                                       ctx->window_w,
+                                       palette_start_y,
+                                       ctx->show_color_palette,
+                                       ctx->show_emoji_palette);
+    if (palette_idx == -1)
+        return SDL_FALSE;
+
+    // Only respond if hovering over a *valid* palette cell
+    // Always cycle the palette corresponding to the active tool,
+    // regardless of which palette cell is under the cursor.
+    if (ctx->current_tool == TOOL_BRUSH || ctx->current_tool == TOOL_WATER_MARKER) {
+        if (yscroll > 0) {
+            app_context_cycle_palette_selection(ctx, -1, 0);
+        } else if (yscroll < 0) {
+            app_context_cycle_palette_selection(ctx, 1, 0);
+        } else {
+            return SDL_FALSE;
+        }
+    } else if (ctx->current_tool == TOOL_EMOJI) {
+        if (yscroll > 0) {
+            app_context_cycle_palette_selection(ctx, -1, 1);
+        } else if (yscroll < 0) {
+            app_context_cycle_palette_selection(ctx, 1, 1);
+        } else {
+            return SDL_FALSE;
+        }
+    } else {
+        return SDL_FALSE;
+    }
+
+    ctx->needs_redraw = SDL_TRUE;
+    return SDL_TRUE;
+}
+
 void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
 {
     SDL_Event e;
+    int last_mouse_x = -1, last_mouse_y = -1;
+    // Grab current mouse position once, used for mouse wheel events.
+    {
+        int mx = 0, my = 0;
+        SDL_GetMouseState(&mx, &my);
+        last_mouse_x = mx;
+        last_mouse_y = my;
+    }
     if (SDL_WaitEventTimeout(&e, sdl_wait_timeout)) {
         do {
             switch (e.type) {
@@ -144,13 +223,22 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
                     app_context_set_brush_radius_from_key(ctx, e.key.keysym.sym);
                 }
                 break;
-            case SDL_MOUSEWHEEL:
-                if (e.wheel.y > 0) { // Scroll up
-                    app_context_change_brush_radius(ctx, 2);
-                } else if (e.wheel.y < 0) { // Scroll down
-                    app_context_change_brush_radius(ctx, -2);
+            case SDL_MOUSEWHEEL: {
+                // Mouse wheel events are delivered globally, not per-window region.
+                // To implement cycling palette, must check if mouse is in palette area.
+                // If yes, perform palette selection cycling and prevent brush size change.
+                // If not, apply original behavior (brush size adjust).
+                int mx = last_mouse_x, my = last_mouse_y;
+                if (!handle_palette_mousewheel(ctx, mx, my, e.wheel.y)) {
+                    // Only fall back to brush size adjust if not handled by palette hover
+                    if (e.wheel.y > 0) { // Scroll up
+                        app_context_change_brush_radius(ctx, 2);
+                    } else if (e.wheel.y < 0) { // Scroll down
+                        app_context_change_brush_radius(ctx, -2);
+                    }
                 }
                 break;
+            }
             case SDL_MOUSEMOTION:
                 if (e.motion.state & (SDL_BUTTON_LMASK | SDL_BUTTON_RMASK)) {
                     app_context_draw_stroke(
@@ -159,6 +247,9 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
                         e.motion.y,
                         (e.motion.state & SDL_BUTTON_RMASK) ? SDL_TRUE : SDL_FALSE);
                 }
+                // Update mouse position tracking for next mouse wheel event
+                last_mouse_x = e.motion.x;
+                last_mouse_y = e.motion.y;
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 handle_mouse_down(ctx, &e.button);
