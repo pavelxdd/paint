@@ -16,8 +16,9 @@
 
 typedef enum {
     TOOL_BRUSH,
+    TOOL_WATER_MARKER,
     TOOL_EMOJI,
-    TOOL_WATER_MARKER
+    __TOOL_COUNT
 } ActiveTool;
 
 typedef struct {

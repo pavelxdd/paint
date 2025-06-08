@@ -93,6 +93,28 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
                 }
                 break;
             case SDL_KEYDOWN:
+                if (e.key.keysym.sym == SDLK_TAB) {
+                    // Cycle tools: TAB forward, CTRL+TAB backward
+                    int count = __TOOL_COUNT;
+                    int idx = 0;
+                    for (int j = 0; j < count; ++j) {
+                        if ((int)ctx->current_tool == j) {
+                            idx = j;
+                            break;
+                        }
+                    }
+                    if (e.key.keysym.mod & KMOD_CTRL) {
+                        idx = (idx + count - 1) % count;
+                    } else {
+                        idx = (idx + 1) % count;
+                    }
+                    ctx->current_tool = idx;
+                    if (ctx->current_tool == TOOL_BRUSH || 
+                        ctx->current_tool == TOOL_WATER_MARKER) {
+                        ctx->last_color_tool = ctx->current_tool;
+                    }
+                    ctx->needs_redraw = SDL_TRUE;
+                } else
                 // Handle tool selection by number keys
                 if (e.key.keysym.sym == SDLK_0) {
                     ctx->current_tool = TOOL_EMOJI;

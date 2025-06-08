@@ -50,7 +50,7 @@ static void render_scene(AppContext *ctx)
     }
 
     // 6. Palette (conditionally visible rows)
-    int active_palette_idx = -1;
+    int active_palette_idx;
     switch (ctx->current_tool) {
     case TOOL_BRUSH:
         active_palette_idx = ctx->brush_selected_palette_idx;
@@ -60,6 +60,9 @@ static void render_scene(AppContext *ctx)
         break;
     case TOOL_EMOJI:
         active_palette_idx = ctx->emoji_selected_palette_idx;
+        break;
+    default:
+        active_palette_idx = -1;
         break;
     }
     palette_draw(ctx->palette,
