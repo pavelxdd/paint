@@ -16,11 +16,11 @@ int tool_selectors_hit_test(const AppContext *ctx, int mx, int my, int start_y)
             return TOOL_WATER_MARKER;
         }
         // Right-side tools
-        if (mx >= ctx->window_w - 2 * TOOL_SELECTOR_SIZE &&
-            mx < ctx->window_w - TOOL_SELECTOR_SIZE) {
+        int right_edge = ctx->window_w;
+        if (mx >= right_edge - 2 * TOOL_SELECTOR_SIZE && mx < right_edge - TOOL_SELECTOR_SIZE) {
             return TOOL_EMOJI;
         }
-        if (mx >= ctx->window_w - TOOL_SELECTOR_SIZE && mx < ctx->window_w) {
+        if (mx >= right_edge - TOOL_SELECTOR_SIZE && mx < right_edge) {
             return HIT_TEST_COLOR_PALETTE_TOGGLE;
         }
     }
@@ -130,14 +130,16 @@ void tool_selectors_draw(AppContext *ctx, int start_y)
     // Current emoji preview
     SDL_Texture *emoji_tex = NULL;
     int emoji_w = 0, emoji_h = 0;
+    SDL_bool has_emoji = SDL_FALSE;
     if (ctx->current_tool == TOOL_EMOJI) {
-        palette_get_emoji_info(
+        has_emoji = palette_get_emoji_info(
             ctx->palette, ctx->emoji_selected_palette_idx, &emoji_tex, &emoji_w, &emoji_h);
     } else { // Not emoji tool, so show a default emoji
-        emoji_renderer_get_default_texture_info(
+        has_emoji = emoji_renderer_get_default_texture_info(
             ctx->palette->emoji_renderer_instance, &emoji_tex, &emoji_w, &emoji_h);
     }
-    if (emoji_tex) {
+
+    if (has_emoji && emoji_tex) {
         float aspect_ratio = (emoji_h == 0) ? 1.0f : (float)emoji_w / emoji_h;
         int render_h = emoji_toggle_rect.h - 2 * DEFAULT_EMOJI_CELL_PADDING;
         int render_w = lroundf(render_h * aspect_ratio);

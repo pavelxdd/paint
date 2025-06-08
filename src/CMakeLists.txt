@@ -1,5 +1,4 @@
 add_executable(${CMAKE_PROJECT_NAME}
-    main.c
     app_context.c
     app_context_brush.c
     app_context_canvas.c
@@ -11,9 +10,11 @@ add_executable(${CMAKE_PROJECT_NAME}
     emoji_data.c
     emoji_renderer.c
     event_handler.c
+    main.c
     palette.c
     palette_draw.c
     palette_queries.c
+    renderer.c
     tool_selectors.c
 )
 

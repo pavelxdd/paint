@@ -80,7 +80,7 @@ void app_context_select_palette_tool(AppContext *ctx, int flat_idx)
     ctx->needs_redraw = SDL_TRUE;
 }
 
-/* ------------ Palette Cycling for Wheel Support ------------ */
+/* ------------ Palette Navigation ------------ */
 // palette_type: 0 = color, 1 = emoji
 void app_context_cycle_palette_selection(AppContext *ctx, int delta, int palette_type)
 {
@@ -115,6 +115,99 @@ void app_context_cycle_palette_selection(AppContext *ctx, int delta, int palette
         else
             ctx->current_color = palette_get_color(ctx->palette, *sel_idx);
     }
+}
+
+void app_context_move_palette_selection(AppContext *ctx, SDL_Keycode key)
+{
+    if (!ctx || !ctx->palette) {
+        return;
+    }
+
+    int *current_idx;
+    int min_idx, max_idx;
+    int num_rows;
+    int cols = ctx->palette->cols;
+
+    // Determine which tool is active and set selection index boundaries
+    if (ctx->current_tool == TOOL_EMOJI) {
+        current_idx = &ctx->emoji_selected_palette_idx;
+        min_idx = ctx->palette->total_color_cells;
+        max_idx =
+            ctx->palette->total_color_cells + ctx->palette->total_emoji_cells_to_display - 1;
+        num_rows = ctx->palette->emoji_rows;
+    } else {
+        // Brush and water-marker use color palette
+        if (ctx->current_tool == TOOL_WATER_MARKER) {
+            current_idx = &ctx->water_marker_selected_palette_idx;
+        } else {
+            current_idx = &ctx->brush_selected_palette_idx;
+        }
+        min_idx = 0;
+        max_idx = ctx->palette->total_color_cells - 1;
+        num_rows = ctx->palette->color_rows;
+    }
+
+    // Do nothing if the current palette has no items to navigate
+    if (num_rows == 0 || max_idx < min_idx) {
+        return;
+    }
+
+    // Handle arrow key navigation with wrapping
+    int current = *current_idx;
+    int new_idx = current;
+
+    // The indices are flat, but navigation is grid-based.
+    // We work with indices relative to the start of the current grid.
+    int relative_idx = current - min_idx;
+    int current_row = relative_idx / cols;
+    int current_col = relative_idx % cols;
+
+    switch (key) {
+    case SDLK_LEFT:
+        if (current_col == 0) { // wrap to right
+            new_idx = current + cols - 1;
+        } else {
+            new_idx = current - 1;
+        }
+        break;
+    case SDLK_RIGHT:
+        if (current_col == cols - 1) { // wrap to left
+            new_idx = current - cols + 1;
+        } else {
+            new_idx = current + 1;
+        }
+        break;
+    case SDLK_UP:
+        if (current_row == 0) { // wrap to bottom
+            new_idx = current + cols * (num_rows - 1);
+        } else {
+            new_idx = current - cols;
+        }
+        break;
+    case SDLK_DOWN:
+        if (current_row == num_rows - 1) { // wrap to top
+            new_idx = current - cols * (num_rows - 1);
+        } else {
+            new_idx = current + cols;
+        }
+        break;
+    default:
+        return; // Ignore other keys
+    }
+
+    // The logic above ensures we stay within the palette's grid, so no
+    // extra bounds checks are needed, assuming the palette is a full rectangle.
+
+    // Update selection and color if applicable
+    *current_idx = new_idx;
+
+    if (ctx->current_tool == TOOL_WATER_MARKER) {
+        ctx->water_marker_color = palette_get_color(ctx->palette, new_idx);
+    } else if (ctx->current_tool == TOOL_BRUSH) {
+        ctx->current_color = palette_get_color(ctx->palette, new_idx);
+    }
+
+    ctx->needs_redraw = SDL_TRUE;
 }
 
 int app_context_get_current_palette_selection(AppContext *ctx)

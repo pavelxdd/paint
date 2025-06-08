@@ -54,8 +54,9 @@ void palette_draw(const Palette *p,
     }
 
     /* ---------- separator between colours and emojis ---------- */
-    if (show_colors && show_emojis && p->emoji_rows > 0 && p->color_rows > 0 &&
-        COLOR_EMOJI_SEPARATOR_HEIGHT > 0) {
+    SDL_bool separator_needed = show_colors && show_emojis && p->emoji_rows > 0 &&
+                                p->color_rows > 0 && COLOR_EMOJI_SEPARATOR_HEIGHT > 0;
+    if (separator_needed) {
         SDL_SetRenderDrawColor(ren, 68, 71, 90, 255); // Dracula 'Current Line'
         SDL_Rect sep_r = {0, current_y, window_w, COLOR_EMOJI_SEPARATOR_HEIGHT};
         SDL_RenderFillRect(ren, &sep_r);
@@ -88,10 +89,10 @@ void palette_draw(const Palette *p,
                     int actual_idx = grid_emoji_idx % num_available_emojis;
                     SDL_Texture *tex = NULL;
                     int tex_w = 0, tex_h = 0;
+                    SDL_bool has_emoji = emoji_renderer_get_texture_info(
+                        p->emoji_renderer_instance, actual_idx, &tex, &tex_w, &tex_h);
 
-                    if (emoji_renderer_get_texture_info(
-                            p->emoji_renderer_instance, actual_idx, &tex, &tex_w, &tex_h) &&
-                        tex) {
+                    if (has_emoji && tex) {
                         float asp = (tex_h == 0) ? 1.0f : (float)tex_w / tex_h;
                         int def_h = cell_r.h - 2 * DEFAULT_EMOJI_CELL_PADDING;
                         int def_w = lroundf(def_h * asp);
@@ -99,12 +100,8 @@ void palette_draw(const Palette *p,
                             def_w = cell_r.w - 2 * DEFAULT_EMOJI_CELL_PADDING;
                             def_h = lroundf(def_w / asp);
                         }
-                        if (def_w < 1) {
-                            def_w = 1;
-                        }
-                        if (def_h < 1) {
-                            def_h = 1;
-                        }
+                        if (def_w < 1) def_w = 1;
+                        if (def_h < 1) def_h = 1;
 
                         SDL_Rect dst_r = {cell_r.x + (cell_r.w - def_w) / 2,
                                           cell_r.y + (cell_r.h - def_h) / 2,
@@ -115,8 +112,8 @@ void palette_draw(const Palette *p,
                         if (f_idx == selected_idx && palette_is_emoji_index(p, f_idx)) {
                             SDL_SetRenderDrawColor(ren, 189, 147, 249, 255); // Dracula 'Purple'
                             SDL_RenderDrawRect(ren, &cell_r);
-                            SDL_Rect r2 =
-                                {cell_r.x + 1, cell_r.y + 1, cell_r.w - 2, cell_r.h - 2};
+                            SDL_Rect r2 = {
+                                cell_r.x + 1, cell_r.y + 1, cell_r.w - 2, cell_r.h - 2};
                             SDL_RenderDrawRect(ren, &r2);
                         }
                     } else {

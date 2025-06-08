@@ -39,9 +39,9 @@ static void draw_dab_at_point(AppContext *ctx, int x, int y, SDL_bool use_backgr
     } else if (ctx->current_tool == TOOL_EMOJI) {
         SDL_Texture *emoji_tex = NULL;
         int ew = 0, eh = 0;
-        if (palette_get_emoji_info(
-                ctx->palette, ctx->emoji_selected_palette_idx, &emoji_tex, &ew, &eh) &&
-            emoji_tex) {
+        SDL_bool has_emoji = palette_get_emoji_info(
+            ctx->palette, ctx->emoji_selected_palette_idx, &emoji_tex, &ew, &eh);
+        if (has_emoji && emoji_tex) {
             float asp = (eh == 0) ? 1.0f : (float)ew / eh;
             int h = ctx->brush_radius * 6;
             if (h < MIN_BRUSH_SIZE * 6) {
