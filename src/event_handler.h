@@ -1,6 +1,6 @@
 #pragma once
 
-#include "app.h" // For AppContext
+#include "app.h" // For App
 #include <SDL2/SDL_events.h>
 
-void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout);
+void handle_events(App *app, int *is_running, Uint32 sdl_wait_timeout);

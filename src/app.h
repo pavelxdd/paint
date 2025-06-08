@@ -58,50 +58,49 @@ typedef struct {
     SDL_bool straight_line_stroke_latched;
     int last_stroke_x;
     int last_stroke_y;
-} AppContext;
+} App;
 
 /* --- Lifecycle (app.c) --- */
-AppContext *app_context_create(SDL_Window *win, SDL_Renderer *ren);
-void app_context_destroy(AppContext *ctx);
+App *app_create(SDL_Window *win, SDL_Renderer *ren);
+void app_destroy(App *app);
 
-/* --- Event Handling (app_context_keyboard.c, app_context_mouse.c) --- */
-void app_context_handle_keydown(AppContext *ctx, const SDL_KeyboardEvent *key_event);
-void app_context_handle_keyup(AppContext *ctx, const SDL_KeyboardEvent *key_event);
-void app_context_handle_mousedown(AppContext *ctx, const SDL_MouseButtonEvent *mouse_event);
-void app_context_handle_mouseup(AppContext *ctx, const SDL_MouseButtonEvent *mouse_event);
-void app_context_handle_mousewheel(
-    AppContext *ctx, const SDL_MouseWheelEvent *wheel_event, int mouse_x, int mouse_y);
+/* --- Event Handling (app_keyboard.c, app_mouse.c) --- */
+void app_handle_keydown(App *app, const SDL_KeyboardEvent *key_event);
+void app_handle_keyup(App *app, const SDL_KeyboardEvent *key_event);
+void app_handle_mousedown(App *app, const SDL_MouseButtonEvent *mouse_event);
+void app_handle_mouseup(App *app, const SDL_MouseButtonEvent *mouse_event);
+void app_handle_mousewheel(
+    App *app, const SDL_MouseWheelEvent *wheel_event, int mouse_x, int mouse_y);
 
-/* --- State & Toggles (app_context_state.c) --- */
-void app_context_toggle_line_mode(AppContext *ctx);
-SDL_bool app_context_is_straight_line_mode(const AppContext *ctx);
-void app_context_toggle_fullscreen(AppContext *ctx);
-void app_context_toggle_color_palette(AppContext *ctx);
-void app_context_toggle_emoji_palette(AppContext *ctx);
+/* --- State & Toggles (app_state.c) --- */
+void app_toggle_line_mode(App *app);
+SDL_bool app_is_straight_line_mode(const App *app);
+void app_toggle_fullscreen(App *app);
+void app_toggle_color_palette(App *app);
+void app_toggle_emoji_palette(App *app);
 
-/* --- Drawing & Canvas (app_context_draw.c, app_context_canvas.c) --- */
-void app_context_draw_stroke(
-    AppContext *ctx, int mouse_x, int mouse_y, SDL_bool use_background_color);
-void app_context_clear_canvas_with_current_bg(AppContext *ctx);
-void app_context_set_background_and_clear_canvas(AppContext *ctx, SDL_Color color);
-void app_context_recreate_canvas_texture(AppContext *ctx);
-void app_context_begin_water_marker_stroke(AppContext *ctx);
-void app_context_end_water_marker_stroke(AppContext *ctx);
+/* --- Drawing & Canvas (app_draw.c, app_canvas.c) --- */
+void app_draw_stroke(App *app, int mouse_x, int mouse_y, SDL_bool use_background_color);
+void app_clear_canvas_with_current_bg(App *app);
+void app_set_background_and_clear_canvas(App *app, SDL_Color color);
+void app_recreate_canvas_texture(App *app);
+void app_begin_water_marker_stroke(App *app);
+void app_end_water_marker_stroke(App *app);
 
-/* --- Brush (app_context_brush.c) --- */
-void app_context_change_brush_radius(AppContext *ctx, int delta);
-void app_context_set_brush_radius_from_key(AppContext *ctx, SDL_Keycode keycode);
+/* --- Brush (app_brush.c) --- */
+void app_change_brush_radius(App *app, int delta);
+void app_set_brush_radius_from_key(App *app, SDL_Keycode keycode);
 
-/* --- Palette & Tool Selection (app_context_palette.c) --- */
-void app_context_select_palette_tool(AppContext *ctx, int palette_idx);
-void app_context_move_palette_selection(AppContext *ctx, SDL_Keycode key);
-void app_context_cycle_palette_selection(AppContext *ctx, int delta, int palette_type);
-int app_context_get_current_palette_selection(AppContext *ctx);
+/* --- Palette & Tool Selection (app_palette.c) --- */
+void app_select_palette_tool(App *app, int palette_idx);
+void app_move_palette_selection(App *app, SDL_Keycode key);
+void app_cycle_palette_selection(App *app, int delta, int palette_type);
+int app_get_current_palette_selection(App *app);
 
-/* --- Window & Resize (app_context_resize.c) --- */
-void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h);
-void app_context_process_debounced_resize(AppContext *ctx);
+/* --- Window & Resize (app_resize.c) --- */
+void app_notify_resize_event(App *app, int new_w, int new_h);
+void app_process_debounced_resize(App *app);
 
-/* --- Layout & Sizing (app_context_layout.c) --- */
-void app_context_recalculate_sizes_and_limits(AppContext *ctx);
-void app_context_update_canvas_display_height(AppContext *ctx);
+/* --- Layout & Sizing (app_layout.c) --- */
+void app_recalculate_sizes_and_limits(App *app);
+void app_update_canvas_display_height(App *app);

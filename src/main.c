@@ -2,7 +2,7 @@
 #include <SDL2/SDL_ttf.h> // For TTF_Init, TTF_Quit
 #include <stdlib.h>      // For EXIT_SUCCESS, EXIT_FAILURE
 
-#include "app.h"   // For AppContext, INITIAL_WINDOW_WIDTH, RESIZE_DEBOUNCE_MS, etc.
+#include "app.h"   // For App, INITIAL_WINDOW_WIDTH, RESIZE_DEBOUNCE_MS, etc.
 #include "event_handler.h" // For handle_events
 #include "renderer.h"      // For render_scene
 
@@ -58,9 +58,9 @@ int main(void)
         }
     }
 
-    AppContext *app_ctx = app_context_create(win, ren);
-    if (!app_ctx) {
-        SDL_Log("Failed to create AppContext");
+    App *app = app_create(win, ren);
+    if (!app) {
+        SDL_Log("Failed to create App");
         SDL_DestroyRenderer(ren);
         SDL_DestroyWindow(win);
         SDL_Quit();
@@ -70,24 +70,24 @@ int main(void)
     int running = 1;
     while (running) {
         Uint32 wait_timeout;
-        if (app_ctx->needs_redraw) {
+        if (app->needs_redraw) {
             wait_timeout = 16;
-        } else if (app_ctx->resize_pending) {
+        } else if (app->resize_pending) {
             wait_timeout = RESIZE_DEBOUNCE_MS / 4;
         } else {
             wait_timeout = (Uint32)-1;
         }
 
-        handle_events(app_ctx, &running, wait_timeout);
-        app_context_process_debounced_resize(app_ctx);
+        handle_events(app, &running, wait_timeout);
+        app_process_debounced_resize(app);
 
-        if (app_ctx->needs_redraw) {
-            render_scene(app_ctx);
-            app_ctx->needs_redraw = SDL_FALSE;
+        if (app->needs_redraw) {
+            render_scene(app);
+            app->needs_redraw = SDL_FALSE;
         }
     }
 
-    app_context_destroy(app_ctx);
+    app_destroy(app);
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     TTF_Quit();

@@ -1,74 +1,74 @@
 #include "app.h"
 
-void app_context_clear_canvas_with_current_bg(AppContext *ctx)
+void app_clear_canvas_with_current_bg(App *app)
 {
-    if (!ctx || !ctx->canvas_texture) {
+    if (!app || !app->canvas_texture) {
         return;
     }
 
-    SDL_SetRenderTarget(ctx->ren, ctx->canvas_texture);
-    SDL_SetRenderDrawColor(ctx->ren,
-                           ctx->background_color.r,
-                           ctx->background_color.g,
-                           ctx->background_color.b,
-                           ctx->background_color.a);
-    SDL_RenderClear(ctx->ren);
-    SDL_SetRenderTarget(ctx->ren, NULL);
-    ctx->needs_redraw = SDL_TRUE;
+    SDL_SetRenderTarget(app->ren, app->canvas_texture);
+    SDL_SetRenderDrawColor(app->ren,
+                           app->background_color.r,
+                           app->background_color.g,
+                           app->background_color.b,
+                           app->background_color.a);
+    SDL_RenderClear(app->ren);
+    SDL_SetRenderTarget(app->ren, NULL);
+    app->needs_redraw = SDL_TRUE;
 }
 
-void app_context_recreate_canvas_texture(AppContext *ctx)
+void app_recreate_canvas_texture(App *app)
 {
-    if (!ctx) {
+    if (!app) {
         return;
     }
 
-    const int w = ctx->window_w;
-    const int h = ctx->window_h;
+    const int w = app->window_w;
+    const int h = app->window_h;
 
     SDL_Texture *new_tex =
-        SDL_CreateTexture(ctx->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+        SDL_CreateTexture(app->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
     if (!new_tex) {
         SDL_Log("Failed to resize canvas texture: %s", SDL_GetError());
         return;
     }
 
     /* clear new texture with background colour */
-    SDL_SetRenderTarget(ctx->ren, new_tex);
-    SDL_SetRenderDrawColor(ctx->ren,
-                           ctx->background_color.r,
-                           ctx->background_color.g,
-                           ctx->background_color.b,
-                           ctx->background_color.a);
-    SDL_RenderClear(ctx->ren);
+    SDL_SetRenderTarget(app->ren, new_tex);
+    SDL_SetRenderDrawColor(app->ren,
+                           app->background_color.r,
+                           app->background_color.g,
+                           app->background_color.b,
+                           app->background_color.a);
+    SDL_RenderClear(app->ren);
 
     /* Destroy old canvas texture, no content is preserved on resize */
-    if (ctx->canvas_texture) {
-        SDL_DestroyTexture(ctx->canvas_texture);
+    if (app->canvas_texture) {
+        SDL_DestroyTexture(app->canvas_texture);
     }
 
-    SDL_SetRenderTarget(ctx->ren, NULL);
-    ctx->canvas_texture = new_tex;
-    ctx->canvas_texture_w = w;
-    ctx->canvas_texture_h = h;
+    SDL_SetRenderTarget(app->ren, NULL);
+    app->canvas_texture = new_tex;
+    app->canvas_texture_w = w;
+    app->canvas_texture_h = h;
 
     // Recreate stroke buffer as well
-    if (ctx->stroke_buffer) {
-        SDL_DestroyTexture(ctx->stroke_buffer);
+    if (app->stroke_buffer) {
+        SDL_DestroyTexture(app->stroke_buffer);
     }
-    ctx->stroke_buffer =
-        SDL_CreateTexture(ctx->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
-    if (!ctx->stroke_buffer) {
+    app->stroke_buffer =
+        SDL_CreateTexture(app->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+    if (!app->stroke_buffer) {
         SDL_Log("Failed to create stroke buffer texture: %s", SDL_GetError());
     } else {
-        SDL_SetTextureBlendMode(ctx->stroke_buffer, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureBlendMode(app->stroke_buffer, SDL_BLENDMODE_BLEND);
         // Clear it to transparent
-        SDL_SetRenderTarget(ctx->ren, ctx->stroke_buffer);
-        SDL_SetRenderDrawBlendMode(ctx->ren, SDL_BLENDMODE_NONE);
-        SDL_SetRenderDrawColor(ctx->ren, 0, 0, 0, 0);
-        SDL_RenderClear(ctx->ren);
-        SDL_SetRenderTarget(ctx->ren, NULL);
+        SDL_SetRenderTarget(app->ren, app->stroke_buffer);
+        SDL_SetRenderDrawBlendMode(app->ren, SDL_BLENDMODE_NONE);
+        SDL_SetRenderDrawColor(app->ren, 0, 0, 0, 0);
+        SDL_RenderClear(app->ren);
+        SDL_SetRenderTarget(app->ren, NULL);
     }
 
-    ctx->needs_redraw = SDL_TRUE;
+    app->needs_redraw = SDL_TRUE;
 }

@@ -2,54 +2,54 @@
 
 /* ------------ State Toggles & Queries ------------ */
 
-void app_context_toggle_line_mode(AppContext *ctx)
+void app_toggle_line_mode(App *app)
 {
-    if (!ctx) {
+    if (!app) {
         return;
     }
-    ctx->line_mode_toggled_on = !ctx->line_mode_toggled_on;
-    ctx->needs_redraw = SDL_TRUE;
+    app->line_mode_toggled_on = !app->line_mode_toggled_on;
+    app->needs_redraw = SDL_TRUE;
 }
 
-SDL_bool app_context_is_straight_line_mode(const AppContext *ctx)
+SDL_bool app_is_straight_line_mode(const App *app)
 {
-    if (!ctx) {
+    if (!app) {
         return SDL_FALSE;
     }
     const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
-    return ctx->line_mode_toggled_on || keyboard_state[SDL_SCANCODE_LCTRL] ||
+    return app->line_mode_toggled_on || keyboard_state[SDL_SCANCODE_LCTRL] ||
            keyboard_state[SDL_SCANCODE_RCTRL];
 }
 
-void app_context_toggle_fullscreen(AppContext *ctx)
+void app_toggle_fullscreen(App *app)
 {
-    if (!ctx || !ctx->win) {
+    if (!app || !app->win) {
         return;
     }
-    Uint32 flags = SDL_GetWindowFlags(ctx->win);
+    Uint32 flags = SDL_GetWindowFlags(app->win);
     if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
-        SDL_SetWindowFullscreen(ctx->win, 0);
+        SDL_SetWindowFullscreen(app->win, 0);
     } else {
-        SDL_SetWindowFullscreen(ctx->win, SDL_WINDOW_FULLSCREEN_DESKTOP);
+        SDL_SetWindowFullscreen(app->win, SDL_WINDOW_FULLSCREEN_DESKTOP);
     }
 }
 
-void app_context_toggle_color_palette(AppContext *ctx)
+void app_toggle_color_palette(App *app)
 {
-    if (!ctx) {
+    if (!app) {
         return;
     }
-    ctx->show_color_palette = !ctx->show_color_palette;
-    app_context_update_canvas_display_height(ctx);
-    ctx->needs_redraw = SDL_TRUE;
+    app->show_color_palette = !app->show_color_palette;
+    app_update_canvas_display_height(app);
+    app->needs_redraw = SDL_TRUE;
 }
 
-void app_context_toggle_emoji_palette(AppContext *ctx)
+void app_toggle_emoji_palette(App *app)
 {
-    if (!ctx) {
+    if (!app) {
         return;
     }
-    ctx->show_emoji_palette = !ctx->show_emoji_palette;
-    app_context_update_canvas_display_height(ctx);
-    ctx->needs_redraw = SDL_TRUE;
+    app->show_emoji_palette = !app->show_emoji_palette;
+    app_update_canvas_display_height(app);
+    app->needs_redraw = SDL_TRUE;
 }
