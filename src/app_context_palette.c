@@ -72,7 +72,7 @@ void app_context_select_palette_tool(AppContext *ctx, int flat_idx)
         if (ctx->current_tool == TOOL_WATER_MARKER) {
             ctx->water_marker_color = selected_color;
             ctx->water_marker_selected_palette_idx = flat_idx;
-        } else { // Must be TOOL_BRUSH
+        } else { // Must be TOOL_BRUSH or a color tool that fell through
             ctx->current_color = selected_color;
             ctx->brush_selected_palette_idx = flat_idx;
         }
@@ -112,6 +112,7 @@ void app_context_cycle_palette_selection(AppContext *ctx, int delta, int palette
         int *sel_idx = (ctx->current_tool == TOOL_WATER_MARKER)
                            ? &ctx->water_marker_selected_palette_idx
                            : &ctx->brush_selected_palette_idx;
+
         int cur = *sel_idx;
         int rel = cur;
         if (rel < 0 || rel >= n) {
@@ -149,7 +150,7 @@ void app_context_move_palette_selection(AppContext *ctx, SDL_Keycode key)
         // Brush and water-marker use color palette
         if (ctx->current_tool == TOOL_WATER_MARKER) {
             current_idx = &ctx->water_marker_selected_palette_idx;
-        } else {
+        } else { // TOOL_BRUSH
             current_idx = &ctx->brush_selected_palette_idx;
         }
         min_idx = 0;
@@ -225,11 +226,13 @@ int app_context_get_current_palette_selection(AppContext *ctx)
     if (!ctx || !ctx->palette) {
         return -1;
     }
-    if (ctx->current_tool == TOOL_EMOJI) {
+    switch (ctx->current_tool) {
+    case TOOL_EMOJI:
         return ctx->emoji_selected_palette_idx;
-    } else if (ctx->current_tool == TOOL_WATER_MARKER) {
+    case TOOL_WATER_MARKER:
         return ctx->water_marker_selected_palette_idx;
-    } else {
+    case TOOL_BRUSH:
+    default:
         return ctx->brush_selected_palette_idx;
     }
 }

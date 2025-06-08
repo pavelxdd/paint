@@ -141,11 +141,28 @@ void app_context_handle_mousedown(AppContext *ctx, const SDL_MouseButtonEvent *m
         // 3. Click is on the canvas
         if (mouse_event->button == SDL_BUTTON_LEFT || mouse_event->button == SDL_BUTTON_RIGHT) {
             ctx->is_drawing = SDL_TRUE;
-            if (mouse_event->button == SDL_BUTTON_LEFT &&
-                ctx->current_tool == TOOL_WATER_MARKER) {
-                app_context_begin_water_marker_stroke(ctx);
+            ctx->last_stroke_x = mx;
+            ctx->last_stroke_y = my;
+
+            if (mouse_event->button == SDL_BUTTON_LEFT) {
+                if (ctx->current_tool == TOOL_WATER_MARKER) {
+                    app_context_begin_water_marker_stroke(ctx);
+                }
             }
-            app_context_draw_stroke(ctx, mx, my, (mouse_event->button == SDL_BUTTON_RIGHT));
+
+            // If not in straight line mode, draw the first dab immediately.
+            // For straight line mode, we wait for mouse motion to draw a preview.
+            const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
+            SDL_bool is_straight_line_mode =
+                (keyboard_state[SDL_SCANCODE_LCTRL] || keyboard_state[SDL_SCANCODE_RCTRL]);
+
+            if (!is_straight_line_mode ||
+                (ctx->current_tool != TOOL_BRUSH && ctx->current_tool != TOOL_WATER_MARKER &&
+                 ctx->current_tool != TOOL_EMOJI)) {
+                app_context_draw_stroke(ctx, mx, my, (mouse_event->button == SDL_BUTTON_RIGHT));
+            } else {
+                ctx->needs_redraw = SDL_TRUE; // Redraw to show preview on first move
+            }
         } else if (mouse_event->button == SDL_BUTTON_MIDDLE) {
             app_context_clear_canvas_with_current_bg(ctx);
         }
@@ -154,8 +171,39 @@ void app_context_handle_mousedown(AppContext *ctx, const SDL_MouseButtonEvent *m
 
 void app_context_handle_mouseup(AppContext *ctx, const SDL_MouseButtonEvent *mouse_event)
 {
-    if (mouse_event->button == SDL_BUTTON_LEFT && ctx->water_marker_stroke_active) {
-        app_context_end_water_marker_stroke(ctx);
+    if (ctx->is_drawing) {
+        const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
+        SDL_bool is_straight_line_mode =
+            (keyboard_state[SDL_SCANCODE_LCTRL] || keyboard_state[SDL_SCANCODE_RCTRL]);
+
+        if (is_straight_line_mode && mouse_event->button == SDL_BUTTON_LEFT &&
+            (ctx->current_tool == TOOL_BRUSH || ctx->current_tool == TOOL_WATER_MARKER ||
+             ctx->current_tool == TOOL_EMOJI)) {
+            // --- Commit the straight line ---
+            if (ctx->current_tool == TOOL_BRUSH || ctx->current_tool == TOOL_EMOJI) {
+                // Blend the preview from the stroke buffer onto the main canvas
+                SDL_SetRenderTarget(ctx->ren, ctx->canvas_texture);
+                SDL_SetTextureBlendMode(ctx->stroke_buffer, SDL_BLENDMODE_BLEND);
+                SDL_RenderCopy(ctx->ren, ctx->stroke_buffer, NULL, NULL);
+                SDL_SetRenderTarget(ctx->ren, NULL);
+            } else { // TOOL_WATER_MARKER
+                // The final preview is on the stroke buffer. End the stroke to blend it.
+                app_context_end_water_marker_stroke(ctx);
+            }
+        } else if (ctx->water_marker_stroke_active && mouse_event->button == SDL_BUTTON_LEFT) {
+            // --- End a freehand water-marker stroke ---
+            app_context_end_water_marker_stroke(ctx);
+        }
+
+        // Clear the stroke buffer for the next operation
+        if (ctx->stroke_buffer) {
+            SDL_SetRenderTarget(ctx->ren, ctx->stroke_buffer);
+            SDL_SetRenderDrawBlendMode(ctx->ren, SDL_BLENDMODE_NONE);
+            SDL_SetRenderDrawColor(ctx->ren, 0, 0, 0, 0);
+            SDL_RenderClear(ctx->ren);
+            SDL_SetRenderTarget(ctx->ren, NULL);
+        }
+        ctx->needs_redraw = SDL_TRUE;
     }
 
     // Reset drawing state on any button release

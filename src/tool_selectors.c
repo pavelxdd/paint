@@ -3,8 +3,6 @@
 #include "ui_constants.h"
 #include <math.h>
 
-// Returns: TOOL_BRUSH, TOOL_EMOJI, TOOL_WATER_MARKER, HIT_TEST_COLOR_PALETTE_TOGGLE, or -1 for
-// miss.
 int tool_selectors_hit_test(const AppContext *ctx, int mx, int my, int start_y)
 {
     if (my >= start_y && my < start_y + TOOL_SELECTOR_AREA_HEIGHT) {
@@ -166,6 +164,7 @@ static void draw_borders_and_highlights(AppContext *ctx,
     if (r_inner_left.w > 0 && r_inner_left.h > 0) {
         SDL_RenderDrawRect(ctx->ren, &r_inner_left);
     }
+
     SDL_Rect sep_line_left = {TOOL_SELECTOR_SIZE - 1, start_y, 2, TOOL_SELECTOR_AREA_HEIGHT};
     SDL_RenderFillRect(ctx->ren, &sep_line_left);
 

@@ -12,8 +12,24 @@ void render_scene(AppContext *ctx)
         SDL_RenderCopy(ctx->ren, ctx->canvas_texture, NULL, NULL);
     }
 
-    // 2. If a water-marker stroke is in progress, render it semi-transparently for live preview.
-    if (ctx->water_marker_stroke_active && ctx->stroke_buffer) {
+    // 2. Render tool previews from the stroke buffer if necessary.
+    const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
+    SDL_bool is_straight_line_mode =
+        (keyboard_state[SDL_SCANCODE_LCTRL] || keyboard_state[SDL_SCANCODE_RCTRL]);
+
+    if (ctx->is_drawing && is_straight_line_mode && ctx->stroke_buffer) {
+        // Render a straight line preview
+        if (ctx->current_tool == TOOL_BRUSH || ctx->current_tool == TOOL_EMOJI) {
+            // Brush and Emoji previews are opaque and on the buffer
+            SDL_RenderCopy(ctx->ren, ctx->stroke_buffer, NULL, NULL);
+        } else if (ctx->current_tool == TOOL_WATER_MARKER) {
+            // Water-marker preview is semi-transparent
+            SDL_SetTextureAlphaMod(ctx->stroke_buffer, 128);
+            SDL_RenderCopy(ctx->ren, ctx->stroke_buffer, NULL, NULL);
+            SDL_SetTextureAlphaMod(ctx->stroke_buffer, 255);
+        }
+    } else if (ctx->water_marker_stroke_active && ctx->stroke_buffer) {
+        // Render a freehand water-marker stroke in progress
         SDL_SetTextureAlphaMod(ctx->stroke_buffer, 128);
         SDL_RenderCopy(ctx->ren, ctx->stroke_buffer, NULL, NULL);
         SDL_SetTextureAlphaMod(ctx->stroke_buffer, 255); // Reset for other potential uses
@@ -41,21 +57,7 @@ void render_scene(AppContext *ctx)
     }
 
     // 6. Palette (conditionally visible rows)
-    int active_palette_idx;
-    switch (ctx->current_tool) {
-    case TOOL_BRUSH:
-        active_palette_idx = ctx->brush_selected_palette_idx;
-        break;
-    case TOOL_WATER_MARKER:
-        active_palette_idx = ctx->water_marker_selected_palette_idx;
-        break;
-    case TOOL_EMOJI:
-        active_palette_idx = ctx->emoji_selected_palette_idx;
-        break;
-    default:
-        active_palette_idx = -1;
-        break;
-    }
+    int active_palette_idx = app_context_get_current_palette_selection(ctx);
     palette_draw(ctx->palette,
                  ctx->ren,
                  current_y,
