@@ -26,7 +26,7 @@ void app_handle_keydown(App *app, const SDL_KeyboardEvent *key_event)
         break;
     case SDLK_TAB: {
         // Cycle tools: TAB forward, CTRL+TAB backward
-        int count = __TOOL_COUNT;
+        int count = TOOL_COUNT;
         int idx = (int)app->current_tool;
 
         if (key_event->keysym.mod & KMOD_CTRL) {

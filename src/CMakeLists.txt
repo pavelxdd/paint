@@ -20,6 +20,9 @@ add_executable(${CMAKE_PROJECT_NAME}
     palette_queries.c
     renderer.c
     tool_selectors.c
+    tool_brush.c
+    tool_emoji.c
+    tool_water_marker.c
 )
 
 find_package(SDL2 REQUIRED)

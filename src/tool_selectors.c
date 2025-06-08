@@ -1,6 +1,5 @@
-#include "tool_selectors.h"
+#include "app.h"
 #include "draw.h"
-#include "ui_constants.h"
 #include <math.h>
 
 int tool_selectors_hit_test(const App *app, int mx, int my, int start_y)

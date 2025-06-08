@@ -1,6 +1,4 @@
 #include "renderer.h"
-#include "palette.h"
-#include "tool_selectors.h"
 
 void render_scene(App *app)
 {

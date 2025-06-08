@@ -1,17 +1,11 @@
 #pragma once
 
-#include <SDL2/SDL.h>
 #include "palette.h"      // For Palette struct and PALETTE_HEIGHT
+#include "tool.h"         // For ActiveTool enum
 #include "ui_constants.h" // Shared UI layout constants
+#include <SDL2/SDL.h>
 
-typedef enum {
-    TOOL_BRUSH,
-    TOOL_WATER_MARKER,
-    TOOL_EMOJI,
-    __TOOL_COUNT
-} ActiveTool;
-
-typedef struct {
+typedef struct App {
     SDL_Window *win;
     SDL_Renderer *ren;
 
@@ -84,8 +78,6 @@ void app_draw_stroke(App *app, int mouse_x, int mouse_y, SDL_bool use_background
 void app_clear_canvas_with_current_bg(App *app);
 void app_set_background_and_clear_canvas(App *app, SDL_Color color);
 void app_recreate_canvas_texture(App *app);
-void app_begin_water_marker_stroke(App *app);
-void app_end_water_marker_stroke(App *app);
 
 /* --- Brush (app_brush.c) --- */
 void app_change_brush_radius(App *app, int delta);

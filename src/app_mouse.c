@@ -1,7 +1,4 @@
 #include "app.h"
-#include "palette.h"
-#include "tool_selectors.h"
-#include "ui_constants.h"
 
 // Returns SDL_TRUE if my is inside palette area, and sets out_palette_start_y.
 static SDL_bool is_point_in_palette_ui(App *app, int my, int *out_palette_start_y)
@@ -155,7 +152,7 @@ void app_handle_mousedown(App *app, const SDL_MouseButtonEvent *mouse_event)
             }
 
             if (mouse_event->button == SDL_BUTTON_LEFT && app->current_tool == TOOL_WATER_MARKER) {
-                app_begin_water_marker_stroke(app);
+                tool_water_marker_begin_stroke(app);
             }
 
             // If not in a latched straight-line stroke, draw the first dab immediately.
@@ -185,11 +182,11 @@ void app_handle_mouseup(App *app, const SDL_MouseButtonEvent *mouse_event)
                 SDL_SetRenderTarget(app->ren, NULL);
             } else { // TOOL_WATER_MARKER
                 // The final preview is on the stroke buffer. End the stroke to blend it.
-                app_end_water_marker_stroke(app);
+                tool_water_marker_end_stroke(app);
             }
         } else if (app->water_marker_stroke_active && mouse_event->button == SDL_BUTTON_LEFT) {
             // --- End a freehand water-marker stroke ---
-            app_end_water_marker_stroke(app);
+            tool_water_marker_end_stroke(app);
         }
 
         // Clear the stroke buffer for the next operation
