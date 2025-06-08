@@ -1,7 +1,3 @@
-// AI Summary: Defines the EmojiRenderer interface for managing and rendering
-// emoji assets. Handles loading the emoji font, shuffling emoji codepoints,
-// rendering them to SDL_Textures, and providing access to these textures and
-// their properties.
 #pragma once
 
 #include <SDL2/SDL.h>

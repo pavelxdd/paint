@@ -1,5 +1,3 @@
-// AI Summary: Declares the main event handling function for the application, which
-// processes the SDL event queue and updates the application state accordingly.
 #pragma once
 
 #include "app_context.h" // For AppContext

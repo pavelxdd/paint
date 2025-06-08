@@ -1,6 +1,9 @@
-// AI Summary: Centralised header for UI/layout constants shared across modules.
-// Avoids cyclic includes by making every high-level constant available here.
 #pragma once
+
+#define INITIAL_WINDOW_WIDTH 800
+#define INITIAL_WINDOW_HEIGHT 600
+
+#define RESIZE_DEBOUNCE_MS 200     // Milliseconds for resize debouncing
 
 /* --------------------------------------------------------------------
    Palette & Toolbar layout

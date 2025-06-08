@@ -1,6 +1,3 @@
-// AI Summary: Declares the Palette structure and its public API. This includes
-// functions for lifecycle management (create, destroy, recreate), drawing, and
-// querying state (hit-test, get color/emoji). Constants are in ui_constants.h.
 #pragma once
 
 #include "emoji_renderer.h"

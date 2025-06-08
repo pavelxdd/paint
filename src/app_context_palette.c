@@ -1,6 +1,3 @@
-// AI Summary: Provides palette visibility toggles, tool selection,
-// and computation of drawable canvas height. Also implements helpers
-// for palette cycling (next/prev) with wraparound.
 #include "app_context.h"
 #include "palette.h"
 #include "ui_constants.h"

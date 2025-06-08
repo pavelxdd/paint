@@ -1,7 +1,3 @@
-// AI Summary: Implements SDL event polling and processing for the paint application.
-// Dispatches events (quit, window, keyboard, mouse) to appropriate handlers using a
-// switch statement. Complex logic like mouse clicks is handled in helper functions
-// to improve readability. Interacts with AppContext to modify application state.
 #include "event_handler.h"
 #include "app_context.h" // For AppContext and its manipulation functions
 

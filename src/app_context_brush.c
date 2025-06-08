@@ -1,9 +1,6 @@
-// AI Summary: Encapsulates all brush-size operations and limit recomputation
-// based on current palette layout and window metrics.
 #include "app_context.h"
 #include "palette.h"
 #include "ui_constants.h"
-#include <math.h>
 
 void app_context_change_brush_radius(AppContext *ctx, int delta)
 {

@@ -1,4 +1,3 @@
-// AI Summary: Declares color utility functions, such as for converting from HSV to RGB color space.
 #pragma once
 
 #include <SDL2/SDL.h>

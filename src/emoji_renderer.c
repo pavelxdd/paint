@@ -1,8 +1,3 @@
-// AI Summary: Implements the EmojiRenderer for the paint application.
-// Manages the lifecycle of an emoji font, a list of emoji codepoints (shuffled from
-// a predefined set), and their corresponding rendered SDL_Textures. It also manages
-// a separate default emoji for UI purposes.
-// Provides functions to create, destroy, and access rendered emoji data.
 #include "emoji_renderer.h"
 #include "emoji_data.h" // For ORIGINAL_DEFAULT_EMOJI_CODEPOINTS and NUM_DEFAULT_EMOJIS
 #include <stdlib.h>

@@ -1,6 +1,3 @@
-// AI Summary: Orchestrates global state creation/destruction, background colour
-// handling, canvas initiation, and debounced resize processing. Brush and palette
-// specifics now live in dedicated companion modules.
 #include "app_context.h"
 #include "palette.h"
 #include <stdlib.h>

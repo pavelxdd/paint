@@ -1,17 +1,7 @@
-// AI Summary: Defines the AppContext structure holding the application's global
-// state for the paint program. Manages window/renderer, canvas, palette, brush,
-// colors, active tool (brush/emoji), palette visibility, and flags for UI
-// updates and resize handling. Provides functions for initializing, destroying,
-// and modifying this state.
 #pragma once
 
-#include "palette.h" // For Palette struct and PALETTE_HEIGHT
 #include <SDL2/SDL.h>
-
-#define INITIAL_WINDOW_WIDTH 800
-#define INITIAL_WINDOW_HEIGHT 600
-
-#define RESIZE_DEBOUNCE_MS 200     // Milliseconds for resize debouncing
+#include "palette.h" // For Palette struct and PALETTE_HEIGHT
 #include "ui_constants.h"          // Shared UI layout constants
 
 typedef enum {

@@ -1,7 +1,3 @@
-// AI Summary: Manages all mouse-related event handling for the application.
-// This includes processing mouse button down/up events for drawing and UI interaction,
-// handling mouse motion for continuous drawing, and managing mouse wheel events for
-// brush size changes or palette cycling.
 #include "app_context.h"
 #include "palette.h"
 #include "tool_selectors.h"

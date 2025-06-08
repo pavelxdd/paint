@@ -1,6 +1,3 @@
-// AI Summary: Implements the data and logic for the color/emoji palette. Handles
-// creation, destruction, dynamic layout calculation based on window size, and procedural
-// color generation. Query and drawing functions are in separate files.
 #include "palette.h"
 #include "color_utils.h"
 #include "emoji_renderer.h"

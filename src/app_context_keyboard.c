@@ -1,6 +1,3 @@
-// AI Summary: Centralises all keyboard event handling for the application.
-// Manages tool selection, palette navigation, UI toggles, and brush size adjustments
-// via keyboard shortcuts, delegating state changes to the AppContext.
 #include "app_context.h"
 
 void app_context_handle_keydown(AppContext *ctx, const SDL_KeyboardEvent *key_event)

@@ -1,8 +1,3 @@
-// AI Summary: Implements query functions for the Palette data structure.
-// These functions provide a way to interact with and retrieve information
-// from the palette, such as hit-testing for mouse clicks, getting color/emoji
-// data by index, and checking the type of an index, without modifying
-// the palette's state.
 #include "palette.h"
 #include "emoji_renderer.h"
 #include "ui_constants.h"

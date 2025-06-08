@@ -1,4 +1,3 @@
-// AI Summary: Implements color conversion utility functions, such as HSV to RGB.
 #include "color_utils.h"
 #include <math.h>
 

@@ -1,6 +1,3 @@
-// AI Summary: Implements drawing and hit-testing for the tool selector UI elements
-// (brush, emoji, water-marker). It visualizes the current tool selection,
-// color, and brush size, and handles user interaction for activating tools.
 #include "tool_selectors.h"
 #include "draw.h"
 #include "emoji_renderer.h"

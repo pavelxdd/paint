@@ -1,6 +1,3 @@
-// AI Summary: Renders the palette UI (color swatches and emojis), including selection
-// highlights and separator lines. Extracted from palette.c to
-// isolate rendering concerns and keep palette logic/data separate.
 #include "palette.h"
 #include "ui_constants.h"
 #include <math.h>

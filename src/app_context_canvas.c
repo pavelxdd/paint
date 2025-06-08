@@ -1,7 +1,3 @@
-// AI Summary: Encapsulates canvas-related operations previously embedded in
-// app_context.c. Functions manage clearing, drawing (brush & emoji), erasing,
-// and safe texture recreation during window resizes. It also handles stroke-buffering
-// for tools like the water-marker to ensure proper transparency.
 #include "app_context.h"
 #include "draw.h"
 #include "palette.h"

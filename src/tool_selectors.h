@@ -1,5 +1,3 @@
-// AI Summary: Declares functions for drawing and handling user input for the
-// tool selector UI component, which contains toggles for the color and emoji palettes.
 #pragma once
 
 #include "app_context.h"
