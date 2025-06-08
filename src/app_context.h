@@ -47,13 +47,15 @@ typedef struct {
     SDL_bool resize_pending;
     Uint32 last_resize_timestamp;
 
-    // UI visibility state
+    // UI state
+    SDL_bool line_mode_toggled_on;
     SDL_bool show_color_palette;
     SDL_bool show_emoji_palette;
 
     // Stroke state
     SDL_bool water_marker_stroke_active;
     SDL_bool is_drawing;
+    SDL_bool straight_line_stroke_latched;
     int last_stroke_x;
     int last_stroke_y;
 } AppContext;
@@ -64,6 +66,7 @@ void app_context_destroy(AppContext *ctx);
 
 // --- Event Handling ---
 void app_context_handle_keydown(AppContext *ctx, const SDL_KeyboardEvent *key_event);
+void app_context_handle_keyup(AppContext *ctx, const SDL_KeyboardEvent *key_event);
 void app_context_handle_mousedown(AppContext *ctx, const SDL_MouseButtonEvent *mouse_event);
 void app_context_handle_mouseup(AppContext *ctx, const SDL_MouseButtonEvent *mouse_event);
 void app_context_handle_mousewheel(
@@ -91,6 +94,8 @@ void app_context_cycle_palette_selection(AppContext *ctx, int delta, int palette
 int app_context_get_current_palette_selection(AppContext *ctx);
 
 // --- Window & State Management ---
+void app_context_toggle_line_mode(AppContext *ctx);
+SDL_bool app_context_is_straight_line_mode(const AppContext *ctx);
 void app_context_toggle_fullscreen(AppContext *ctx);
 void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h);
 void app_context_process_debounced_resize(AppContext *ctx);

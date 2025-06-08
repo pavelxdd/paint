@@ -107,6 +107,8 @@ void app_context_handle_mousedown(AppContext *ctx, const SDL_MouseButtonEvent *m
                 ctx->needs_redraw = SDL_TRUE;
             } else if (hit_tool == HIT_TEST_COLOR_PALETTE_TOGGLE) {
                 app_context_toggle_color_palette(ctx);
+            } else if (hit_tool == HIT_TEST_LINE_MODE_TOGGLE) {
+                app_context_toggle_line_mode(ctx);
             } else if (hit_tool == TOOL_EMOJI) {
                 app_context_toggle_emoji_palette(ctx);
             }
@@ -144,21 +146,20 @@ void app_context_handle_mousedown(AppContext *ctx, const SDL_MouseButtonEvent *m
             ctx->last_stroke_x = mx;
             ctx->last_stroke_y = my;
 
+            // Latch the straight-line mode for the duration of this stroke.
+            // Right-click (eraser) never uses straight line mode.
             if (mouse_event->button == SDL_BUTTON_LEFT) {
-                if (ctx->current_tool == TOOL_WATER_MARKER) {
-                    app_context_begin_water_marker_stroke(ctx);
-                }
+                ctx->straight_line_stroke_latched = app_context_is_straight_line_mode(ctx);
+            } else {
+                ctx->straight_line_stroke_latched = SDL_FALSE;
             }
 
-            // If not in straight line mode, draw the first dab immediately.
-            // For straight line mode, we wait for mouse motion to draw a preview.
-            const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
-            SDL_bool is_straight_line_mode =
-                (keyboard_state[SDL_SCANCODE_LCTRL] || keyboard_state[SDL_SCANCODE_RCTRL]);
+            if (mouse_event->button == SDL_BUTTON_LEFT && ctx->current_tool == TOOL_WATER_MARKER) {
+                app_context_begin_water_marker_stroke(ctx);
+            }
 
-            if (!is_straight_line_mode ||
-                (ctx->current_tool != TOOL_BRUSH && ctx->current_tool != TOOL_WATER_MARKER &&
-                 ctx->current_tool != TOOL_EMOJI)) {
+            // If not in a latched straight-line stroke, draw the first dab immediately.
+            if (!ctx->straight_line_stroke_latched) {
                 app_context_draw_stroke(ctx, mx, my, (mouse_event->button == SDL_BUTTON_RIGHT));
             } else {
                 ctx->needs_redraw = SDL_TRUE; // Redraw to show preview on first move
@@ -172,11 +173,7 @@ void app_context_handle_mousedown(AppContext *ctx, const SDL_MouseButtonEvent *m
 void app_context_handle_mouseup(AppContext *ctx, const SDL_MouseButtonEvent *mouse_event)
 {
     if (ctx->is_drawing) {
-        const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
-        SDL_bool is_straight_line_mode =
-            (keyboard_state[SDL_SCANCODE_LCTRL] || keyboard_state[SDL_SCANCODE_RCTRL]);
-
-        if (is_straight_line_mode && mouse_event->button == SDL_BUTTON_LEFT &&
+        if (ctx->straight_line_stroke_latched && mouse_event->button == SDL_BUTTON_LEFT &&
             (ctx->current_tool == TOOL_BRUSH || ctx->current_tool == TOOL_WATER_MARKER ||
              ctx->current_tool == TOOL_EMOJI)) {
             // --- Commit the straight line ---
@@ -208,6 +205,7 @@ void app_context_handle_mouseup(AppContext *ctx, const SDL_MouseButtonEvent *mou
 
     // Reset drawing state on any button release
     ctx->is_drawing = SDL_FALSE;
+    ctx->straight_line_stroke_latched = SDL_FALSE;
     ctx->last_stroke_x = -1;
     ctx->last_stroke_y = -1;
 }

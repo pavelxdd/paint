@@ -13,11 +13,7 @@ void render_scene(AppContext *ctx)
     }
 
     // 2. Render tool previews from the stroke buffer if necessary.
-    const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
-    SDL_bool is_straight_line_mode =
-        (keyboard_state[SDL_SCANCODE_LCTRL] || keyboard_state[SDL_SCANCODE_RCTRL]);
-
-    if (ctx->is_drawing && is_straight_line_mode && ctx->stroke_buffer) {
+    if (ctx->is_drawing && ctx->straight_line_stroke_latched && ctx->stroke_buffer) {
         // Render a straight line preview
         if (ctx->current_tool == TOOL_BRUSH || ctx->current_tool == TOOL_EMOJI) {
             // Brush and Emoji previews are opaque and on the buffer

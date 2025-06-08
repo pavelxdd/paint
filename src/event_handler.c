@@ -21,6 +21,9 @@ void handle_events(AppContext *ctx, int *is_running, Uint32 sdl_wait_timeout)
             case SDL_KEYDOWN:
                 app_context_handle_keydown(ctx, &e.key);
                 break;
+            case SDL_KEYUP:
+                app_context_handle_keyup(ctx, &e.key);
+                break;
             case SDL_MOUSEWHEEL:
                 app_context_handle_mousewheel(ctx, &e.wheel, last_mouse_x, last_mouse_y);
                 break;

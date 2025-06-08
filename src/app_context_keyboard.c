@@ -4,6 +4,26 @@ void app_context_handle_keydown(AppContext *ctx, const SDL_KeyboardEvent *key_ev
 {
     // Handle specific keys that are not modifiers for other actions.
     switch (key_event->keysym.sym) {
+    case SDLK_LCTRL:
+        if (key_event->repeat == 0) {
+            const Uint8 *state = SDL_GetKeyboardState(NULL);
+            if (state[SDL_SCANCODE_RCTRL]) {
+                app_context_toggle_line_mode(ctx);
+            } else {
+                ctx->needs_redraw = SDL_TRUE; // Redraw to show toggle highlight
+            }
+        }
+        break;
+    case SDLK_RCTRL:
+        if (key_event->repeat == 0) {
+            const Uint8 *state = SDL_GetKeyboardState(NULL);
+            if (state[SDL_SCANCODE_LCTRL]) {
+                app_context_toggle_line_mode(ctx);
+            } else {
+                ctx->needs_redraw = SDL_TRUE; // Redraw to show toggle highlight
+            }
+        }
+        break;
     case SDLK_TAB: {
         // Cycle tools: TAB forward, CTRL+TAB backward
         int count = __TOOL_COUNT;
@@ -53,6 +73,21 @@ void app_context_handle_keydown(AppContext *ctx, const SDL_KeyboardEvent *key_ev
     default:
         // For other keys, try to see if they are for brush size.
         app_context_set_brush_radius_from_key(ctx, key_event->keysym.sym);
+        break;
+    }
+}
+
+void app_context_handle_keyup(AppContext *ctx, const SDL_KeyboardEvent *key_event)
+{
+    switch (key_event->keysym.sym) {
+    case SDLK_LCTRL:
+    case SDLK_RCTRL:
+        // When a ctrl key is released, the line toggle button might change state
+        // (if it was only highlighted due to the key being held).
+        ctx->needs_redraw = SDL_TRUE;
+        break;
+    default:
+        // Other keys do not affect visual state on release.
         break;
     }
 }

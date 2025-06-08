@@ -15,6 +15,9 @@ int tool_selectors_hit_test(const AppContext *ctx, int mx, int my, int start_y)
         }
         // Right-side tools
         int right_edge = ctx->window_w;
+        if (mx >= right_edge - 3 * TOOL_SELECTOR_SIZE && mx < right_edge - 2 * TOOL_SELECTOR_SIZE) {
+            return HIT_TEST_LINE_MODE_TOGGLE;
+        }
         if (mx >= right_edge - 2 * TOOL_SELECTOR_SIZE && mx < right_edge - TOOL_SELECTOR_SIZE) {
             return TOOL_EMOJI;
         }
@@ -28,6 +31,7 @@ int tool_selectors_hit_test(const AppContext *ctx, int mx, int my, int start_y)
 static void draw_backgrounds(AppContext *ctx,
                              const SDL_Rect *brush_r,
                              const SDL_Rect *water_r,
+                             const SDL_Rect *line_r,
                              const SDL_Rect *emoji_r,
                              const SDL_Rect *color_r)
 {
@@ -43,6 +47,27 @@ static void draw_backgrounds(AppContext *ctx,
                            ctx->water_marker_color.b,
                            255);
     SDL_RenderFillRect(ctx->ren, water_r);
+
+    // Line Mode Toggle
+    if (app_context_is_straight_line_mode(ctx)) {
+        SDL_Color yellow = {241, 250, 140, 255}; // Dracula Yellow
+        SDL_Color dark_icon = {40, 42, 54, 255};    // Dracula Background
+        SDL_SetRenderDrawColor(ctx->ren, yellow.r, yellow.g, yellow.b, 255);
+        SDL_RenderFillRect(ctx->ren, line_r);
+        SDL_SetRenderDrawColor(ctx->ren, dark_icon.r, dark_icon.g, dark_icon.b, 255);
+    } else {
+        SDL_Color bg_color_line = {40, 42, 54, 255}; // Dracula 'Background'
+        SDL_SetRenderDrawColor(ctx->ren, bg_color_line.r, bg_color_line.g, bg_color_line.b, 255);
+        SDL_RenderFillRect(ctx->ren, line_r);
+        SDL_SetRenderDrawColor(ctx->ren, 248, 248, 242, 255); // Dracula 'Foreground'
+    }
+    // Draw diagonal line icon
+    int p = TOOL_SELECTOR_SIZE / 4;
+    SDL_RenderDrawLine(ctx->ren, line_r->x + p, line_r->y + line_r->h - p, line_r->x + line_r->w - p, line_r->y + p);
+    SDL_RenderDrawLine(
+        ctx->ren, line_r->x + p + 1, line_r->y + line_r->h - p, line_r->x + line_r->w - p + 1, line_r->y + p);
+    SDL_RenderDrawLine(
+        ctx->ren, line_r->x + p, line_r->y + line_r->h - p - 1, line_r->x + line_r->w - p, line_r->y + p - 1);
 
     // Emoji
     SDL_Color bg_color = {40, 42, 54, 255}; // Dracula 'Background'
@@ -149,6 +174,7 @@ static void draw_borders_and_highlights(AppContext *ctx,
                                         int start_y,
                                         const SDL_Rect *brush_r,
                                         const SDL_Rect *water_r,
+                                        const SDL_Rect *line_r,
                                         const SDL_Rect *emoji_r,
                                         const SDL_Rect *color_r)
 {
@@ -169,9 +195,9 @@ static void draw_borders_and_highlights(AppContext *ctx,
     SDL_RenderFillRect(ctx->ren, &sep_line_left);
 
     // Right container
-    SDL_Rect right_toolbar_area = {ctx->window_w - 2 * TOOL_SELECTOR_SIZE,
+    SDL_Rect right_toolbar_area = {ctx->window_w - 3 * TOOL_SELECTOR_SIZE,
                                    start_y,
-                                   2 * TOOL_SELECTOR_SIZE,
+                                   3 * TOOL_SELECTOR_SIZE,
                                    TOOL_SELECTOR_AREA_HEIGHT};
     SDL_RenderDrawRect(ctx->ren, &right_toolbar_area);
     SDL_Rect r_inner_right = {right_toolbar_area.x + 1,
@@ -181,11 +207,20 @@ static void draw_borders_and_highlights(AppContext *ctx,
     if (r_inner_right.w > 0 && r_inner_right.h > 0) {
         SDL_RenderDrawRect(ctx->ren, &r_inner_right);
     }
-    SDL_Rect sep_line_right = {
+    SDL_Rect sep_line_right1 = {
+        ctx->window_w - 2 * TOOL_SELECTOR_SIZE - 1, start_y, 2, TOOL_SELECTOR_AREA_HEIGHT};
+    SDL_RenderFillRect(ctx->ren, &sep_line_right1);
+    SDL_Rect sep_line_right2 = {
         ctx->window_w - TOOL_SELECTOR_SIZE - 1, start_y, 2, TOOL_SELECTOR_AREA_HEIGHT};
-    SDL_RenderFillRect(ctx->ren, &sep_line_right);
+    SDL_RenderFillRect(ctx->ren, &sep_line_right2);
 
     // Active highlights
+    if (app_context_is_straight_line_mode(ctx)) {
+        SDL_SetRenderDrawColor(ctx->ren, 40, 42, 54, 255); // Dracula 'Background' for contrast
+        SDL_RenderDrawRect(ctx->ren, line_r);
+        SDL_Rect r2 = {line_r->x + 1, line_r->y + 1, line_r->w - 2, line_r->h - 2};
+        SDL_RenderDrawRect(ctx->ren, &r2);
+    }
     if (ctx->current_tool == TOOL_BRUSH) {
         Uint8 ir = 255 - ctx->current_color.r;
         Uint8 ig = 255 - ctx->current_color.g;
@@ -226,17 +261,25 @@ void tool_selectors_draw(AppContext *ctx, int start_y)
     SDL_Rect water_marker_toggle_rect = {
         TOOL_SELECTOR_SIZE, start_y, TOOL_SELECTOR_SIZE, TOOL_SELECTOR_SIZE};
     // Right-side tools
+    SDL_Rect line_toggle_rect = {
+        ctx->window_w - 3 * TOOL_SELECTOR_SIZE, start_y, TOOL_SELECTOR_SIZE, TOOL_SELECTOR_SIZE};
     SDL_Rect emoji_toggle_rect = {
         ctx->window_w - 2 * TOOL_SELECTOR_SIZE, start_y, TOOL_SELECTOR_SIZE, TOOL_SELECTOR_SIZE};
     SDL_Rect color_toggle_rect = {
         ctx->window_w - TOOL_SELECTOR_SIZE, start_y, TOOL_SELECTOR_SIZE, TOOL_SELECTOR_SIZE};
 
-    draw_backgrounds(ctx, &brush_toggle_rect, &water_marker_toggle_rect, &emoji_toggle_rect, &color_toggle_rect);
+    draw_backgrounds(ctx,
+                     &brush_toggle_rect,
+                     &water_marker_toggle_rect,
+                     &line_toggle_rect,
+                     &emoji_toggle_rect,
+                     &color_toggle_rect);
     draw_previews(ctx, &brush_toggle_rect, &water_marker_toggle_rect, &emoji_toggle_rect);
     draw_borders_and_highlights(ctx,
                                 start_y,
                                 &brush_toggle_rect,
                                 &water_marker_toggle_rect,
+                                &line_toggle_rect,
                                 &emoji_toggle_rect,
                                 &color_toggle_rect);
 }

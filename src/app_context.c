@@ -66,7 +66,9 @@ AppContext *app_context_create(SDL_Window *win, SDL_Renderer *ren)
     ctx->resize_pending = SDL_FALSE;
     ctx->last_resize_timestamp = 0;
     ctx->water_marker_stroke_active = SDL_FALSE;
+    ctx->line_mode_toggled_on = SDL_FALSE;
     ctx->is_drawing = SDL_FALSE;
+    ctx->straight_line_stroke_latched = SDL_FALSE;
     ctx->last_stroke_x = -1;
     ctx->last_stroke_y = -1;
 
@@ -93,6 +95,29 @@ void app_context_destroy(AppContext *ctx)
     }
     palette_destroy(ctx->palette);
     free(ctx);
+}
+
+/* ---------------------------------------------------------------------------
+ * State updates & queries
+ * --------------------------------------------------------------------------*/
+
+void app_context_toggle_line_mode(AppContext *ctx)
+{
+    if (!ctx) {
+        return;
+    }
+    ctx->line_mode_toggled_on = !ctx->line_mode_toggled_on;
+    ctx->needs_redraw = SDL_TRUE;
+}
+
+SDL_bool app_context_is_straight_line_mode(const AppContext *ctx)
+{
+    if (!ctx) {
+        return SDL_FALSE;
+    }
+    const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
+    return ctx->line_mode_toggled_on || keyboard_state[SDL_SCANCODE_LCTRL] ||
+           keyboard_state[SDL_SCANCODE_RCTRL];
 }
 
 /* ---------------------------------------------------------------------------

@@ -172,12 +172,8 @@ void app_context_draw_stroke(AppContext *ctx,
         return;
     }
 
-    const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
-    SDL_bool is_straight_line_mode =
-        (keyboard_state[SDL_SCANCODE_LCTRL] || keyboard_state[SDL_SCANCODE_RCTRL]);
-
     // Straight line mode is active for Brush, Water Marker, or Emoji (but not for erasing)
-    if (is_straight_line_mode && !use_background_color &&
+    if (ctx->straight_line_stroke_latched && !use_background_color &&
         (ctx->current_tool == TOOL_BRUSH || ctx->current_tool == TOOL_WATER_MARKER ||
          ctx->current_tool == TOOL_EMOJI)) {
         // --- Straight Line Preview ---
@@ -191,6 +187,7 @@ void app_context_draw_stroke(AppContext *ctx,
         int y0 = ctx->last_stroke_y;
         int x1 = mouse_x;
         int y1 = mouse_y;
+        const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
         if (keyboard_state[SDL_SCANCODE_LSHIFT] || keyboard_state[SDL_SCANCODE_RSHIFT]) {
             int dx = abs(x1 - x0);
             int dy = abs(y1 - y0);
