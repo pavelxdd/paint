@@ -8,32 +8,9 @@
 #include "ui_constants.h"
 #include <math.h>
 
-/* ----------------------- Public API ----------------------------- */
-
-void app_context_clear_canvas_with_current_bg(AppContext *ctx)
+static void draw_dab_at_point(AppContext *ctx, int x, int y, SDL_bool use_background_color)
 {
-    if (!ctx || !ctx->canvas_texture) {
-        return;
-    }
-
-    SDL_SetRenderTarget(ctx->ren, ctx->canvas_texture);
-    SDL_SetRenderDrawColor(ctx->ren,
-                           ctx->background_color.r,
-                           ctx->background_color.g,
-                           ctx->background_color.b,
-                           ctx->background_color.a);
-    SDL_RenderClear(ctx->ren);
-    SDL_SetRenderTarget(ctx->ren, NULL);
-    ctx->needs_redraw = SDL_TRUE;
-}
-
-void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool use_background_color)
-{
-    if (!ctx || !ctx->canvas_texture) {
-        return;
-    }
-    /* keep within drawable area */
-    if (mouse_y >= ctx->canvas_display_area_h || ctx->canvas_display_area_h == 0) {
+    if (y >= ctx->canvas_display_area_h || ctx->canvas_display_area_h == 0) {
         return;
     }
 
@@ -53,7 +30,7 @@ void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool
                                ctx->background_color.g,
                                ctx->background_color.b,
                                ctx->background_color.a);
-        draw_circle(ctx->ren, mouse_x, mouse_y, ctx->brush_radius);
+        draw_circle(ctx->ren, x, y, ctx->brush_radius);
     } else if (ctx->current_tool == TOOL_WATER_MARKER) {
         SDL_SetRenderDrawColor(ctx->ren,
                                ctx->water_marker_color.r,
@@ -61,7 +38,7 @@ void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool
                                ctx->water_marker_color.b,
                                255); // Opaque on buffer
         int side = lroundf(ctx->brush_radius * 2 * 1.5f);
-        SDL_Rect rect = {mouse_x - side / 2, mouse_y - side / 2, side, side};
+        SDL_Rect rect = {x - side / 2, y - side / 2, side, side};
         SDL_RenderFillRect(ctx->ren, &rect);
     } else if (ctx->current_tool == TOOL_EMOJI) {
         SDL_Texture *emoji_tex = NULL;
@@ -79,7 +56,7 @@ void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool
                 w = 1;
             }
 
-            SDL_Rect dst = {mouse_x - w / 2, mouse_y - h / 2, w, h};
+            SDL_Rect dst = {x - w / 2, y - h / 2, w, h};
             SDL_RenderCopy(ctx->ren, emoji_tex, NULL, &dst);
         }
     } else { // TOOL_BRUSH
@@ -88,11 +65,79 @@ void app_context_draw_stroke(AppContext *ctx, int mouse_x, int mouse_y, SDL_bool
                                ctx->current_color.g,
                                ctx->current_color.b,
                                255);
-        draw_circle(ctx->ren, mouse_x, mouse_y, ctx->brush_radius);
+        draw_circle(ctx->ren, x, y, ctx->brush_radius);
     }
 
     SDL_SetRenderTarget(ctx->ren, NULL);
     ctx->needs_redraw = SDL_TRUE;
+}
+
+/* ----------------------- Public API ----------------------------- */
+
+void app_context_clear_canvas_with_current_bg(AppContext *ctx)
+{
+    if (!ctx || !ctx->canvas_texture) {
+        return;
+    }
+
+    SDL_SetRenderTarget(ctx->ren, ctx->canvas_texture);
+    SDL_SetRenderDrawColor(ctx->ren,
+                           ctx->background_color.r,
+                           ctx->background_color.g,
+                           ctx->background_color.b,
+                           ctx->background_color.a);
+    SDL_RenderClear(ctx->ren);
+    SDL_SetRenderTarget(ctx->ren, NULL);
+    ctx->needs_redraw = SDL_TRUE;
+}
+
+void app_context_draw_stroke(
+    AppContext *ctx, int mouse_x, int mouse_y, SDL_bool use_background_color)
+{
+    if (!ctx || !ctx->canvas_texture) {
+        return;
+    }
+
+    // Emojis are stamped, not drawn as a continuous line.
+    // However, right-clicking with the emoji tool should still erase with a circle.
+    if (ctx->current_tool == TOOL_EMOJI && !use_background_color) {
+        draw_dab_at_point(ctx, mouse_x, mouse_y, use_background_color);
+        return;
+    }
+
+    // If this is the first point of a stroke, last_stroke_x will be -1.
+    int x0 = (ctx->last_stroke_x == -1) ? mouse_x : ctx->last_stroke_x;
+    int y0 = (ctx->last_stroke_y == -1) ? mouse_y : ctx->last_stroke_y;
+    int x1 = mouse_x;
+    int y1 = mouse_y;
+
+    // Bresenham's line algorithm to draw a continuous line of "dabs".
+    int dx = abs(x1 - x0);
+    int sx = x0 < x1 ? 1 : -1;
+    int dy = -abs(y1 - y0);
+    int sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy;
+    int e2;
+
+    for (;;) {
+        draw_dab_at_point(ctx, x0, y0, use_background_color);
+        if (x0 == x1 && y0 == y1) {
+            break;
+        }
+        e2 = 2 * err;
+        if (e2 >= dy) {
+            err += dy;
+            x0 += sx;
+        }
+        if (e2 <= dx) {
+            err += dx;
+            y0 += sy;
+        }
+    }
+
+    // Update the last point for the next segment of the stroke.
+    ctx->last_stroke_x = mouse_x;
+    ctx->last_stroke_y = mouse_y;
 }
 
 void app_context_recreate_canvas_texture(AppContext *ctx)

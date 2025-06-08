@@ -3,6 +3,8 @@ add_executable(${CMAKE_PROJECT_NAME}
     app_context.c
     app_context_brush.c
     app_context_canvas.c
+    app_context_keyboard.c
+    app_context_mouse.c
     app_context_palette.c
     color_utils.c
     draw.c

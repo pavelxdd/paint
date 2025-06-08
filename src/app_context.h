@@ -61,6 +61,9 @@ typedef struct {
 
     // Stroke state
     SDL_bool water_marker_stroke_active;
+    SDL_bool is_drawing;
+    int last_stroke_x;
+    int last_stroke_y;
 } AppContext;
 
 // Initialization and Cleanup
@@ -73,11 +76,19 @@ void app_context_set_background_and_clear_canvas(AppContext *ctx, SDL_Color colo
 void app_context_clear_canvas_with_current_bg(AppContext *ctx);
 void app_context_toggle_color_palette(AppContext *ctx);
 void app_context_toggle_emoji_palette(AppContext *ctx);
+void app_context_toggle_fullscreen(AppContext *ctx);
 void app_context_change_brush_radius(AppContext *ctx, int delta);
 void app_context_set_brush_radius_from_key(AppContext *ctx, SDL_Keycode keycode);
 void app_context_recalculate_sizes_and_limits(AppContext *ctx);
 void app_context_draw_stroke(
     AppContext *ctx, int mouse_x, int mouse_y, SDL_bool use_background_color);
+
+// Event Handling
+void app_context_handle_keydown(AppContext *ctx, const SDL_KeyboardEvent *key_event);
+void app_context_handle_mousedown(AppContext *ctx, const SDL_MouseButtonEvent *mouse_event);
+void app_context_handle_mouseup(AppContext *ctx, const SDL_MouseButtonEvent *mouse_event);
+void app_context_handle_mousewheel(
+    AppContext *ctx, const SDL_MouseWheelEvent *wheel_event, int mouse_x, int mouse_y);
 
 // For window resize event notification
 void app_context_notify_resize_event(AppContext *ctx, int new_w, int new_h);

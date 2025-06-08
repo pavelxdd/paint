@@ -69,6 +69,9 @@ AppContext *app_context_create(SDL_Window *win, SDL_Renderer *ren)
     ctx->resize_pending = SDL_FALSE;
     ctx->last_resize_timestamp = 0;
     ctx->water_marker_stroke_active = SDL_FALSE;
+    ctx->is_drawing = SDL_FALSE;
+    ctx->last_stroke_x = -1;
+    ctx->last_stroke_y = -1;
 
     return ctx;
 
@@ -175,6 +178,19 @@ void app_context_process_debounced_resize(AppContext *ctx)
 
         ctx->resize_pending = SDL_FALSE;
         ctx->needs_redraw = SDL_TRUE;
+    }
+}
+
+void app_context_toggle_fullscreen(AppContext *ctx)
+{
+    if (!ctx || !ctx->win) {
+        return;
+    }
+    Uint32 flags = SDL_GetWindowFlags(ctx->win);
+    if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        SDL_SetWindowFullscreen(ctx->win, 0);
+    } else {
+        SDL_SetWindowFullscreen(ctx->win, SDL_WINDOW_FULLSCREEN_DESKTOP);
     }
 }
 
