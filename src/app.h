@@ -3,7 +3,8 @@
 #include "palette.h"      // For Palette struct and PALETTE_HEIGHT
 #include "tool.h"         // For ActiveTool enum
 #include "ui_constants.h" // Shared UI layout constants
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
+#include <stdbool.h>
 
 typedef struct App {
     SDL_Window *win;
@@ -35,21 +36,21 @@ typedef struct App {
     int window_w;
     int window_h;
 
-    SDL_bool needs_redraw;
+    bool needs_redraw;
 
     // For resize debouncing
-    SDL_bool resize_pending;
-    Uint32 last_resize_timestamp;
+    bool resize_pending;
+    Uint64 last_resize_timestamp;
 
     // UI state
-    SDL_bool line_mode_toggled_on;
-    SDL_bool show_color_palette;
-    SDL_bool show_emoji_palette;
+    bool line_mode_toggled_on;
+    bool show_color_palette;
+    bool show_emoji_palette;
 
     // Stroke state
-    SDL_bool water_marker_stroke_active;
-    SDL_bool is_drawing;
-    SDL_bool straight_line_stroke_latched;
+    bool water_marker_stroke_active;
+    bool is_drawing;
+    bool straight_line_stroke_latched;
     int last_stroke_x;
     int last_stroke_y;
 } App;
@@ -68,13 +69,13 @@ void app_handle_mousewheel(
 
 /* --- State & Toggles (app_state.c) --- */
 void app_toggle_line_mode(App *app);
-SDL_bool app_is_straight_line_mode(const App *app);
+bool app_is_straight_line_mode(const App *app);
 void app_toggle_fullscreen(App *app);
 void app_toggle_color_palette(App *app);
 void app_toggle_emoji_palette(App *app);
 
 /* --- Drawing & Canvas (app_draw.c, app_canvas.c) --- */
-void app_draw_stroke(App *app, int mouse_x, int mouse_y, SDL_bool use_background_color);
+void app_draw_stroke(App *app, int mouse_x, int mouse_y, bool use_background_color);
 void app_clear_canvas_with_current_bg(App *app);
 void app_set_background_and_clear_canvas(App *app, SDL_Color color);
 void app_recreate_canvas_texture(App *app);

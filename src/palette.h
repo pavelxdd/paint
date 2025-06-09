@@ -2,7 +2,8 @@
 
 #include "emoji_renderer.h"
 #include "ui_constants.h" /* Shared UI constants */
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
+#include <stdbool.h>
 
 typedef struct {
     SDL_Color *colors;                /* Dynamic array of colour cells             */
@@ -29,8 +30,8 @@ void palette_draw(const Palette *p,
                   int palette_start_y,
                   int window_w,
                   int selected_idx,
-                  SDL_bool show_colors,
-                  SDL_bool show_emojis);
+                  bool show_colors,
+                  bool show_emojis);
 
 /* Interaction helpers ------------------------------------------------------ */
 int palette_hit_test(const Palette *p,
@@ -38,15 +39,15 @@ int palette_hit_test(const Palette *p,
                      int my,
                      int window_w,
                      int palette_start_y,
-                     SDL_bool show_colors,
-                     SDL_bool show_emojis);
+                     bool show_colors,
+                     bool show_emojis);
 
 SDL_Color palette_get_color(const Palette *p, int flat_index);
 
-SDL_bool
+bool
 palette_get_emoji_info(const Palette *p, int flat_index, SDL_Texture **tex, int *w, int *h);
 
-SDL_bool palette_is_color_index(const Palette *p, int flat_index);
-SDL_bool palette_is_emoji_index(const Palette *p, int flat_index);
+bool palette_is_color_index(const Palette *p, int flat_index);
+bool palette_is_emoji_index(const Palette *p, int flat_index);
 
 int palette_get_emoji_array_idx_from_flat_idx(const Palette *p, int flat_index);

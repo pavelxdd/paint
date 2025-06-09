@@ -1,7 +1,8 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <stdbool.h>
 
 // Ensure this font is available
 #define EMOJI_FONT_PATH "/usr/share/fonts/noto/NotoColorEmoji.ttf"
@@ -34,12 +35,12 @@ void emoji_renderer_shuffle_and_render_all(EmojiRenderer *er);
 
 // Gets a specific emoji texture and its original dimensions.
 // The index is into the shuffled list of available emojis.
-// Returns SDL_FALSE if the index is invalid or texture is not available.
-SDL_bool emoji_renderer_get_texture_info(
+// Returns false if the index is invalid or texture is not available.
+bool emoji_renderer_get_texture_info(
     const EmojiRenderer *er, int emoji_array_idx, SDL_Texture **tex, int *w, int *h);
 
 // Gets the texture info for the default "blank face" emoji.
-SDL_bool
+bool
 emoji_renderer_get_default_texture_info(const EmojiRenderer *er, SDL_Texture **tex, int *w, int *h);
 
 // Gets the total number of unique emojis available and rendered by this instance.

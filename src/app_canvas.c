@@ -14,7 +14,7 @@ void app_clear_canvas_with_current_bg(App *app)
                            app->background_color.a);
     SDL_RenderClear(app->ren);
     SDL_SetRenderTarget(app->ren, NULL);
-    app->needs_redraw = SDL_TRUE;
+    app->needs_redraw = true;
 }
 
 void app_recreate_canvas_texture(App *app)
@@ -70,5 +70,5 @@ void app_recreate_canvas_texture(App *app)
         SDL_SetRenderTarget(app->ren, NULL);
     }
 
-    app->needs_redraw = SDL_TRUE;
+    app->needs_redraw = true;
 }

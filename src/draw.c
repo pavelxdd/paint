@@ -2,11 +2,11 @@
 #include <math.h>
 
 // Draw filled circle using horizontal scanlines.
-void draw_circle(SDL_Renderer *r, int cx, int cy, int radius)
+void draw_circle(SDL_Renderer *ren, int cx, int cy, int radius)
 {
     if (radius <= 0) {
         if (radius == 0) {
-            SDL_RenderDrawPoint(r, cx, cy);
+            SDL_RenderPoint(ren, (float)cx, (float)cy);
         }
         return;
     }
@@ -14,12 +14,12 @@ void draw_circle(SDL_Renderer *r, int cx, int cy, int radius)
     for (int y = -radius; y <= radius; y++) {
         // Calculate the horizontal extent (x-span) for this scanline
         int x_span = floorf(sqrtf((float)(radius * radius - y * y)));
-        SDL_RenderDrawLine(r, cx - x_span, cy + y, cx + x_span, cy + y);
+        SDL_RenderLine(ren, (float)cx - x_span, (float)cy + y, (float)cx + x_span, (float)cy + y);
     }
 }
 
 // Draw hollow (outline only) circle (for preview)
-void draw_hollow_circle(SDL_Renderer *r, int cx, int cy, int radius)
+void draw_hollow_circle(SDL_Renderer *ren, int cx, int cy, int radius)
 {
     const int thickness = 2;
 
@@ -29,7 +29,7 @@ void draw_hollow_circle(SDL_Renderer *r, int cx, int cy, int radius)
 
     // For very small radii, draw a filled circle as a 2px outline isn't meaningful.
     if (radius <= thickness) {
-        draw_circle(r, cx, cy, radius);
+        draw_circle(ren, cx, cy, radius);
         return;
     }
 
@@ -41,7 +41,7 @@ void draw_hollow_circle(SDL_Renderer *r, int cx, int cy, int radius)
         for (int h = -radius; h <= radius; ++h) {
             int dist_sq = w * w + h * h;
             if (dist_sq <= outer_radius_sq && dist_sq > inner_radius_sq) {
-                SDL_RenderDrawPoint(r, cx + w, cy + h);
+                SDL_RenderPoint(ren, (float)cx + w, (float)cy + h);
             }
         }
     }
@@ -49,7 +49,8 @@ void draw_hollow_circle(SDL_Renderer *r, int cx, int cy, int radius)
 
 // Draw a thick line with round caps using geometry for the shaft.
 // This is much faster than drawing circles along a path.
-void draw_thick_line(SDL_Renderer *ren, int x1, int y1, int x2, int y2, int thickness, SDL_Color color)
+void draw_thick_line(
+    SDL_Renderer *ren, int x1, int y1, int x2, int y2, int thickness, SDL_Color color)
 {
     int radius = thickness / 2;
     if (radius < 1) {
@@ -69,12 +70,15 @@ void draw_thick_line(SDL_Renderer *ren, int x1, int y1, int x2, int y2, int thic
     float cos_angle = cosf(angle);
     float half_thickness = (float)radius;
 
+    SDL_FColor fcolor = {
+        color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f};
+
     // The four corners of the rectangle making up the line shaft
     SDL_Vertex vertices[4] = {
-        {{(float)x1 - half_thickness * sin_angle, (float)y1 + half_thickness * cos_angle}, color, {0, 0}},
-        {{(float)x2 - half_thickness * sin_angle, (float)y2 + half_thickness * cos_angle}, color, {0, 0}},
-        {{(float)x2 + half_thickness * sin_angle, (float)y2 - half_thickness * cos_angle}, color, {0, 0}},
-        {{(float)x1 + half_thickness * sin_angle, (float)y1 - half_thickness * cos_angle}, color, {0, 0}},
+        {{(float)x1 - half_thickness * sin_angle, (float)y1 + half_thickness * cos_angle}, fcolor, {0, 0}},
+        {{(float)x2 - half_thickness * sin_angle, (float)y2 + half_thickness * cos_angle}, fcolor, {0, 0}},
+        {{(float)x2 + half_thickness * sin_angle, (float)y2 - half_thickness * cos_angle}, fcolor, {0, 0}},
+        {{(float)x1 + half_thickness * sin_angle, (float)y1 - half_thickness * cos_angle}, fcolor, {0, 0}},
     };
 
     // The rectangle is formed by two triangles: (0, 1, 3) and (1, 2, 3).

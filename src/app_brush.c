@@ -13,7 +13,7 @@ void app_change_brush_radius(App *app, int delta)
     if (app->brush_radius > app->max_brush_radius) {
         app->brush_radius = app->max_brush_radius;
     }
-    app->needs_redraw = SDL_TRUE;
+    app->needs_redraw = true;
 }
 
 void app_set_brush_radius_from_key(App *app, SDL_Keycode keycode)

@@ -1,12 +1,13 @@
 #include "palette.h"
+#include <stdbool.h>
 
 int palette_hit_test(const Palette *p,
                      int mx,
                      int my,
                      int window_w,
                      int palette_start_y,
-                     SDL_bool show_colors,
-                     SDL_bool show_emojis)
+                     bool show_colors,
+                     bool show_emojis)
 {
     if (p->cols == 0) {
         return -1;
@@ -66,28 +67,28 @@ SDL_Color palette_get_color(const Palette *p, int flat_index)
     return (SDL_Color){0, 0, 0, 255};
 }
 
-SDL_bool
+bool
 palette_get_emoji_info(const Palette *p, int flat_index, SDL_Texture **tex, int *w, int *h)
 {
     if (!palette_is_emoji_index(p, flat_index) || !p->emoji_renderer_instance) {
-        return SDL_FALSE;
+        return false;
     }
 
     int arr_idx = palette_get_emoji_array_idx_from_flat_idx(p, flat_index);
     if (arr_idx == -1) {
-        return SDL_FALSE;
+        return false;
     }
 
     EmojiRenderer *er = p->emoji_renderer_instance;
     return emoji_renderer_get_texture_info(er, arr_idx, tex, w, h);
 }
 
-SDL_bool palette_is_color_index(const Palette *p, int flat_index)
+bool palette_is_color_index(const Palette *p, int flat_index)
 {
     return flat_index >= 0 && flat_index < p->total_color_cells;
 }
 
-SDL_bool palette_is_emoji_index(const Palette *p, int flat_index)
+bool palette_is_emoji_index(const Palette *p, int flat_index)
 {
     return flat_index >= p->total_color_cells && flat_index < p->total_cells;
 }

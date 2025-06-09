@@ -25,8 +25,8 @@ App *app_create(SDL_Window *win, SDL_Renderer *ren)
         goto fail;
     }
 
-    app->show_color_palette = SDL_TRUE;
-    app->show_emoji_palette = SDL_TRUE;
+    app->show_color_palette = true;
+    app->show_emoji_palette = true;
 
     app_update_canvas_display_height(app);
 
@@ -62,13 +62,13 @@ App *app_create(SDL_Window *win, SDL_Renderer *ren)
     app->stroke_buffer = NULL;
     app_recreate_canvas_texture(app);
 
-    app->needs_redraw = SDL_TRUE;
-    app->resize_pending = SDL_FALSE;
+    app->needs_redraw = true;
+    app->resize_pending = false;
     app->last_resize_timestamp = 0;
-    app->water_marker_stroke_active = SDL_FALSE;
-    app->line_mode_toggled_on = SDL_FALSE;
-    app->is_drawing = SDL_FALSE;
-    app->straight_line_stroke_latched = SDL_FALSE;
+    app->water_marker_stroke_active = false;
+    app->line_mode_toggled_on = false;
+    app->is_drawing = false;
+    app->straight_line_stroke_latched = false;
     app->last_stroke_x = -1;
     app->last_stroke_y = -1;
 

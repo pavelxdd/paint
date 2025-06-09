@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include <stdbool.h>
 
 void render_scene(App *app)
 {
@@ -7,7 +8,7 @@ void render_scene(App *app)
 
     // 1. Render the canvas texture to the entire window first.
     if (app->canvas_texture) {
-        SDL_RenderCopy(app->ren, app->canvas_texture, NULL, NULL);
+        SDL_RenderTexture(app->ren, app->canvas_texture, NULL, NULL);
     }
 
     // 2. Render tool previews from the stroke buffer if necessary.
@@ -15,17 +16,17 @@ void render_scene(App *app)
         // Render a straight line preview
         if (app->current_tool == TOOL_BRUSH || app->current_tool == TOOL_EMOJI) {
             // Brush and Emoji previews are opaque and on the buffer
-            SDL_RenderCopy(app->ren, app->stroke_buffer, NULL, NULL);
+            SDL_RenderTexture(app->ren, app->stroke_buffer, NULL, NULL);
         } else if (app->current_tool == TOOL_WATER_MARKER) {
             // Water-marker preview is semi-transparent
             SDL_SetTextureAlphaMod(app->stroke_buffer, 128);
-            SDL_RenderCopy(app->ren, app->stroke_buffer, NULL, NULL);
+            SDL_RenderTexture(app->ren, app->stroke_buffer, NULL, NULL);
             SDL_SetTextureAlphaMod(app->stroke_buffer, 255);
         }
     } else if (app->water_marker_stroke_active && app->stroke_buffer) {
         // Render a freehand water-marker stroke in progress
         SDL_SetTextureAlphaMod(app->stroke_buffer, 128);
-        SDL_RenderCopy(app->ren, app->stroke_buffer, NULL, NULL);
+        SDL_RenderTexture(app->ren, app->stroke_buffer, NULL, NULL);
         SDL_SetTextureAlphaMod(app->stroke_buffer, 255); // Reset for other potential uses
     }
 
@@ -40,12 +41,13 @@ void render_scene(App *app)
     int current_y = app->canvas_display_area_h;
 
     // 5. Separator between canvas/selectors and palette (if palette is visible)
-    SDL_bool is_palette_content_visible =
+    bool is_palette_content_visible =
         (app->show_color_palette && app->palette->color_rows > 0) ||
         (app->show_emoji_palette && app->palette->emoji_rows > 0);
     if (is_palette_content_visible && TOOL_SELECTOR_SEPARATOR_HEIGHT > 0) {
         SDL_SetRenderDrawColor(app->ren, 68, 71, 90, 255); // Dracula 'Current Line'
-        SDL_Rect sep_rect = {0, current_y, app->window_w, TOOL_SELECTOR_SEPARATOR_HEIGHT};
+        SDL_FRect sep_rect = {
+            0, (float)current_y, (float)app->window_w, (float)TOOL_SELECTOR_SEPARATOR_HEIGHT};
         SDL_RenderFillRect(app->ren, &sep_rect);
         current_y += TOOL_SELECTOR_SEPARATOR_HEIGHT;
     }

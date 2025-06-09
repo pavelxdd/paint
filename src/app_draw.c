@@ -1,8 +1,10 @@
 #include "app.h"
 #include "draw.h"
 #include <math.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
-static void app_draw_dab(App *app, int x, int y, SDL_bool use_background_color)
+static void app_draw_dab(App *app, int x, int y, bool use_background_color)
 {
     if (y >= app->canvas_display_area_h || app->canvas_display_area_h == 0) {
         return;
@@ -17,7 +19,7 @@ static void app_draw_dab(App *app, int x, int y, SDL_bool use_background_color)
                                app->background_color.a);
         draw_circle(app->ren, x, y, app->brush_radius);
         SDL_SetRenderTarget(app->ren, NULL);
-        app->needs_redraw = SDL_TRUE;
+        app->needs_redraw = true;
         return;
     }
 
@@ -34,10 +36,10 @@ static void app_draw_dab(App *app, int x, int y, SDL_bool use_background_color)
     default:
         return; // Should not happen
     }
-    app->needs_redraw = SDL_TRUE;
+    app->needs_redraw = true;
 }
 
-void app_draw_stroke(App *app, int mouse_x, int mouse_y, SDL_bool use_background_color)
+void app_draw_stroke(App *app, int mouse_x, int mouse_y, bool use_background_color)
 {
     if (!app || !app->canvas_texture) {
         return;
@@ -58,7 +60,7 @@ void app_draw_stroke(App *app, int mouse_x, int mouse_y, SDL_bool use_background
         int y0 = app->last_stroke_y;
         int x1 = mouse_x;
         int y1 = mouse_y;
-        const Uint8 *keyboard_state = SDL_GetKeyboardState(NULL);
+        const bool *keyboard_state = SDL_GetKeyboardState(NULL);
         if (keyboard_state[SDL_SCANCODE_LSHIFT] || keyboard_state[SDL_SCANCODE_RSHIFT]) {
             int dx = abs(x1 - x0);
             int dy = abs(y1 - y0);
@@ -85,7 +87,7 @@ void app_draw_stroke(App *app, int mouse_x, int mouse_y, SDL_bool use_background
         }
 
         SDL_SetRenderTarget(app->ren, NULL);
-        app->needs_redraw = SDL_TRUE;
+        app->needs_redraw = true;
         return;
     }
 

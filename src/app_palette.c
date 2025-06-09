@@ -29,7 +29,7 @@ void app_select_palette_tool(App *app, int flat_idx)
             app->brush_selected_palette_idx = flat_idx;
         }
     }
-    app->needs_redraw = SDL_TRUE;
+    app->needs_redraw = true;
 }
 
 /* ------------ Palette Navigation ------------ */
@@ -170,7 +170,7 @@ void app_move_palette_selection(App *app, SDL_Keycode key)
         app->current_color = palette_get_color(app->palette, new_idx);
     }
 
-    app->needs_redraw = SDL_TRUE;
+    app->needs_redraw = true;
 }
 
 int app_get_current_palette_selection(App *app)

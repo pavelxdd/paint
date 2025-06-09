@@ -1,6 +1,9 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h> // For TTF_Init, TTF_Quit
-#include <stdlib.h>      // For EXIT_SUCCESS, EXIT_FAILURE
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_properties.h>
+#include <SDL3_ttf/SDL_ttf.h> // For TTF_Init, TTF_Quit
+#include <stdbool.h>
+#include <stdlib.h> // For EXIT_SUCCESS, EXIT_FAILURE
 
 #include "app.h"   // For App, INITIAL_WINDOW_WIDTH, RESIZE_DEBOUNCE_MS, etc.
 #include "event_handler.h" // For handle_events
@@ -8,20 +11,18 @@
 
 int main(void)
 {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("SDL_Init error: %s", SDL_GetError());
         return EXIT_FAILURE;
     }
 
-    if (TTF_Init() == -1) {
-        SDL_Log("TTF_Init error: %s", TTF_GetError());
+    if (!TTF_Init()) {
+        SDL_Log("TTF_Init error: %s", SDL_GetError());
         SDL_Quit();
         return EXIT_FAILURE;
     }
 
     SDL_Window *win = SDL_CreateWindow("Simple Paint",
-                                       SDL_WINDOWPOS_CENTERED,
-                                       SDL_WINDOWPOS_CENTERED,
                                        INITIAL_WINDOW_WIDTH,
                                        INITIAL_WINDOW_HEIGHT,
                                        SDL_WINDOW_RESIZABLE);
@@ -31,7 +32,7 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer *ren = SDL_CreateRenderer(win, NULL);
     if (!ren) {
         SDL_Log("CreateRenderer error: %s", SDL_GetError());
         SDL_DestroyWindow(win);
@@ -40,21 +41,14 @@ int main(void)
     }
 
     // Log renderer info
-    SDL_RendererInfo info;
-    if (SDL_GetRendererInfo(ren, &info) == 0) {
-        SDL_Log("Active renderer: %s", info.name);
-        if (info.flags & SDL_RENDERER_ACCELERATED) {
-            SDL_Log("Renderer is accelerated.");
-        } else {
+    SDL_PropertiesID props = SDL_GetRendererProperties(ren);
+    if (props) {
+        const char *name = SDL_GetStringProperty(props, SDL_PROP_RENDERER_NAME_STRING, NULL);
+        SDL_Log("Active renderer: %s", name ? name : "Unknown");
+
+        if (name && SDL_strcmp(name, "software") == 0) {
             SDL_Log("Warning: Renderer is NOT accelerated. "
                     "Performance may be poor.");
-        }
-        if (info.flags & SDL_RENDERER_TARGETTEXTURE) {
-            SDL_Log("Renderer supports target textures.");
-        } else {
-            SDL_Log("Error: Renderer does NOT support target textures. "
-                    "Application may not work correctly.");
-            // This is a critical error, consider exiting if absolutely necessary
         }
     }
 
@@ -69,13 +63,13 @@ int main(void)
 
     int running = 1;
     while (running) {
-        Uint32 wait_timeout;
+        int wait_timeout;
         if (app->needs_redraw) {
             wait_timeout = 16;
         } else if (app->resize_pending) {
             wait_timeout = RESIZE_DEBOUNCE_MS / 4;
         } else {
-            wait_timeout = (Uint32)-1;
+            wait_timeout = -1;
         }
 
         handle_events(app, &running, wait_timeout);
@@ -83,7 +77,7 @@ int main(void)
 
         if (app->needs_redraw) {
             render_scene(app);
-            app->needs_redraw = SDL_FALSE;
+            app->needs_redraw = false;
         }
     }
 

@@ -1,37 +1,60 @@
-# paint
+# Simple Paint
+
+A fun and simple painting application vibe coded with C and SDL3.
 
 ![Screenshot of the paint program in action](paint.png)
 
-Welcome to `paint`, the revolutionary digital canvas where creativity knows no bounds! This isn't just another paint program; it's a masterpiece of modern software engineering, fully vibe-coded with the power of AI to deliver an unparalleled artistic experience. From procedurally generated color palettes to a delightful array of emojis, every feature has been meticulously crafted to inspire joy and unleash your inner artist. Prepare to be amazed!
+## Features
+
+- **Multiple Tools**: Includes a standard brush, a semi-transparent water marker, and an emoji brush.
+- **Dynamic Palettes**: A vibrant color palette and a shuffled emoji palette that adapt to the window size.
+- **Straight Line Mode**: Draw perfect straight lines by holding `Ctrl` or toggling the line mode.
+- **Brush Size Control**: Easily adjust the brush size with the mouse wheel or keyboard.
+- **UI Toggles**: Show or hide the color and emoji palettes with function keys.
+- **Fullscreen Support**: Switch to an immersive fullscreen mode with the `F` key.
+
+## Dependencies
+
+This project requires a modern C compiler (C17), CMake, and the following libraries:
+
+- **SDL3**
+- **SDL3_ttf**
+
+Please ensure they are installed on your system before building.
 
 ## Building
 
-This project uses CMake.
-
-### Install Dependencies
-
-* CMake (e.g., `sudo apt install cmake` on Debian/Ubuntu, `brew install cmake` on macOS)
-* SDL2 development libraries (e.g., `sudo apt install libsdl2-dev` on Debian/Ubuntu, `brew install sdl2` on macOS)
-* SDL2_ttf development libraries (e.g., `sudo apt install libsdl2-ttf-dev` on Debian/Ubuntu, `brew install sdl2_ttf` on macOS)
-
-### Compile
-
-Create a build directory and run CMake and Make from there:
+To build the project, use CMake:
 
 ```bash
-mkdir build
-cd build
-cmake ..
-make
+cmake . -Bbuild -DCMAKE_BUILD_TYPE=Release
+cmake --build build 
 ```
-
-The executable `paint` will be created in the `build` directory.
 
 ## Running
 
-After successful compilation, navigate to the `build` directory and run the executable:
+Execute the binary from the build directory:
 
 ```bash
-cd build
-./paint
+./build/paint
 ```
+
+## Controls
+
+- **Left Mouse Button**: Draw with the selected tool.
+- **Right Mouse Button**: Erase (draws with the background color).
+- **Middle Mouse Button**: Clear canvas to background color.
+- **Mouse Wheel**: Adjust brush size.
+- **Mouse Wheel over Palette**: Cycle through the active palette (colors or emojis).
+- **`+` / `-`**: Adjust brush size.
+- **`1`**: Select Brush tool.
+- **`2`**: Select Water Marker tool.
+- **`0`**: Select Emoji tool.
+- **`Tab`**: Cycle forward through tools.
+- **`Ctrl+Tab`**: Cycle backward through tools.
+- **`Ctrl` (hold) or `Ctrl`+`Ctrl` (toggle)**: Activate straight line mode.
+- **`Shift` (while drawing line)**: Snap straight line to horizontal/vertical.
+- **`F1`**: Toggle color palette visibility.
+- **`F2`**: Toggle emoji palette visibility.
+- **Arrow Keys**: Navigate the selected palette.
+- **`F`**: Toggle fullscreen mode.
