@@ -1,5 +1,4 @@
 #include "app.h"
-#include <stdbool.h>
 
 // Returns true if my is inside palette area, and sets out_palette_start_y.
 static bool is_point_in_palette_ui(App *app, int my, int *out_palette_start_y)
@@ -19,8 +18,8 @@ static bool is_point_in_palette_ui(App *app, int my, int *out_palette_start_y)
     int colors_h = app->show_color_palette ? app->palette->color_rows * PALETTE_HEIGHT : 0;
     int sep_h = (app->show_color_palette && app->show_emoji_palette &&
                  app->palette->color_rows > 0 && app->palette->emoji_rows > 0)
-                    ? COLOR_EMOJI_SEPARATOR_HEIGHT
-                    : 0;
+                ? COLOR_EMOJI_SEPARATOR_HEIGHT
+                : 0;
     int emojis_h = app->show_emoji_palette ? app->palette->emoji_rows * PALETTE_HEIGHT : 0;
     int total_h = colors_h + sep_h + emojis_h;
 

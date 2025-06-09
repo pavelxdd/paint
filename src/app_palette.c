@@ -1,6 +1,5 @@
 #include "app.h"
 #include "palette.h"
-#include "ui_constants.h"
 
 /* ------------ tool selection ------------ */
 void app_select_palette_tool(App *app, int flat_idx)
@@ -62,8 +61,8 @@ void app_cycle_palette_selection(App *app, int delta, int palette_type)
             return;
         }
         int *sel_idx = (app->current_tool == TOOL_WATER_MARKER)
-                           ? &app->water_marker_selected_palette_idx
-                           : &app->brush_selected_palette_idx;
+                       ? &app->water_marker_selected_palette_idx
+                       : &app->brush_selected_palette_idx;
 
         int cur = *sel_idx;
         int rel = cur;
@@ -126,36 +125,36 @@ void app_move_palette_selection(App *app, SDL_Keycode key)
     int current_col = relative_idx % cols;
 
     switch (key) {
-    case SDLK_LEFT:
-        if (current_col == 0) { // wrap to right
-            new_idx = current + cols - 1;
-        } else {
-            new_idx = current - 1;
-        }
-        break;
-    case SDLK_RIGHT:
-        if (current_col == cols - 1) { // wrap to left
-            new_idx = current - cols + 1;
-        } else {
-            new_idx = current + 1;
-        }
-        break;
-    case SDLK_UP:
-        if (current_row == 0) { // wrap to bottom
-            new_idx = current + cols * (num_rows - 1);
-        } else {
-            new_idx = current - cols;
-        }
-        break;
-    case SDLK_DOWN:
-        if (current_row == num_rows - 1) { // wrap to top
-            new_idx = current - cols * (num_rows - 1);
-        } else {
-            new_idx = current + cols;
-        }
-        break;
-    default:
-        return; // Ignore other keys
+        case SDLK_LEFT:
+            if (current_col == 0) { // wrap to right
+                new_idx = current + cols - 1;
+            } else {
+                new_idx = current - 1;
+            }
+            break;
+        case SDLK_RIGHT:
+            if (current_col == cols - 1) { // wrap to left
+                new_idx = current - cols + 1;
+            } else {
+                new_idx = current + 1;
+            }
+            break;
+        case SDLK_UP:
+            if (current_row == 0) { // wrap to bottom
+                new_idx = current + cols * (num_rows - 1);
+            } else {
+                new_idx = current - cols;
+            }
+            break;
+        case SDLK_DOWN:
+            if (current_row == num_rows - 1) { // wrap to top
+                new_idx = current - cols * (num_rows - 1);
+            } else {
+                new_idx = current + cols;
+            }
+            break;
+        default:
+            return; // Ignore other keys
     }
 
     // The logic above ensures we stay within the palette's grid, so no
@@ -179,12 +178,12 @@ int app_get_current_palette_selection(App *app)
         return -1;
     }
     switch (app->current_tool) {
-    case TOOL_EMOJI:
-        return app->emoji_selected_palette_idx;
-    case TOOL_WATER_MARKER:
-        return app->water_marker_selected_palette_idx;
-    case TOOL_BRUSH:
-    default:
-        return app->brush_selected_palette_idx;
+        case TOOL_EMOJI:
+            return app->emoji_selected_palette_idx;
+        case TOOL_WATER_MARKER:
+            return app->water_marker_selected_palette_idx;
+        case TOOL_BRUSH:
+        default:
+            return app->brush_selected_palette_idx;
     }
 }

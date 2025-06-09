@@ -1,8 +1,5 @@
 #include "app.h"
 #include "draw.h"
-#include <math.h>
-#include <stdbool.h>
-#include <stdlib.h>
 
 static void app_draw_dab(App *app, int x, int y, bool use_background_color)
 {
@@ -24,17 +21,17 @@ static void app_draw_dab(App *app, int x, int y, bool use_background_color)
     }
 
     switch (app->current_tool) {
-    case TOOL_BRUSH:
-        tool_brush_draw_dab(app, x, y);
-        break;
-    case TOOL_WATER_MARKER:
-        tool_water_marker_draw_dab(app, x, y);
-        break;
-    case TOOL_EMOJI:
-        tool_emoji_draw_dab(app, x, y);
-        break;
-    default:
-        return; // Should not happen
+        case TOOL_BRUSH:
+            tool_brush_draw_dab(app, x, y);
+            break;
+        case TOOL_WATER_MARKER:
+            tool_water_marker_draw_dab(app, x, y);
+            break;
+        case TOOL_EMOJI:
+            tool_emoji_draw_dab(app, x, y);
+            break;
+        default:
+            return; // Should not happen
     }
     app->needs_redraw = true;
 }
@@ -73,17 +70,17 @@ void app_draw_stroke(App *app, int mouse_x, int mouse_y, bool use_background_col
 
         // Draw the preview line based on the active tool
         switch (app->current_tool) {
-        case TOOL_BRUSH:
-            tool_brush_draw_line_preview(app, x0, y0, x1, y1);
-            break;
-        case TOOL_WATER_MARKER:
-            tool_water_marker_draw_line_preview(app, x0, y0, x1, y1);
-            break;
-        case TOOL_EMOJI:
-            tool_emoji_draw_line_preview(app, x0, y0, x1, y1);
-            break;
-        default:
-            break;
+            case TOOL_BRUSH:
+                tool_brush_draw_line_preview(app, x0, y0, x1, y1);
+                break;
+            case TOOL_WATER_MARKER:
+                tool_water_marker_draw_line_preview(app, x0, y0, x1, y1);
+                break;
+            case TOOL_EMOJI:
+                tool_emoji_draw_line_preview(app, x0, y0, x1, y1);
+                break;
+            default:
+                break;
         }
 
         SDL_SetRenderTarget(app->ren, NULL);

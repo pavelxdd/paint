@@ -1,10 +1,7 @@
 #pragma once
 
-#include "palette.h"      // For Palette struct and PALETTE_HEIGHT
-#include "tool.h"         // For ActiveTool enum
-#include "ui_constants.h" // Shared UI layout constants
-#include <SDL3/SDL.h>
-#include <stdbool.h>
+#include "palette.h"
+#include "tool.h"
 
 typedef struct App {
     SDL_Window *win;

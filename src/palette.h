@@ -1,9 +1,6 @@
 #pragma once
 
 #include "emoji_renderer.h"
-#include "ui_constants.h" /* Shared UI constants */
-#include <SDL3/SDL.h>
-#include <stdbool.h>
 
 typedef struct {
     SDL_Color *colors;                /* Dynamic array of colour cells             */
@@ -44,8 +41,8 @@ int palette_hit_test(const Palette *p,
 
 SDL_Color palette_get_color(const Palette *p, int flat_index);
 
-bool
-palette_get_emoji_info(const Palette *p, int flat_index, SDL_Texture **tex, int *w, int *h);
+bool palette_get_emoji_info(const Palette *p, int flat_index,
+                            SDL_Texture **tex, int *w, int *h);
 
 bool palette_is_color_index(const Palette *p, int flat_index);
 bool palette_is_emoji_index(const Palette *p, int flat_index);

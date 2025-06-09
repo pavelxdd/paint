@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL3/SDL.h>
-
 /**
  * @brief Converts a color from HSV to RGB color space.
  *

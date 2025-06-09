@@ -25,6 +25,8 @@ add_executable(${CMAKE_PROJECT_NAME}
     tool_water_marker.c
 )
 
+target_precompile_headers(${CMAKE_PROJECT_NAME} PRIVATE pch.h)
+
 find_package(SDL3 REQUIRED)
 find_package(SDL3_ttf REQUIRED)
 
@@ -39,4 +41,66 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
     SDL3_ttf::SDL3_ttf
     m
 )
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall -Wextra)
+
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
+    -D_GNU_SOURCE
+    -D_LARGE_FILES
+    -D_LARGEFILE_SOURCE
+    -D_FILE_OFFSET_BITS=64
+    -D_TIME_BITS=64
+)
+
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+    -pipe
+    -funsigned-char
+    -fno-math-errno
+    -fno-common
+    -Werror
+    -Wfatal-errors
+    -Wall
+    -Wextra
+    -Wundef
+    -Wpedantic
+    -pedantic-errors
+    -Wstrict-prototypes
+    -Wmissing-braces
+    -Wmissing-prototypes
+    -Wmissing-declarations
+    -Wimplicit-fallthrough
+    -Wdouble-promotion
+    -Wpointer-arith
+    -Wfloat-equal
+    -Winline
+    -Wshadow
+    -Wvla
+    -Walloca
+    -Wformat=2
+    -Wwrite-strings
+    -Wstrict-overflow
+    -Wno-missing-field-initializers
+    -Wno-unused-parameter
+    -Wno-strict-aliasing
+    -Wno-format-nonliteral
+)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    add_compile_options(
+        -Wduplicated-branches
+        -Wduplicated-cond
+        -Wlogical-op
+        -Wnormalized
+        -Wstringop-overflow=4
+        -Wformat-overflow=2
+        -Wformat-truncation
+        -Wformat-signedness
+        -Wno-format-zero-length
+        -Wno-clobbered
+    )
+elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
+    add_compile_options(
+        -Wno-gnu
+        -Wno-language-extension-token
+        -Wno-builtin-requires-header
+        -Wno-format-pedantic
+    )
+endif()

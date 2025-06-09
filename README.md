@@ -28,7 +28,7 @@ To build the project, use CMake:
 
 ```bash
 cmake . -Bbuild -DCMAKE_BUILD_TYPE=Release
-cmake --build build 
+cmake --build build
 ```
 
 ## Running

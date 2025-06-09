@@ -1,5 +1,4 @@
 #include "palette.h"
-#include <stdbool.h>
 
 int palette_hit_test(const Palette *p,
                      int mx,
@@ -15,8 +14,8 @@ int palette_hit_test(const Palette *p,
 
     int colors_h = show_colors ? p->color_rows * PALETTE_HEIGHT : 0;
     int sep_h = (show_colors && show_emojis && p->color_rows > 0 && p->emoji_rows > 0)
-                    ? COLOR_EMOJI_SEPARATOR_HEIGHT
-                    : 0;
+                ? COLOR_EMOJI_SEPARATOR_HEIGHT
+                : 0;
     int emojis_h = show_emojis ? p->emoji_rows * PALETTE_HEIGHT : 0;
     int total_h = colors_h + sep_h + emojis_h;
 
@@ -64,11 +63,13 @@ SDL_Color palette_get_color(const Palette *p, int flat_index)
     if (palette_is_color_index(p, flat_index) && p->colors) {
         return p->colors[flat_index];
     }
-    return (SDL_Color){0, 0, 0, 255};
+    return (SDL_Color) {
+        0, 0, 0, 255
+    };
 }
 
-bool
-palette_get_emoji_info(const Palette *p, int flat_index, SDL_Texture **tex, int *w, int *h)
+bool palette_get_emoji_info(const Palette *p, int flat_index,
+                            SDL_Texture **tex, int *w, int *h)
 {
     if (!palette_is_emoji_index(p, flat_index) || !p->emoji_renderer_instance) {
         return false;

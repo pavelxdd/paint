@@ -1,10 +1,5 @@
-#include "palette.h"
 #include "color_utils.h"
-#include "ui_constants.h" /* layout constants */
-
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
+#include "palette.h"
 
 /* --------------------------------------------------------------------------
    Internal helpers
@@ -26,7 +21,7 @@ static void palette_calculate_and_set_dynamic_rows(Palette *p, int window_h)
             int rows = c_rows + e_rows;
             int palette_h = rows * PALETTE_HEIGHT;
 
-            if (c_rows && e_rows && COLOR_EMOJI_SEPARATOR_HEIGHT) {
+            if (c_rows > 0 && e_rows > 0 && COLOR_EMOJI_SEPARATOR_HEIGHT > 0) {
                 palette_h += COLOR_EMOJI_SEPARATOR_HEIGHT;
             }
 
@@ -91,7 +86,9 @@ static void fill_palette_colors(Palette *p)
             } else { /* grayscale */
                 float t = (p->cols == 1) ? 0.0f : (float)col / (p->cols - 1);
                 Uint8 g = lroundf((1.0f - t) * 255.0f);
-                p->colors[pos] = (SDL_Color){g, g, g, 255};
+                p->colors[pos] = (SDL_Color) {
+                    g, g, g, 255
+                };
             }
         }
     }

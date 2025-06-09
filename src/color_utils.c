@@ -1,5 +1,4 @@
 #include "color_utils.h"
-#include <math.h>
 
 /* HSV→RGB conversion (0 ≤ h < 360) */
 SDL_Color hsv_to_rgb(float h, float s, float v)
@@ -19,7 +18,7 @@ SDL_Color hsv_to_rgb(float h, float s, float v)
         v = 1.0f;
     }
 
-    if (s == 0.0f) { /* gray */
+    if (s < 1e-5f) { /* gray */
         rgb.r = rgb.g = rgb.b = lroundf(v * 255.0f);
         return rgb;
     }

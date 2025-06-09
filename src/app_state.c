@@ -1,5 +1,4 @@
 #include "app.h"
-#include <stdbool.h>
 
 /* ------------ State Toggles & Queries ------------ */
 

@@ -1,13 +1,6 @@
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_properties.h>
-#include <SDL3_ttf/SDL_ttf.h> // For TTF_Init, TTF_Quit
-#include <stdbool.h>
-#include <stdlib.h> // For EXIT_SUCCESS, EXIT_FAILURE
-
-#include "app.h"   // For App, INITIAL_WINDOW_WIDTH, RESIZE_DEBOUNCE_MS, etc.
-#include "event_handler.h" // For handle_events
-#include "renderer.h"      // For render_scene
+#include "app.h"
+#include "event_handler.h"
+#include "renderer.h"
 
 int main(void)
 {

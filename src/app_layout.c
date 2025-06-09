@@ -1,6 +1,5 @@
 #include "app.h"
 #include "palette.h"
-#include "ui_constants.h"
 
 void app_recalculate_sizes_and_limits(App *app)
 {
@@ -41,7 +40,8 @@ void app_update_canvas_display_height(App *app)
         palette_h += app->palette->emoji_rows * PALETTE_HEIGHT;
     }
     if (app->show_color_palette && app->show_emoji_palette && app->palette &&
-        app->palette->color_rows && app->palette->emoji_rows && COLOR_EMOJI_SEPARATOR_HEIGHT) {
+        app->palette->color_rows > 0 && app->palette->emoji_rows > 0 &&
+        COLOR_EMOJI_SEPARATOR_HEIGHT > 0) {
         palette_h += COLOR_EMOJI_SEPARATOR_HEIGHT;
     }
 

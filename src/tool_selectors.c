@@ -1,7 +1,5 @@
 #include "app.h"
 #include "draw.h"
-#include <math.h>
-#include <stdbool.h>
 
 int tool_selectors_hit_test(const App *app, int mx, int my, int start_y)
 {
@@ -82,22 +80,26 @@ static void draw_backgrounds(App *app,
     SDL_RenderFillRect(app->ren, emoji_r);
 
     // Color Palette Toggle (Colorful Checkerboard)
-    static const SDL_Color checker_colors[] = {{190, 100, 130, 255},
-                                               {210, 130, 130, 255},
-                                               {205, 160, 110, 255},
-                                               {220, 200, 160, 255},
-                                               {155, 200, 150, 255},
-                                               {130, 195, 205, 255},
-                                               {165, 170, 220, 255}};
+    static const SDL_Color checker_colors[] = {
+        {190, 100, 130, 255},
+        {210, 130, 130, 255},
+        {205, 160, 110, 255},
+        {220, 200, 160, 255},
+        {155, 200, 150, 255},
+        {130, 195, 205, 255},
+        {165, 170, 220, 255},
+    };
     const int num_checker_colors = sizeof(checker_colors) / sizeof(checker_colors[0]);
     int num_checkers = 5;
     float checker_size = (float)TOOL_SELECTOR_SIZE / num_checkers;
     for (int row = 0; row < num_checkers; ++row) {
         for (int col = 0; col < num_checkers; ++col) {
-            SDL_FRect checker_rect = {color_r->x + col * checker_size,
-                                      color_r->y + row * checker_size,
-                                      checker_size,
-                                      checker_size};
+            SDL_FRect checker_rect = {
+                color_r->x + col * checker_size,
+                color_r->y + row * checker_size,
+                checker_size,
+                checker_size,
+            };
             SDL_Color c = checker_colors[(row + 2 * col) % num_checker_colors];
             SDL_SetRenderDrawColor(app->ren, c.r, c.g, c.b, 255);
             SDL_RenderFillRect(app->ren, &checker_rect);
@@ -133,13 +135,19 @@ static void draw_previews(
     SDL_SetRenderDrawColor(app->ren, w_ir, w_ig, w_ib, 255);
     float side = (float)preview_radius * 2;
     SDL_FRect wm_preview_rect_outer = {
-        water_r->x + (water_r->w - side) / 2, water_r->y + (water_r->h - side) / 2, side, side};
+        water_r->x + (water_r->w - side) / 2,
+        water_r->y + (water_r->h - side) / 2,
+        side,
+        side,
+    };
     SDL_RenderRect(app->ren, &wm_preview_rect_outer);
     if (side > 2) { // Draw inner rect for 2px border
-        SDL_FRect wm_preview_rect_inner = {wm_preview_rect_outer.x + 1,
-                                           wm_preview_rect_outer.y + 1,
-                                           wm_preview_rect_outer.w - 2,
-                                           wm_preview_rect_outer.h - 2};
+        SDL_FRect wm_preview_rect_inner = {
+            wm_preview_rect_outer.x + 1,
+            wm_preview_rect_outer.y + 1,
+            wm_preview_rect_outer.w - 2,
+            wm_preview_rect_outer.h - 2,
+        };
         SDL_RenderRect(app->ren, &wm_preview_rect_inner);
     }
 
@@ -149,10 +157,12 @@ static void draw_previews(
     bool has_emoji = false;
     if (app->current_tool == TOOL_EMOJI) {
         has_emoji = palette_get_emoji_info(
-            app->palette, app->emoji_selected_palette_idx, &emoji_tex, &emoji_w, &emoji_h);
+                        app->palette, app->emoji_selected_palette_idx,
+                        &emoji_tex, &emoji_w, &emoji_h);
     } else { // Not emoji tool, so show a default emoji
         has_emoji = emoji_renderer_get_default_texture_info(
-            app->palette->emoji_renderer_instance, &emoji_tex, &emoji_w, &emoji_h);
+                        app->palette->emoji_renderer_instance,
+                        &emoji_tex, &emoji_w, &emoji_h);
     }
 
     if (has_emoji && emoji_tex) {
@@ -169,10 +179,12 @@ static void draw_previews(
         if (render_h < 1) {
             render_h = 1;
         }
-        SDL_FRect dst_rect = {emoji_r->x + (emoji_r->w - render_w) / 2.0f,
-                              emoji_r->y + (emoji_r->h - render_h) / 2.0f,
-                              render_w,
-                              render_h};
+        SDL_FRect dst_rect = {
+            emoji_r->x + (emoji_r->w - render_w) / 2.0f,
+            emoji_r->y + (emoji_r->h - render_h) / 2.0f,
+            render_w,
+            render_h,
+        };
         SDL_RenderTexture(app->ren, emoji_tex, NULL, &dst_rect);
     }
 }
@@ -189,42 +201,54 @@ static void draw_borders_and_highlights(App *app,
 
     // Left container
     SDL_FRect left_toolbar_area = {
-        0, (float)start_y, 2.0f * TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_AREA_HEIGHT};
+        0, (float)start_y, 2.0f * TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_AREA_HEIGHT
+    };
     SDL_RenderRect(app->ren, &left_toolbar_area);
-    SDL_FRect r_inner_left = {left_toolbar_area.x + 1,
-                              left_toolbar_area.y + 1,
-                              left_toolbar_area.w - 2,
-                              left_toolbar_area.h - 2};
+    SDL_FRect r_inner_left = {
+        left_toolbar_area.x + 1,
+        left_toolbar_area.y + 1,
+        left_toolbar_area.w - 2,
+        left_toolbar_area.h - 2,
+    };
     if (r_inner_left.w > 0 && r_inner_left.h > 0) {
         SDL_RenderRect(app->ren, &r_inner_left);
     }
 
     SDL_FRect sep_line_left = {
-        (float)TOOL_SELECTOR_SIZE - 1, (float)start_y, 2, (float)TOOL_SELECTOR_AREA_HEIGHT};
+        (float)TOOL_SELECTOR_SIZE - 1, (float)start_y, 2, (float)TOOL_SELECTOR_AREA_HEIGHT
+    };
     SDL_RenderFillRect(app->ren, &sep_line_left);
 
     // Right container
-    SDL_FRect right_toolbar_area = {(float)app->window_w - 3 * TOOL_SELECTOR_SIZE,
-                                    (float)start_y,
-                                    3.0f * TOOL_SELECTOR_SIZE,
-                                    (float)TOOL_SELECTOR_AREA_HEIGHT};
+    SDL_FRect right_toolbar_area = {
+        (float)app->window_w - 3 * TOOL_SELECTOR_SIZE,
+        (float)start_y,
+        3.0f * TOOL_SELECTOR_SIZE,
+        (float)TOOL_SELECTOR_AREA_HEIGHT,
+    };
     SDL_RenderRect(app->ren, &right_toolbar_area);
-    SDL_FRect r_inner_right = {right_toolbar_area.x + 1,
-                               right_toolbar_area.y + 1,
-                               right_toolbar_area.w - 2,
-                               right_toolbar_area.h - 2};
+    SDL_FRect r_inner_right = {
+        right_toolbar_area.x + 1,
+        right_toolbar_area.y + 1,
+        right_toolbar_area.w - 2,
+        right_toolbar_area.h - 2,
+    };
     if (r_inner_right.w > 0 && r_inner_right.h > 0) {
         SDL_RenderRect(app->ren, &r_inner_right);
     }
-    SDL_FRect sep_line_right1 = {(float)app->window_w - 2 * TOOL_SELECTOR_SIZE - 1,
-                                 (float)start_y,
-                                 2,
-                                 (float)TOOL_SELECTOR_AREA_HEIGHT};
+    SDL_FRect sep_line_right1 = {
+        (float)app->window_w - 2 * TOOL_SELECTOR_SIZE - 1,
+        (float)start_y,
+        2,
+        (float)TOOL_SELECTOR_AREA_HEIGHT,
+    };
     SDL_RenderFillRect(app->ren, &sep_line_right1);
-    SDL_FRect sep_line_right2 = {(float)app->window_w - TOOL_SELECTOR_SIZE - 1,
-                                 (float)start_y,
-                                 2,
-                                 (float)TOOL_SELECTOR_AREA_HEIGHT};
+    SDL_FRect sep_line_right2 = {
+        (float)app->window_w - TOOL_SELECTOR_SIZE - 1,
+        (float)start_y,
+        2,
+        (float)TOOL_SELECTOR_AREA_HEIGHT,
+    };
     SDL_RenderFillRect(app->ren, &sep_line_right2);
 
     // Active highlights
@@ -272,14 +296,18 @@ void tool_selectors_draw(App *app, int start_y)
     // Left-side tools
     SDL_FRect brush_toggle_rect = {0, (float)start_y, (float)TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_SIZE};
     SDL_FRect water_marker_toggle_rect = {
-        (float)TOOL_SELECTOR_SIZE, (float)start_y, (float)TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_SIZE};
+        (float)TOOL_SELECTOR_SIZE, (float)start_y, (float)TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_SIZE
+    };
     // Right-side tools
     SDL_FRect line_toggle_rect = {
-        (float)app->window_w - 3 * TOOL_SELECTOR_SIZE, (float)start_y, (float)TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_SIZE};
+        (float)app->window_w - 3 * TOOL_SELECTOR_SIZE, (float)start_y, (float)TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_SIZE
+    };
     SDL_FRect emoji_toggle_rect = {
-        (float)app->window_w - 2 * TOOL_SELECTOR_SIZE, (float)start_y, (float)TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_SIZE};
+        (float)app->window_w - 2 * TOOL_SELECTOR_SIZE, (float)start_y, (float)TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_SIZE
+    };
     SDL_FRect color_toggle_rect = {
-        (float)app->window_w - TOOL_SELECTOR_SIZE, (float)start_y, (float)TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_SIZE};
+        (float)app->window_w - TOOL_SELECTOR_SIZE, (float)start_y, (float)TOOL_SELECTOR_SIZE, (float)TOOL_SELECTOR_SIZE
+    };
 
     draw_backgrounds(app,
                      &brush_toggle_rect,

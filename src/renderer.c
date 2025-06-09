@@ -1,5 +1,4 @@
 #include "renderer.h"
-#include <stdbool.h>
 
 void render_scene(App *app)
 {
@@ -47,7 +46,8 @@ void render_scene(App *app)
     if (is_palette_content_visible && TOOL_SELECTOR_SEPARATOR_HEIGHT > 0) {
         SDL_SetRenderDrawColor(app->ren, 68, 71, 90, 255); // Dracula 'Current Line'
         SDL_FRect sep_rect = {
-            0, (float)current_y, (float)app->window_w, (float)TOOL_SELECTOR_SEPARATOR_HEIGHT};
+            0, (float)current_y, (float)app->window_w, (float)TOOL_SELECTOR_SEPARATOR_HEIGHT
+        };
         SDL_RenderFillRect(app->ren, &sep_rect);
         current_y += TOOL_SELECTOR_SEPARATOR_HEIGHT;
     }

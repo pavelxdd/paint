@@ -1,7 +1,4 @@
 #include "app.h"
-#include <math.h>
-#include <stdbool.h>
-#include <stdlib.h>
 
 static void draw_line_of_square_dabs(App *app, int x0, int y0, int x1, int y1)
 {

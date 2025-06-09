@@ -1,20 +1,17 @@
+#include "emoji_data.h"
 #include "emoji_renderer.h"
-#include "emoji_data.h" // For ORIGINAL_DEFAULT_EMOJI_CODEPOINTS and NUM_DEFAULT_EMOJIS
-#include <SDL3_ttf/SDL_ttf.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h> // For strlen
-#include <time.h>   // For srand, rand (though main seeds it typically)
 
 // Fisher-Yates shuffle for an array of char pointers
 static void shuffle_char_pointers(const char **array, int n)
 {
     if (n > 1) {
-        for (int i = n - 1; i > 0; i--) {
+        int i = n - 1;
+        while (i > 0) {
             int j = rand() % (i + 1);
             const char *temp = array[j];
             array[j] = array[i];
             array[i] = temp;
+            i--;
         }
     }
 }
@@ -85,15 +82,19 @@ EmojiRenderer *emoji_renderer_create(SDL_Renderer *ren)
     }
 
     er->default_emoji_texture = NULL;
-    er->default_emoji_texture_dims = (SDL_Point){0, 0};
+    er->default_emoji_texture_dims = (SDL_Point) {
+        0, 0
+    };
     const char *default_emoji_codepoint = "🙂";
     SDL_Color fg_color_default = {0, 0, 0, 255};
     SDL_Surface *surface = TTF_RenderText_Blended(
-        er->emoji_font, default_emoji_codepoint, strlen(default_emoji_codepoint), fg_color_default);
+                               er->emoji_font, default_emoji_codepoint, strlen(default_emoji_codepoint), fg_color_default);
     if (surface) {
         er->default_emoji_texture = SDL_CreateTextureFromSurface(er->ren_ref, surface);
         if (er->default_emoji_texture) {
-            er->default_emoji_texture_dims = (SDL_Point){surface->w, surface->h};
+            er->default_emoji_texture_dims = (SDL_Point) {
+                surface->w, surface->h
+            };
         } else {
             SDL_Log("Failed to create default emoji texture: %s", SDL_GetError());
         }
@@ -143,7 +144,9 @@ void emoji_renderer_shuffle_and_render_all(EmojiRenderer *er)
         const char *codepoint = er->emoji_codepoints_shuffled[i];
         if (!codepoint || strlen(codepoint) == 0) {
             er->emoji_textures[i] = NULL;
-            er->emoji_texture_dims[i] = (SDL_Point){0, 0};
+            er->emoji_texture_dims[i] = (SDL_Point) {
+                0, 0
+            };
             continue;
         }
         SDL_Surface *surface =
@@ -151,25 +154,31 @@ void emoji_renderer_shuffle_and_render_all(EmojiRenderer *er)
         if (!surface) {
             SDL_Log("Failed to render emoji '%s': %s", codepoint, SDL_GetError());
             er->emoji_textures[i] = NULL;
-            er->emoji_texture_dims[i] = (SDL_Point){0, 0};
+            er->emoji_texture_dims[i] = (SDL_Point) {
+                0, 0
+            };
             continue;
         }
         er->emoji_textures[i] = SDL_CreateTextureFromSurface(er->ren_ref, surface);
         if (!er->emoji_textures[i]) {
             SDL_Log("Failed to create texture for emoji '%s': %s", codepoint, SDL_GetError());
-            er->emoji_texture_dims[i] = (SDL_Point){0, 0};
+            er->emoji_texture_dims[i] = (SDL_Point) {
+                0, 0
+            };
         } else {
-            er->emoji_texture_dims[i] = (SDL_Point){surface->w, surface->h};
+            er->emoji_texture_dims[i] = (SDL_Point) {
+                surface->w, surface->h
+            };
         }
         SDL_DestroySurface(surface);
     }
 }
 
 bool emoji_renderer_get_texture_info(const EmojiRenderer *er,
-                                         int emoji_array_idx,
-                                         SDL_Texture **tex,
-                                         int *w,
-                                         int *h)
+                                     int emoji_array_idx,
+                                     SDL_Texture **tex,
+                                     int *w,
+                                     int *h)
 {
     if (!er || !tex || !w || !h || emoji_array_idx < 0 ||
         emoji_array_idx >= er->num_defined_emojis) {
@@ -185,9 +194,9 @@ bool emoji_renderer_get_texture_info(const EmojiRenderer *er,
 }
 
 bool emoji_renderer_get_default_texture_info(const EmojiRenderer *er,
-                                                 SDL_Texture **tex,
-                                                 int *w,
-                                                 int *h)
+                                             SDL_Texture **tex,
+                                             int *w,
+                                             int *h)
 {
     if (!er || !tex || !w || !h || !er->default_emoji_texture) {
         if (tex) {

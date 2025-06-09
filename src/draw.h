@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL3/SDL.h>
-
 void draw_circle(SDL_Renderer *ren, int cx, int cy, int radius);
 void draw_hollow_circle(SDL_Renderer *ren, int cx, int cy, int radius);
 void draw_thick_line(

@@ -1,5 +1,4 @@
 #include "draw.h"
-#include <math.h>
 
 // Draw filled circle using horizontal scanlines.
 void draw_circle(SDL_Renderer *ren, int cx, int cy, int radius)
@@ -71,7 +70,11 @@ void draw_thick_line(
     float half_thickness = (float)radius;
 
     SDL_FColor fcolor = {
-        color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f};
+        color.r / 255.0f,
+        color.g / 255.0f,
+        color.b / 255.0f,
+        color.a / 255.0f,
+    };
 
     // The four corners of the rectangle making up the line shaft
     SDL_Vertex vertices[4] = {

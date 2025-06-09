@@ -1,9 +1,5 @@
 #pragma once
 
-#include <SDL3/SDL.h>
-#include <SDL3_ttf/SDL_ttf.h>
-#include <stdbool.h>
-
 // Ensure this font is available
 #define EMOJI_FONT_PATH "/usr/share/fonts/noto/NotoColorEmoji.ttf"
 #define EMOJI_FONT_SIZE 48 // Font size for rendering emojis to texture
@@ -40,8 +36,7 @@ bool emoji_renderer_get_texture_info(
     const EmojiRenderer *er, int emoji_array_idx, SDL_Texture **tex, int *w, int *h);
 
 // Gets the texture info for the default "blank face" emoji.
-bool
-emoji_renderer_get_default_texture_info(const EmojiRenderer *er, SDL_Texture **tex, int *w, int *h);
+bool emoji_renderer_get_default_texture_info(const EmojiRenderer *er, SDL_Texture **tex, int *w, int *h);
 
 // Gets the total number of unique emojis available and rendered by this instance.
 int emoji_renderer_get_num_emojis(const EmojiRenderer *er);

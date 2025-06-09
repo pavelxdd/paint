@@ -1,5 +1,4 @@
 #include "emoji_data.h"
-#include <stddef.h> // For sizeof
 
 // Predefined list of emojis - curated for a children's painting application.
 // This list is shuffled on startup.

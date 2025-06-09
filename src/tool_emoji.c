@@ -1,14 +1,12 @@
 #include "app.h"
-#include <math.h>
-
-#include <stdbool.h>
 
 static void draw_line_of_emojis(App *app, int x0, int y0, int x1, int y1)
 {
     SDL_Texture *emoji_tex = NULL;
     int ew = 0, eh = 0;
     bool has_emoji = palette_get_emoji_info(
-        app->palette, app->emoji_selected_palette_idx, &emoji_tex, &ew, &eh);
+                         app->palette, app->emoji_selected_palette_idx,
+                         &emoji_tex, &ew, &eh);
 
     if (!has_emoji || !emoji_tex) {
         return;
@@ -58,7 +56,8 @@ void tool_emoji_draw_dab(App *app, int x, int y)
     SDL_Texture *emoji_tex = NULL;
     int ew = 0, eh = 0;
     bool has_emoji = palette_get_emoji_info(
-        app->palette, app->emoji_selected_palette_idx, &emoji_tex, &ew, &eh);
+                         app->palette, app->emoji_selected_palette_idx,
+                         &emoji_tex, &ew, &eh);
     if (has_emoji && emoji_tex) {
         float asp = (eh == 0) ? 1.0f : (float)ew / eh;
         int h = app->brush_radius * 6;

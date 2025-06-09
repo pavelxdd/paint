@@ -1,8 +1,4 @@
 #include "palette.h"
-#include "ui_constants.h"
-#include <stdbool.h>
-
-#include <math.h> // For lroundf
 
 static void palette_draw_colors(const Palette *p,
                                 SDL_Renderer *ren,
@@ -84,7 +80,8 @@ static void palette_draw_emojis(const Palette *p,
                 SDL_Texture *tex = NULL;
                 int tex_w = 0, tex_h = 0;
                 bool has_emoji = emoji_renderer_get_texture_info(
-                    p->emoji_renderer_instance, actual_idx, &tex, &tex_w, &tex_h);
+                                     p->emoji_renderer_instance, actual_idx,
+                                     &tex, &tex_w, &tex_h);
 
                 if (has_emoji && tex) {
                     float asp = (tex_h == 0) ? 1.0f : (float)tex_w / tex_h;
@@ -101,17 +98,19 @@ static void palette_draw_emojis(const Palette *p,
                         def_h = 1;
                     }
 
-                    SDL_FRect dst_r = {(float)cell_r.x + (cell_r.w - def_w) / 2.0f,
-                                      (float)cell_r.y + (cell_r.h - def_h) / 2.0f,
-                                      (float)def_w,
-                                      (float)def_h};
+                    SDL_FRect dst_r = {
+                        (float)cell_r.x + (cell_r.w - def_w) / 2.0f,
+                        (float)cell_r.y + (cell_r.h - def_h) / 2.0f,
+                        (float)def_w,
+                        (float)def_h,
+                    };
                     SDL_RenderTexture(ren, tex, NULL, &dst_r);
 
                     if (f_idx == selected_idx && palette_is_emoji_index(p, f_idx)) {
                         SDL_SetRenderDrawColor(ren, 189, 147, 249, 255); // Dracula 'Purple'
                         SDL_RenderRect(ren, &f_cell_r);
                         SDL_FRect r2 =
-                            {f_cell_r.x + 1, f_cell_r.y + 1, f_cell_r.w - 2, f_cell_r.h - 2};
+                        {f_cell_r.x + 1, f_cell_r.y + 1, f_cell_r.w - 2, f_cell_r.h - 2};
                         SDL_RenderRect(ren, &r2);
                     }
                 } else {
@@ -155,11 +154,12 @@ void palette_draw(const Palette *p,
 
     /* ---------- separator between colours and emojis ---------- */
     bool separator_needed = show_colors && show_emojis && p->emoji_rows > 0 &&
-                                p->color_rows > 0 && COLOR_EMOJI_SEPARATOR_HEIGHT > 0;
+                            p->color_rows > 0 && COLOR_EMOJI_SEPARATOR_HEIGHT > 0;
     if (separator_needed) {
         SDL_SetRenderDrawColor(ren, 68, 71, 90, 255); // Dracula 'Current Line'
         SDL_FRect sep_r = {
-            0, (float)current_y, (float)window_w, (float)COLOR_EMOJI_SEPARATOR_HEIGHT};
+            0, (float)current_y, (float)window_w, (float)COLOR_EMOJI_SEPARATOR_HEIGHT
+        };
         SDL_RenderFillRect(ren, &sep_r);
         current_y += COLOR_EMOJI_SEPARATOR_HEIGHT;
     }

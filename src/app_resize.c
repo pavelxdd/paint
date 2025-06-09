@@ -1,8 +1,6 @@
 #include "app.h"
 #include "palette.h"
 
-#include <stdbool.h>
-
 void app_notify_resize_event(App *app, int new_w, int new_h)
 {
     if (!app) {

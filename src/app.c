@@ -1,13 +1,12 @@
 #include "app.h"
 #include "palette.h"
-#include <stdlib.h>
 
 /* ---------------------------------------------------------------------------
  * Lifecycle
  * --------------------------------------------------------------------------*/
 App *app_create(SDL_Window *win, SDL_Renderer *ren)
 {
-    App *app = malloc(sizeof *app);
+    App *app = malloc(sizeof * app);
     if (!app) {
         SDL_Log("Failed to allocate App");
         return NULL;
@@ -18,7 +17,9 @@ App *app_create(SDL_Window *win, SDL_Renderer *ren)
     app->window_w = INITIAL_WINDOW_WIDTH;
     app->window_h = INITIAL_WINDOW_HEIGHT;
 
-    app->background_color = (SDL_Color){255, 255, 255, 255};
+    app->background_color = (SDL_Color) {
+        255, 255, 255, 255
+    };
 
     app->palette = palette_create(ren, app->window_w, app->window_h);
     if (!app->palette) {
@@ -40,7 +41,9 @@ App *app_create(SDL_Window *win, SDL_Renderer *ren)
         app->water_marker_color =
             palette_get_color(app->palette, app->water_marker_selected_palette_idx);
     } else {
-        app->water_marker_color = (SDL_Color){255, 0, 0, 255}; // Fallback red
+        app->water_marker_color = (SDL_Color) {
+            255, 0, 0, 255
+        }; // Fallback red
     }
 
     // Default brush to black (bottom-right)
@@ -49,7 +52,9 @@ App *app_create(SDL_Window *win, SDL_Renderer *ren)
     if (app->palette->total_color_cells > 0) {
         app->current_color = palette_get_color(app->palette, app->brush_selected_palette_idx);
     } else {
-        app->current_color = (SDL_Color){0, 0, 0, 255}; // Fallback black
+        app->current_color = (SDL_Color) {
+            0, 0, 0, 255
+        }; // Fallback black
     }
 
     // Default emoji to first one
