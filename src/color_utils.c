@@ -19,16 +19,16 @@ SDL_Color hsv_to_rgb(float h, float s, float v)
     }
 
     if (s < 1e-5f) { /* gray */
-        rgb.r = rgb.g = rgb.b = lroundf(v * 255.0f);
+        rgb.r = rgb.g = rgb.b = (Uint8)SDL_lroundf(v * 255.0f);
         return rgb;
     }
 
     float c = v * s;
-    float h_prime = fmodf(h / 60.0f, 6.0f);
+    float h_prime = SDL_fmodf(h / 60.0f, 6.0f);
     if (h_prime < 0) {
         h_prime += 6.0f;
     }
-    float x_val = c * (1.0f - fabsf(fmodf(h_prime, 2.0f) - 1.0f));
+    float x_val = c * (1.0f - SDL_fabsf(SDL_fmodf(h_prime, 2.0f) - 1.0f));
 
     float r1 = 0, g1 = 0, b1 = 0;
     if (h_prime < 1) {
@@ -56,8 +56,8 @@ SDL_Color hsv_to_rgb(float h, float s, float v)
     g1 += m;
     b1 += m;
 
-    rgb.r = lroundf(r1 * 255.0f);
-    rgb.g = lroundf(g1 * 255.0f);
-    rgb.b = lroundf(b1 * 255.0f);
+    rgb.r = (Uint8)SDL_lroundf(r1 * 255.0f);
+    rgb.g = (Uint8)SDL_lroundf(g1 * 255.0f);
+    rgb.b = (Uint8)SDL_lroundf(b1 * 255.0f);
     return rgb;
 }

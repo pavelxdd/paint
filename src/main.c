@@ -1,4 +1,7 @@
+#include <stdlib.h>
+
 #include "app.h"
+#include "ui.h"
 #include "event_handler.h"
 #include "renderer.h"
 
@@ -8,6 +11,7 @@ int main(void)
         SDL_Log("SDL_Init error: %s", SDL_GetError());
         return EXIT_FAILURE;
     }
+    SDL_srand(0);
 
     if (!TTF_Init()) {
         SDL_Log("TTF_Init error: %s", SDL_GetError());

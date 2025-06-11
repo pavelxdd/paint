@@ -1,6 +1,7 @@
 #include "app.h"
+#include "ui.h"
 
-static void draw_line_of_emojis(App *app, int x0, int y0, int x1, int y1)
+static void draw_line_of_emojis(App *app, float x0, float y0, float x1, float y1)
 {
     SDL_Texture *emoji_tex = NULL;
     int ew = 0, eh = 0;
@@ -17,7 +18,7 @@ static void draw_line_of_emojis(App *app, int x0, int y0, int x1, int y1)
     if (h < MIN_BRUSH_SIZE * 6) {
         h = MIN_BRUSH_SIZE * 6;
     }
-    int w = lroundf(h * asp);
+    int w = (int)SDL_lroundf(h * asp);
     if (w == 0) {
         w = 1;
     }
@@ -26,12 +27,14 @@ static void draw_line_of_emojis(App *app, int x0, int y0, int x1, int y1)
     }
 
     // Draw first emoji at the start point
-    SDL_FRect dst_start = {(float)x0 - w / 2, (float)y0 - h / 2, (float)w, (float)h};
-    SDL_RenderTexture(app->ren, emoji_tex, NULL, &dst_start);
+    SDL_FRect dst_start = {x0 - w / 2.0f, y0 - h / 2.0f, (float)w, (float)h};
+    if (!SDL_RenderTexture(app->ren, emoji_tex, NULL, &dst_start)) {
+        SDL_Log("Emoji: Failed to render start emoji: %s", SDL_GetError());
+    }
 
     float dx = x1 - x0;
     float dy = y1 - y0;
-    float line_length = sqrtf(dx * dx + dy * dy);
+    float line_length = SDL_sqrtf(dx * dx + dy * dy);
 
     // Use emoji height as spacing
     if (line_length < h) {
@@ -41,18 +44,23 @@ static void draw_line_of_emojis(App *app, int x0, int y0, int x1, int y1)
     float ux = dx / line_length;
     float uy = dy / line_length;
 
-    int num_emojis = floorf(line_length / h);
+    int num_emojis = (int)SDL_floorf(line_length / h);
     for (int i = 1; i <= num_emojis; ++i) {
-        int px = x0 + lroundf((float)i * h * ux);
-        int py = y0 + lroundf((float)i * h * uy);
-        SDL_FRect dst = {(float)px - w / 2, (float)py - h / 2, (float)w, (float)h};
-        SDL_RenderTexture(app->ren, emoji_tex, NULL, &dst);
+        float px = x0 + (float)i * h * ux;
+        float py = y0 + (float)i * h * uy;
+        SDL_FRect dst = {px - w / 2.0f, py - h / 2.0f, (float)w, (float)h};
+        if (!SDL_RenderTexture(app->ren, emoji_tex, NULL, &dst)) {
+            SDL_Log("Emoji: Failed to render line emoji: %s", SDL_GetError());
+        }
     }
 }
 
 void tool_emoji_draw_dab(App *app, int x, int y)
 {
-    SDL_SetRenderTarget(app->ren, app->canvas_texture);
+    if (!SDL_SetRenderTarget(app->ren, app->canvas_texture)) {
+        SDL_Log("Emoji: Failed to set render target for dab: %s", SDL_GetError());
+        return;
+    }
     SDL_Texture *emoji_tex = NULL;
     int ew = 0, eh = 0;
     bool has_emoji = palette_get_emoji_info(
@@ -64,18 +72,22 @@ void tool_emoji_draw_dab(App *app, int x, int y)
         if (h < MIN_BRUSH_SIZE * 6) {
             h = MIN_BRUSH_SIZE * 6;
         }
-        int w = lroundf(h * asp);
+        int w = (int)SDL_lroundf(h * asp);
         if (w == 0) {
             w = 1;
         }
 
-        SDL_FRect dst = {(float)x - w / 2, (float)y - h / 2, (float)w, (float)h};
-        SDL_RenderTexture(app->ren, emoji_tex, NULL, &dst);
+        SDL_FRect dst = {(float)x - w / 2.0f, (float)y - h / 2.0f, (float)w, (float)h};
+        if (!SDL_RenderTexture(app->ren, emoji_tex, NULL, &dst)) {
+            SDL_Log("Emoji: Failed to render dab texture: %s", SDL_GetError());
+        }
     }
-    SDL_SetRenderTarget(app->ren, NULL);
+    if (!SDL_SetRenderTarget(app->ren, NULL)) {
+        SDL_Log("Emoji: Failed to reset render target after dab: %s", SDL_GetError());
+    }
 }
 
-void tool_emoji_draw_line_preview(App *app, int x0, int y0, int x1, int y1)
+void tool_emoji_draw_line_preview(App *app, float x0, float y0, float x1, float y1)
 {
     draw_line_of_emojis(app, x0, y0, x1, y1);
 }

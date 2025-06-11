@@ -1,4 +1,5 @@
 #include "app.h"
+#include "ui.h"
 
 // Returns true if my is inside palette area, and sets out_palette_start_y.
 static bool is_point_in_palette_ui(App *app, int my, int *out_palette_start_y)
@@ -34,16 +35,16 @@ static bool is_point_in_palette_ui(App *app, int my, int *out_palette_start_y)
 
 // Handle mouse wheel over palette: cycles current palette selection (color or emoji) with
 // wraparound.
-static bool handle_palette_mousewheel(App *app, int mx, int my, int yscroll)
+static bool handle_palette_mousewheel(App *app, float mx, float my, int yscroll)
 {
     int palette_start_y = 0;
-    if (!is_point_in_palette_ui(app, my, &palette_start_y)) {
+    if (!is_point_in_palette_ui(app, (int)my, &palette_start_y)) {
         return false; // Not in palette area
     }
 
     int palette_idx = palette_hit_test(app->palette,
-                                       mx,
-                                       my,
+                                       (int)mx,
+                                       (int)my,
                                        app->window_w,
                                        palette_start_y,
                                        app->show_color_palette,
@@ -81,15 +82,15 @@ static bool handle_palette_mousewheel(App *app, int mx, int my, int yscroll)
 
 void app_handle_mousedown(App *app, const SDL_MouseButtonEvent *mouse_event)
 {
-    int mx = (int)mouse_event->x;
-    int my = (int)mouse_event->y;
+    float mx = mouse_event->x;
+    float my = mouse_event->y;
 
     // --- UI CLICK HANDLING ---
     // Priority: 1. Tool Selectors, 2. Palette, 3. Canvas
 
     // 1. Check for tool selector hit first, as they float over the canvas
     int tool_selectors_y = app->canvas_display_area_h - TOOL_SELECTOR_AREA_HEIGHT;
-    int hit_tool = tool_selectors_hit_test(app, mx, my, tool_selectors_y);
+    int hit_tool = ui_hit_test_tool_selectors(app, (int)mx, (int)my, tool_selectors_y);
 
     if (hit_tool != -1) { // Hit test returns -1 for miss
         // Click was on a tool selector
@@ -101,6 +102,9 @@ void app_handle_mousedown(App *app, const SDL_MouseButtonEvent *mouse_event)
             } else if (hit_tool == TOOL_WATER_MARKER) {
                 app->current_tool = TOOL_WATER_MARKER;
                 app->last_color_tool = TOOL_WATER_MARKER;
+                app->needs_redraw = true;
+            } else if (hit_tool == TOOL_BLUR) {
+                app->current_tool = TOOL_BLUR;
                 app->needs_redraw = true;
             } else if (hit_tool == HIT_TEST_COLOR_PALETTE_TOGGLE) {
                 app_toggle_color_palette(app);
@@ -121,8 +125,8 @@ void app_handle_mousedown(App *app, const SDL_MouseButtonEvent *mouse_event)
         }
 
         int palette_idx = palette_hit_test(app->palette,
-                                           mx,
-                                           my,
+                                           (int)mx,
+                                           (int)my,
                                            app->window_w,
                                            palette_start_y,
                                            app->show_color_palette,
@@ -138,10 +142,12 @@ void app_handle_mousedown(App *app, const SDL_MouseButtonEvent *mouse_event)
         }
     } else {
         // 3. Click is on the canvas
-        if (mouse_event->button == SDL_BUTTON_LEFT || mouse_event->button == SDL_BUTTON_RIGHT) {
+        if (mouse_event->button == SDL_BUTTON_LEFT ||
+            mouse_event->button == SDL_BUTTON_RIGHT) {
             app->is_drawing = true;
             app->last_stroke_x = mx;
             app->last_stroke_y = my;
+            app->has_moved_since_mousedown = false;
 
             // Latch the straight-line mode for the duration of this stroke.
             // Right-click (eraser) never uses straight line mode.
@@ -151,8 +157,12 @@ void app_handle_mousedown(App *app, const SDL_MouseButtonEvent *mouse_event)
                 app->straight_line_stroke_latched = false;
             }
 
-            if (mouse_event->button == SDL_BUTTON_LEFT && app->current_tool == TOOL_WATER_MARKER) {
-                tool_water_marker_begin_stroke(app);
+            if (mouse_event->button == SDL_BUTTON_LEFT) {
+                if (app->current_tool == TOOL_WATER_MARKER) {
+                    tool_water_marker_begin_stroke(app);
+                } else if (app->current_tool == TOOL_BLUR) {
+                    tool_blur_begin_stroke(app);
+                }
             }
 
             // If not in a latched straight-line stroke, draw the first dab immediately.
@@ -169,46 +179,84 @@ void app_handle_mousedown(App *app, const SDL_MouseButtonEvent *mouse_event)
 
 void app_handle_mouseup(App *app, const SDL_MouseButtonEvent *mouse_event)
 {
-    if (app->is_drawing) {
-        if (app->straight_line_stroke_latched && mouse_event->button == SDL_BUTTON_LEFT &&
-            (app->current_tool == TOOL_BRUSH || app->current_tool == TOOL_WATER_MARKER ||
-             app->current_tool == TOOL_EMOJI)) {
-            // --- Commit the straight line ---
+    if (app->is_drawing && mouse_event->button == SDL_BUTTON_LEFT) {
+        if (app->straight_line_stroke_latched) {
             if (app->current_tool == TOOL_BRUSH || app->current_tool == TOOL_EMOJI) {
-                // Blend the preview from the stroke buffer onto the main canvas
-                SDL_SetRenderTarget(app->ren, app->canvas_texture);
-                SDL_SetTextureBlendMode(app->stroke_buffer, SDL_BLENDMODE_BLEND);
-                SDL_RenderTexture(app->ren, app->stroke_buffer, NULL, NULL);
-                SDL_SetRenderTarget(app->ren, NULL);
-            } else { // TOOL_WATER_MARKER
-                // The final preview is on the stroke buffer. End the stroke to blend it.
+                if (SDL_SetRenderTarget(app->ren, app->canvas_texture)) {
+                    if (!SDL_SetTextureBlendMode(app->stroke_buffer, SDL_BLENDMODE_BLEND)) {
+                        SDL_Log("MUP:Failed to set blend mode for stroke buffer: %s", SDL_GetError());
+                    }
+                    if (!SDL_RenderTexture(app->ren, app->stroke_buffer, NULL, NULL)) {
+                        SDL_Log("MUP:Failed to render stroke buffer: %s", SDL_GetError());
+                    }
+                    if (!SDL_SetRenderTarget(app->ren, NULL)) {
+                        SDL_Log("MUP:Failed to reset render target: %s", SDL_GetError());
+                    }
+                } else {
+                    SDL_Log("MUP:Failed to set render target to canvas: %s", SDL_GetError());
+                }
+            } else if (app->current_tool == TOOL_WATER_MARKER) {
                 tool_water_marker_end_stroke(app);
+            } else if (app->current_tool == TOOL_BLUR) {
+                // The preview is now the real deal, just finalize.
+                tool_blur_end_stroke(app);
             }
-        } else if (app->water_marker_stroke_active && mouse_event->button == SDL_BUTTON_LEFT) {
-            // --- End a freehand water-marker stroke ---
-            tool_water_marker_end_stroke(app);
+        } else { // Freehand stroke for buffered tools
+            if (app->is_buffered_stroke_active) {
+                switch (app->current_tool) {
+                    case TOOL_WATER_MARKER:
+                        tool_water_marker_end_stroke(app);
+                        break;
+                    case TOOL_BLUR:
+                        if (!app->has_moved_since_mousedown) {
+                            // Single click: apply more dabs to make it feel substantial
+                            for (int i = 0; i < 9; ++i) {
+                                tool_blur_draw_dab(app, (int)mouse_event->x, (int)mouse_event->y);
+                            }
+                        }
+                        tool_blur_end_stroke(app);
+                        break;
+                    default:
+                        // This case can be hit if tool is switched mid-stroke.
+                        // For now, do nothing.
+                        break;
+                }
+            }
         }
+    }
 
-        // Clear the stroke buffer for the next operation
-        if (app->stroke_buffer) {
-            SDL_SetRenderTarget(app->ren, app->stroke_buffer);
-            SDL_SetRenderDrawBlendMode(app->ren, SDL_BLENDMODE_NONE);
-            SDL_SetRenderDrawColor(app->ren, 0, 0, 0, 0);
-            SDL_RenderClear(app->ren);
-            SDL_SetRenderTarget(app->ren, NULL);
+    // Clear the stroke buffer for the next operation
+    if (app->stroke_buffer) {
+        if (SDL_SetRenderTarget(app->ren, app->stroke_buffer)) {
+            if (!SDL_SetRenderDrawBlendMode(app->ren, SDL_BLENDMODE_NONE)) {
+                SDL_Log("MUP:Failed to set blend mode for clear: %s", SDL_GetError());
+            }
+            if (!SDL_SetRenderDrawColor(app->ren, 0, 0, 0, 0)) {
+                SDL_Log("MUP:Failed to set color for clear: %s", SDL_GetError());
+            }
+            if (!SDL_RenderClear(app->ren)) {
+                SDL_Log("MUP:Failed to clear stroke buffer: %s", SDL_GetError());
+            }
+            if (!SDL_SetRenderTarget(app->ren, NULL)) {
+                SDL_Log("MUP:Failed to reset render target after clear: %s", SDL_GetError());
+            }
+        } else {
+            SDL_Log("MUP:Failed to set render target to stroke buffer: %s", SDL_GetError());
         }
-        app->needs_redraw = true;
     }
 
     // Reset drawing state on any button release
     app->is_drawing = false;
     app->straight_line_stroke_latched = false;
-    app->last_stroke_x = -1;
-    app->last_stroke_y = -1;
+    app->is_buffered_stroke_active = false;
+    app->last_stroke_x = -1.0f;
+    app->last_stroke_y = -1.0f;
+    app->has_moved_since_mousedown = false;
+    app->needs_redraw = true;
 }
 
 void app_handle_mousewheel(
-    App *app, const SDL_MouseWheelEvent *wheel_event, int mouse_x, int mouse_y)
+    App *app, const SDL_MouseWheelEvent *wheel_event, float mouse_x, float mouse_y)
 {
     // Mouse wheel events are delivered globally, not per-window region.
     // To implement cycling palette, must check if mouse is in palette area.

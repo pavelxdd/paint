@@ -1,4 +1,5 @@
 #include "app.h"
+#include "ui.h"
 
 void app_change_brush_radius(App *app, int delta)
 {

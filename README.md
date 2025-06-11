@@ -1,17 +1,22 @@
 # Simple Paint
 
-A fun and simple painting application vibe coded with C and SDL3.
+A very simple painting application created with C and SDL3.
 
 ![Screenshot of the paint program in action](paint.png)
 
 ## Features
 
-- **Multiple Tools**: Includes a standard brush, a semi-transparent water marker, and an emoji brush.
-- **Dynamic Palettes**: A vibrant color palette and a shuffled emoji palette that adapt to the window size.
-- **Straight Line Mode**: Draw perfect straight lines by holding `Ctrl` or toggling the line mode.
-- **Brush Size Control**: Easily adjust the brush size with the mouse wheel or keyboard.
-- **UI Toggles**: Show or hide the color and emoji palettes with function keys.
-- **Fullscreen Support**: Switch to an immersive fullscreen mode with the `F` key.
+- **Basic Drawing Tools**: Includes a standard brush and a semi-transparent "water marker".
+- **Blur Tool**: A tool to smudge and blur parts of the drawing, creating soft, blended effects.
+- **Emoji Brush**: Select from a shuffled grid of emojis to paint with.
+- **Resizable Brush**: Change the brush size with the mouse wheel or keyboard shortcuts.
+- **Color Palette**: A dynamic color palette is generated based on window size. Click to select a
+    color, or middle-click to set the background.
+- **Straight Line Mode**: Hold `Ctrl` or toggle with `Ctrl`+`Ctrl` to draw straight lines. Hold
+    `Shift` while drawing a straight line to snap to horizontal or vertical axes.
+- **Simple UI**: The UI is minimal, with tool selectors and palettes that adjust to the window
+    size.
+- **Cross-Platform**: Built with SDL3, it should compile and run on Windows, macOS, and Linux.
 
 ## Dependencies
 
@@ -27,7 +32,7 @@ Please ensure they are installed on your system before building.
 To build the project, use CMake:
 
 ```bash
-cmake . -Bbuild -DCMAKE_BUILD_TYPE=Release
+cmake -B build
 cmake --build build
 ```
 
@@ -39,22 +44,40 @@ Execute the binary from the build directory:
 ./build/paint
 ```
 
-## Controls
+## How to Use
 
-- **Left Mouse Button**: Draw with the selected tool.
+### Mouse Controls
+
+- **Left Mouse Button**: Draw with the selected tool and color.
 - **Right Mouse Button**: Erase (draws with the background color).
-- **Middle Mouse Button**: Clear canvas to background color.
-- **Mouse Wheel**: Adjust brush size.
-- **Mouse Wheel over Palette**: Cycle through the active palette (colors or emojis).
-- **`+` / `-`**: Adjust brush size.
-- **`1`**: Select Brush tool.
-- **`2`**: Select Water Marker tool.
-- **`0`**: Select Emoji tool.
-- **`Tab`**: Cycle forward through tools.
-- **`Ctrl+Tab`**: Cycle backward through tools.
-- **`Ctrl` (hold) or `Ctrl`+`Ctrl` (toggle)**: Activate straight line mode.
-- **`Shift` (while drawing line)**: Snap straight line to horizontal/vertical.
-- **`F1`**: Toggle color palette visibility.
-- **`F2`**: Toggle emoji palette visibility.
-- **Arrow Keys**: Navigate the selected palette.
-- **`F`**: Toggle fullscreen mode.
+- **Middle Mouse Button**:
+  - On canvas: Clear the canvas to the current background color.
+  - On a color in the palette: Set that color as the new background and clear the canvas.
+- **Mouse Wheel**:
+  - Over canvas: Adjust brush size.
+  - Over palette: Cycle through the current tool's selection (colors or emojis).
+
+### Keyboard Shortcuts
+
+#### Tool Selection
+
+- `1`: Select **Brush** tool.
+- `2`: Select **Water Marker** tool.
+- `3`: Select **Blur** tool.
+- `0`: Select **Emoji** tool.
+- `Tab`: Cycle forward through tools.
+- `Ctrl` + `Tab`: Cycle backward through tools.
+
+#### Drawing Controls
+
+- `+` / `-`: Increase/decrease brush size.
+- `Ctrl` (hold): Temporarily enter straight-line drawing mode.
+- `Ctrl` + `Ctrl` (press both): Toggle straight-line mode on/off.
+- `Shift` (while in straight-line mode): Snap line to 90-degree angles.
+
+#### UI & Window
+
+- `F1`: Toggle the color palette.
+- `F2`: Toggle the emoji palette.
+- `Arrow Keys`: Navigate the active palette (color or emoji).
+- `F`: Toggle fullscreen.

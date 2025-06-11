@@ -14,6 +14,9 @@ typedef struct App {
     int canvas_display_area_h;
 
     SDL_Texture *stroke_buffer; // For tools that need to be blended as a whole stroke
+    SDL_Texture *blur_source_texture; // For the blur tool to read from
+    SDL_Texture *blur_dab_texture;    // Reusable texture for individual blur dabs
+    SDL_Texture *blur_temp_texture;   // For multi-pass blur
 
     Palette *palette;
 
@@ -45,11 +48,12 @@ typedef struct App {
     bool show_emoji_palette;
 
     // Stroke state
-    bool water_marker_stroke_active;
+    bool is_buffered_stroke_active;
     bool is_drawing;
     bool straight_line_stroke_latched;
-    int last_stroke_x;
-    int last_stroke_y;
+    float last_stroke_x;
+    float last_stroke_y;
+    bool has_moved_since_mousedown;
 } App;
 
 /* --- Lifecycle (app.c) --- */
@@ -62,7 +66,7 @@ void app_handle_keyup(App *app, const SDL_KeyboardEvent *key_event);
 void app_handle_mousedown(App *app, const SDL_MouseButtonEvent *mouse_event);
 void app_handle_mouseup(App *app, const SDL_MouseButtonEvent *mouse_event);
 void app_handle_mousewheel(
-    App *app, const SDL_MouseWheelEvent *wheel_event, int mouse_x, int mouse_y);
+    App *app, const SDL_MouseWheelEvent *wheel_event, float mouse_x, float mouse_y);
 
 /* --- State & Toggles (app_state.c) --- */
 void app_toggle_line_mode(App *app);
@@ -72,7 +76,8 @@ void app_toggle_color_palette(App *app);
 void app_toggle_emoji_palette(App *app);
 
 /* --- Drawing & Canvas (app_draw.c, app_canvas.c) --- */
-void app_draw_stroke(App *app, int mouse_x, int mouse_y, bool use_background_color);
+void app_draw_stroke(App *app, float mouse_x, float mouse_y, bool use_background_color);
+void app_draw_line_of_dabs(App *app, float x0, float y0, float x1, float y1, bool use_background_color);
 void app_clear_canvas_with_current_bg(App *app);
 void app_set_background_and_clear_canvas(App *app, SDL_Color color);
 void app_recreate_canvas_texture(App *app);

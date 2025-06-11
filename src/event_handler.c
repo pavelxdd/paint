@@ -20,14 +20,13 @@ void handle_events(App *app, int *is_running, int sdl_wait_timeout)
                     app_handle_keyup(app, &e.key);
                     break;
                 case SDL_EVENT_MOUSE_WHEEL:
-                    app_handle_mousewheel(app, &e.wheel, (int)e.wheel.mouse_x, (int)e.wheel.mouse_y);
+                    app_handle_mousewheel(app, &e.wheel, e.wheel.mouse_x, e.wheel.mouse_y);
                     break;
                 case SDL_EVENT_MOUSE_MOTION:
                     if (app->is_drawing) {
-                        app_draw_stroke(app,
-                                        (int)e.motion.x,
-                                        (int)e.motion.y,
-                                        (e.motion.state & SDL_BUTTON_RMASK) ? true : false);
+                        app->has_moved_since_mousedown = true;
+                        app_draw_stroke(
+                            app, e.motion.x, e.motion.y, (e.motion.state & SDL_BUTTON_RMASK) != 0);
                     }
                     break;
                 case SDL_EVENT_MOUSE_BUTTON_DOWN:

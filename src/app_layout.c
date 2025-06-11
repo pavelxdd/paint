@@ -1,4 +1,5 @@
 #include "app.h"
+#include "ui.h"
 #include "palette.h"
 
 void app_recalculate_sizes_and_limits(App *app)

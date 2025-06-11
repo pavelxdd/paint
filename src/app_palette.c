@@ -13,8 +13,8 @@ void app_select_palette_tool(App *app, int flat_idx)
         app->emoji_selected_palette_idx = flat_idx;
     } else {
         // A color was picked.
-        // If current tool is emoji, switch to the last used color tool.
-        if (app->current_tool == TOOL_EMOJI) {
+        // If current tool is emoji or blur, switch to the last used color tool.
+        if (app->current_tool == TOOL_EMOJI || app->current_tool == TOOL_BLUR) {
             app->current_tool = app->last_color_tool;
         }
 
@@ -182,6 +182,8 @@ int app_get_current_palette_selection(App *app)
             return app->emoji_selected_palette_idx;
         case TOOL_WATER_MARKER:
             return app->water_marker_selected_palette_idx;
+        case TOOL_BLUR:
+            return -1; // Blur tool has no palette selection
         case TOOL_BRUSH:
         default:
             return app->brush_selected_palette_idx;

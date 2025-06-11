@@ -7,7 +7,7 @@ static void shuffle_char_pointers(const char **array, int n)
     if (n > 1) {
         int i = n - 1;
         while (i > 0) {
-            int j = rand() % (i + 1);
+            int j = SDL_rand(i + 1);
             const char *temp = array[j];
             array[j] = array[i];
             array[i] = temp;
@@ -31,7 +31,7 @@ static void clear_rendered_emojis(EmojiRenderer *er)
 
 EmojiRenderer *emoji_renderer_create(SDL_Renderer *ren)
 {
-    EmojiRenderer *er = (EmojiRenderer *)malloc(sizeof(EmojiRenderer));
+    EmojiRenderer *er = (EmojiRenderer *)SDL_malloc(sizeof(EmojiRenderer));
     if (!er) {
         SDL_Log("Failed to allocate EmojiRenderer");
         return NULL;
@@ -41,7 +41,7 @@ EmojiRenderer *emoji_renderer_create(SDL_Renderer *ren)
     er->emoji_font = TTF_OpenFont(EMOJI_FONT_PATH, EMOJI_FONT_SIZE);
     if (!er->emoji_font) {
         SDL_Log("Failed to load emoji font '%s': %s", EMOJI_FONT_PATH, SDL_GetError());
-        free(er);
+        SDL_free(er);
         return NULL;
     }
 
@@ -52,11 +52,11 @@ EmojiRenderer *emoji_renderer_create(SDL_Renderer *ren)
 
     if (er->num_defined_emojis > 0) {
         er->emoji_codepoints_shuffled =
-            (const char **)malloc(sizeof(char *) * er->num_defined_emojis);
+            (const char **)SDL_malloc(sizeof(char *) * er->num_defined_emojis);
         if (!er->emoji_codepoints_shuffled) {
             SDL_Log("Failed to allocate memory for shuffled emoji codepoints.");
             TTF_CloseFont(er->emoji_font);
-            free(er);
+            SDL_free(er);
             return NULL;
         }
         // Copy pointers from the original static array
@@ -65,17 +65,17 @@ EmojiRenderer *emoji_renderer_create(SDL_Renderer *ren)
         }
 
         er->emoji_textures =
-            (SDL_Texture **)calloc(er->num_defined_emojis, sizeof(SDL_Texture *));
+            (SDL_Texture **)SDL_calloc(er->num_defined_emojis, sizeof(SDL_Texture *));
         er->emoji_texture_dims =
-            (SDL_Point *)calloc(er->num_defined_emojis, sizeof(SDL_Point));
+            (SDL_Point *)SDL_calloc(er->num_defined_emojis, sizeof(SDL_Point));
 
         if (!er->emoji_textures || !er->emoji_texture_dims) {
             SDL_Log("Failed to allocate memory for emoji textures/dims.");
             TTF_CloseFont(er->emoji_font);
-            free(er->emoji_codepoints_shuffled);
-            free(er->emoji_textures); // calloc initializes to NULL, so safe to free
-            free(er->emoji_texture_dims);
-            free(er);
+            SDL_free(er->emoji_codepoints_shuffled);
+            SDL_free(er->emoji_textures);
+            SDL_free(er->emoji_texture_dims);
+            SDL_free(er);
             return NULL;
         }
         emoji_renderer_shuffle_and_render_all(er); // Initial shuffle and render
@@ -87,8 +87,7 @@ EmojiRenderer *emoji_renderer_create(SDL_Renderer *ren)
     };
     const char *default_emoji_codepoint = "🙂";
     SDL_Color fg_color_default = {0, 0, 0, 255};
-    SDL_Surface *surface = TTF_RenderText_Blended(
-                               er->emoji_font, default_emoji_codepoint, strlen(default_emoji_codepoint), fg_color_default);
+    SDL_Surface *surface = TTF_RenderText_Blended(er->emoji_font, default_emoji_codepoint, 0, fg_color_default);
     if (surface) {
         er->default_emoji_texture = SDL_CreateTextureFromSurface(er->ren_ref, surface);
         if (er->default_emoji_texture) {
@@ -112,9 +111,9 @@ void emoji_renderer_destroy(EmojiRenderer *er)
         return;
     }
     clear_rendered_emojis(er);
-    free(er->emoji_textures);
-    free(er->emoji_texture_dims);
-    free(er->emoji_codepoints_shuffled); // Free the array of pointers, not the strings themselves
+    SDL_free(er->emoji_textures);
+    SDL_free(er->emoji_texture_dims);
+    SDL_free(er->emoji_codepoints_shuffled); // Free the array of pointers, not the strings themselves
 
     if (er->default_emoji_texture) {
         SDL_DestroyTexture(er->default_emoji_texture);
@@ -123,7 +122,7 @@ void emoji_renderer_destroy(EmojiRenderer *er)
     if (er->emoji_font) {
         TTF_CloseFont(er->emoji_font);
     }
-    free(er);
+    SDL_free(er);
 }
 
 void emoji_renderer_shuffle_and_render_all(EmojiRenderer *er)
@@ -142,7 +141,7 @@ void emoji_renderer_shuffle_and_render_all(EmojiRenderer *er)
     SDL_Color fg_color = {0, 0, 0, 255}; // Emojis are typically rendered with their own colors
     for (int i = 0; i < er->num_defined_emojis; ++i) {
         const char *codepoint = er->emoji_codepoints_shuffled[i];
-        if (!codepoint || strlen(codepoint) == 0) {
+        if (!codepoint || *codepoint == '\0') {
             er->emoji_textures[i] = NULL;
             er->emoji_texture_dims[i] = (SDL_Point) {
                 0, 0
@@ -150,7 +149,7 @@ void emoji_renderer_shuffle_and_render_all(EmojiRenderer *er)
             continue;
         }
         SDL_Surface *surface =
-            TTF_RenderText_Blended(er->emoji_font, codepoint, strlen(codepoint), fg_color);
+            TTF_RenderText_Blended(er->emoji_font, codepoint, 0, fg_color);
         if (!surface) {
             SDL_Log("Failed to render emoji '%s': %s", codepoint, SDL_GetError());
             er->emoji_textures[i] = NULL;

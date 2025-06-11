@@ -1,4 +1,5 @@
 #include "color_utils.h"
+#include "ui.h"
 #include "palette.h"
 
 /* --------------------------------------------------------------------------
@@ -13,7 +14,7 @@
 /* Keep reasonable canvas height when adjusting palette rows */
 #define MIN_CANVAS_HEIGHT_FOR_PALETTE_CALC (PALETTE_HEIGHT * 10)
 
-/* Decide how many colour / emoji rows fit given current window height. */
+/* Decide how many color / emoji rows fit given current window height. */
 static void palette_calculate_and_set_dynamic_rows(Palette *p, int window_h)
 {
     for (int c_rows = MAX_DYNAMIC_COLOR_ROWS; c_rows >= MIN_DYNAMIC_COLOR_ROWS; --c_rows) {
@@ -49,7 +50,7 @@ static void palette_calculate_and_set_dynamic_rows(Palette *p, int window_h)
     p->total_rows = p->color_rows + p->emoji_rows;
 }
 
-/* Fill the colour swatch array (HSV rows + grayscale row). */
+/* Fill the color swatch array (HSV rows + grayscale row). */
 static void fill_palette_colors(Palette *p)
 {
     if (p->color_rows == 0) {
@@ -85,7 +86,7 @@ static void fill_palette_colors(Palette *p)
                 p->colors[pos] = hsv_to_rgb(hue, s, v);
             } else { /* grayscale */
                 float t = (p->cols == 1) ? 0.0f : (float)col / (p->cols - 1);
-                Uint8 g = lroundf((1.0f - t) * 255.0f);
+                Uint8 g = (Uint8)SDL_lroundf((1.0f - t) * 255.0f);
                 p->colors[pos] = (SDL_Color) {
                     g, g, g, 255
                 };
@@ -100,7 +101,7 @@ static void fill_palette_colors(Palette *p)
 
 Palette *palette_create(SDL_Renderer *ren, int window_w, int window_h)
 {
-    Palette *p = malloc(sizeof(Palette));
+    Palette *p = SDL_malloc(sizeof(Palette));
     if (!p) {
         SDL_Log("Failed to allocate Palette");
         return NULL;
@@ -109,7 +110,7 @@ Palette *palette_create(SDL_Renderer *ren, int window_w, int window_h)
     p->emoji_renderer_instance = emoji_renderer_create(ren);
     if (!p->emoji_renderer_instance) {
         SDL_Log("Failed to create EmojiRenderer");
-        free(p);
+        SDL_free(p);
         return NULL;
     }
 
@@ -124,9 +125,9 @@ void palette_destroy(Palette *p)
         return;
     }
 
-    free(p->colors);
+    SDL_free(p->colors);
     emoji_renderer_destroy(p->emoji_renderer_instance);
-    free(p);
+    SDL_free(p);
 }
 
 void palette_recreate(Palette *p, int window_w, int window_h)
@@ -141,15 +142,15 @@ void palette_recreate(Palette *p, int window_w, int window_h)
     p->total_color_cells = p->cols * p->color_rows;
 
     if (p->color_rows) {
-        p->colors = realloc(p->colors, sizeof(SDL_Color) * p->total_color_cells);
+        p->colors = SDL_realloc(p->colors, sizeof(SDL_Color) * p->total_color_cells);
         if (p->colors) {
             fill_palette_colors(p);
         } else {
-            SDL_Log("Palette: realloc for colours failed");
+            SDL_Log("Palette: realloc for colors failed");
             p->total_color_cells = 0;
         }
     } else {
-        free(p->colors);
+        SDL_free(p->colors);
         p->colors = NULL;
         p->total_color_cells = 0;
     }

@@ -26,11 +26,10 @@ void app_toggle_fullscreen(App *app)
     if (!app || !app->win) {
         return;
     }
-    Uint32 flags = SDL_GetWindowFlags(app->win);
-    if (flags & SDL_WINDOW_FULLSCREEN) {
-        SDL_SetWindowFullscreen(app->win, 0);
-    } else {
-        SDL_SetWindowFullscreen(app->win, SDL_WINDOW_FULLSCREEN);
+    // This function toggles borderless fullscreen mode.
+    bool is_fullscreen = (SDL_GetWindowFlags(app->win) & SDL_WINDOW_FULLSCREEN) != 0;
+    if (!SDL_SetWindowFullscreen(app->win, !is_fullscreen)) {
+        SDL_Log("Could not toggle fullscreen mode: %s", SDL_GetError());
     }
 }
 

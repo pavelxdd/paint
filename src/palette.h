@@ -3,13 +3,13 @@
 #include "emoji_renderer.h"
 
 typedef struct {
-    SDL_Color *colors;                /* Dynamic array of colour cells             */
+    SDL_Color *colors;                /* Dynamic array of color cells             */
     int cols;                         /* Column count (screen-width dependent)      */
-    int total_rows;                   /* colour_rows + emoji_rows                   */
-    int color_rows;                   /* Number of colour rows                      */
+    int total_rows;                   /* color_rows + emoji_rows                   */
+    int color_rows;                   /* Number of color rows                      */
     int emoji_rows;                   /* Number of emoji rows                       */
 
-    int total_color_cells;            /* colour_rows * cols                    */
+    int total_color_cells;            /* color_rows * cols                    */
     int total_emoji_cells_to_display; /* emoji_rows  * cols                    */
     int total_cells;                  /* total_color_cells + total_emoji_cells */
 

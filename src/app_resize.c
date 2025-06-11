@@ -1,4 +1,5 @@
 #include "app.h"
+#include "ui.h"
 #include "palette.h"
 
 void app_notify_resize_event(App *app, int new_w, int new_h)

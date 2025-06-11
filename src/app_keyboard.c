@@ -48,6 +48,10 @@ void app_handle_keydown(App *app, const SDL_KeyboardEvent *key_event)
             app->last_color_tool = TOOL_WATER_MARKER;
             app->needs_redraw = true;
             break;
+        case SDLK_3:
+            app->current_tool = TOOL_BLUR;
+            app->needs_redraw = true;
+            break;
         case SDLK_F1:
             app_toggle_color_palette(app);
             break;

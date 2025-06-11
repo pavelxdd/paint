@@ -1,4 +1,5 @@
 #include "app.h"
+#include "ui.h"
 #include "palette.h"
 
 /* ---------------------------------------------------------------------------
@@ -6,7 +7,7 @@
  * --------------------------------------------------------------------------*/
 App *app_create(SDL_Window *win, SDL_Renderer *ren)
 {
-    App *app = malloc(sizeof * app);
+    App *app = SDL_malloc(sizeof * app);
     if (!app) {
         SDL_Log("Failed to allocate App");
         return NULL;
@@ -65,17 +66,20 @@ App *app_create(SDL_Window *win, SDL_Renderer *ren)
 
     app->canvas_texture = NULL;
     app->stroke_buffer = NULL;
+    app->blur_source_texture = NULL;
+    app->blur_dab_texture = NULL;
     app_recreate_canvas_texture(app);
 
     app->needs_redraw = true;
     app->resize_pending = false;
     app->last_resize_timestamp = 0;
-    app->water_marker_stroke_active = false;
+    app->is_buffered_stroke_active = false;
     app->line_mode_toggled_on = false;
     app->is_drawing = false;
     app->straight_line_stroke_latched = false;
-    app->last_stroke_x = -1;
-    app->last_stroke_y = -1;
+    app->last_stroke_x = -1.0f;
+    app->last_stroke_y = -1.0f;
+    app->has_moved_since_mousedown = false;
 
     return app;
 
@@ -83,7 +87,7 @@ fail:
     if (app->palette) {
         palette_destroy(app->palette);
     }
-    free(app);
+    SDL_free(app);
     return NULL;
 }
 
@@ -98,8 +102,17 @@ void app_destroy(App *app)
     if (app->stroke_buffer) {
         SDL_DestroyTexture(app->stroke_buffer);
     }
+    if (app->blur_source_texture) {
+        SDL_DestroyTexture(app->blur_source_texture);
+    }
+    if (app->blur_dab_texture) {
+        SDL_DestroyTexture(app->blur_dab_texture);
+    }
+    if (app->blur_temp_texture) {
+        SDL_DestroyTexture(app->blur_temp_texture);
+    }
     palette_destroy(app->palette);
-    free(app);
+    SDL_free(app);
 }
 
 /* ---------------------------------------------------------------------------

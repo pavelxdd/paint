@@ -19,10 +19,11 @@ add_executable(${CMAKE_PROJECT_NAME}
     palette_draw.c
     palette_queries.c
     renderer.c
-    tool_selectors.c
     tool_brush.c
+    tool_blur.c
     tool_emoji.c
     tool_water_marker.c
+    ui.c
 )
 
 target_precompile_headers(${CMAKE_PROJECT_NAME} PRIVATE pch.h)
@@ -72,7 +73,6 @@ target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
     -Wfloat-equal
     -Winline
     -Wshadow
-    -Wvla
     -Walloca
     -Wformat=2
     -Wwrite-strings

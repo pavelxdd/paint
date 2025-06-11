@@ -1,3 +1,4 @@
+#include "ui.h"
 #include "palette.h"
 
 int palette_hit_test(const Palette *p,
@@ -40,7 +41,7 @@ int palette_hit_test(const Palette *p,
         return -1;
     }
 
-    /* colour rows */
+    /* color rows */
     if (show_colors && my < palette_start_y + colors_h) {
         int r = (my - palette_start_y) / PALETTE_HEIGHT;
         return r * p->cols + clicked_c;
