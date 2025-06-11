@@ -18,7 +18,7 @@ The development process consists of a human providing high-level tasks and objec
 - **Color Palette**: A dynamically generated palette of colors.
 - **Emoji Palette**: A shuffled grid of fun emojis to stamp on the canvas.
 - **Brush Controls**: Adjustable brush size.
-- **Straight Line Mode**: Draw straight lines with any tool.
+- **Straight Line Mode**: Draw straight lines with the Brush, Water Marker, and Emoji tools.
 - **Fullscreen Mode**: Toggle fullscreen for an immersive drawing experience.
 - **Eraser**: Use the right mouse button to erase.
 - **Dynamic UI**: The user interface adapts to the window size.

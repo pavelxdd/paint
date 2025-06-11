@@ -4,7 +4,7 @@
 
 void app_toggle_line_mode(App *app)
 {
-    if (!app) {
+    if (!app || app->current_tool == TOOL_BLUR) {
         return;
     }
     app->line_mode_toggled_on = !app->line_mode_toggled_on;
@@ -13,7 +13,7 @@ void app_toggle_line_mode(App *app)
 
 bool app_is_straight_line_mode(const App *app)
 {
-    if (!app) {
+    if (!app || app->current_tool == TOOL_BLUR) {
         return false;
     }
     const bool *keyboard_state = SDL_GetKeyboardState(NULL);

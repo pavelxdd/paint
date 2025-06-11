@@ -70,31 +70,46 @@ static void draw_backgrounds(App *app,
     }
 
     // Line Mode Toggle
-    if (app_is_straight_line_mode(app)) {
-        SDL_Color yellow = {241, 250, 140, 255}; // Dracula Yellow
-        SDL_Color dark_icon = {40, 42, 54, 255};    // Dracula Background
-        if (!SDL_SetRenderDrawColor(app->ren, yellow.r, yellow.g, yellow.b, 255)) {
+    bool line_mode_disabled = (app->current_tool == TOOL_BLUR);
+    if (line_mode_disabled) {
+        SDL_Color bg = {68, 71, 90, 255};    // Dracula 'Current Line' (dark gray)
+        SDL_Color icon = {98, 114, 164, 255}; // Dracula 'Comment' (light gray)
+        if (!SDL_SetRenderDrawColor(app->ren, bg.r, bg.g, bg.b, 255)) {
+            SDL_Log("UI: Failed to set line-mode disabled bg: %s", SDL_GetError());
+        }
+        if (!SDL_RenderFillRect(app->ren, line_r)) {
+            SDL_Log("UI: Failed to fill line-mode disabled bg: %s", SDL_GetError());
+        }
+        if (!SDL_SetRenderDrawColor(app->ren, icon.r, icon.g, icon.b, 255)) {
+            SDL_Log("UI: Failed to set line-mode disabled icon: %s", SDL_GetError());
+        }
+    } else if (app_is_straight_line_mode(app)) {
+        SDL_Color bg = {241, 250, 140, 255}; // Dracula Yellow
+        SDL_Color icon = {40, 42, 54, 255};  // Dracula Background
+        if (!SDL_SetRenderDrawColor(app->ren, bg.r, bg.g, bg.b, 255)) {
             SDL_Log("UI: Failed to set line-mode on bg color: %s", SDL_GetError());
         }
         if (!SDL_RenderFillRect(app->ren, line_r)) {
             SDL_Log("UI: Failed to fill line-mode on bg: %s", SDL_GetError());
         }
-        if (!SDL_SetRenderDrawColor(app->ren, dark_icon.r, dark_icon.g, dark_icon.b, 255)) {
+        if (!SDL_SetRenderDrawColor(app->ren, icon.r, icon.g, icon.b, 255)) {
             SDL_Log("UI: Failed to set line-mode on icon color: %s", SDL_GetError());
         }
     } else {
-        SDL_Color bg_color_line = {40, 42, 54, 255}; // Dracula 'Background'
-        if (!SDL_SetRenderDrawColor(app->ren, bg_color_line.r, bg_color_line.g, bg_color_line.b, 255)) {
+        SDL_Color bg = {40, 42, 54, 255};   // Dracula 'Background'
+        SDL_Color icon = {248, 248, 242, 255}; // Dracula 'Foreground'
+        if (!SDL_SetRenderDrawColor(app->ren, bg.r, bg.g, bg.b, 255)) {
             SDL_Log("UI: Failed to set line-mode off bg color: %s", SDL_GetError());
         }
         if (!SDL_RenderFillRect(app->ren, line_r)) {
             SDL_Log("UI: Failed to fill line-mode off bg: %s", SDL_GetError());
         }
-        if (!SDL_SetRenderDrawColor(app->ren, 248, 248, 242, 255)) { // Dracula 'Foreground'
+        if (!SDL_SetRenderDrawColor(app->ren, icon.r, icon.g, icon.b, 255)) {
             SDL_Log("UI: Failed to set line-mode off icon color: %s", SDL_GetError());
         }
     }
-    // Draw diagonal line icon
+
+    // Draw diagonal line icon (color is set by the logic above)
     int p = TOOL_SELECTOR_SIZE / 4;
     if (!SDL_RenderLine(app->ren,
                         line_r->x + p,
