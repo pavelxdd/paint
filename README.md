@@ -1,6 +1,14 @@
 # Simple Paint
 
-A very simple painting application created with C and SDL3.
+A simple paint application created with C and SDL3.
+
+## 🤖 Disclaimer
+
+This repository is an experiment in AI-driven software development. Its purpose is to test various tools and workflows in which a Large Language Model (LLM) acts as the primary code author.
+
+The development process consists of a human providing high-level tasks and objectives. In response, an AI generates all source code and subsequent modifications. This project, therefore, serves as a practical exploration of using AI as a software engineering tool.
+
+---
 
 ![Screenshot of the paint program in action](paint.png)
 
