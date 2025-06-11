@@ -58,8 +58,7 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    int running = 1;
-    while (running) {
+    while (app->running) {
         int wait_timeout;
         if (app->needs_redraw) {
             wait_timeout = 16;
@@ -69,7 +68,7 @@ int main(void)
             wait_timeout = -1;
         }
 
-        handle_events(app, &running, wait_timeout);
+        handle_events(app, wait_timeout);
         app_process_debounced_resize(app);
 
         if (app->needs_redraw) {

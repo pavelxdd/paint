@@ -4,6 +4,9 @@ void app_handle_keydown(App *app, const SDL_KeyboardEvent *key_event)
 {
     // Handle specific keys that are not modifiers for other actions.
     switch (key_event->key) {
+        case SDLK_ESCAPE:
+            app->running = 0;
+            break;
         case SDLK_LCTRL:
         case SDLK_RCTRL:
             if (key_event->repeat == 0) {

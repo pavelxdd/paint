@@ -2,4 +2,4 @@
 
 #include "app.h"
 
-void handle_events(App *app, int *is_running, int sdl_wait_timeout);
+void handle_events(App *app, int sdl_wait_timeout);

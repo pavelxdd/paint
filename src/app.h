@@ -36,6 +36,7 @@ typedef struct App {
     int window_w;
     int window_h;
 
+    bool running;
     bool needs_redraw;
 
     // For resize debouncing

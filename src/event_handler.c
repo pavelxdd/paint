@@ -1,14 +1,14 @@
 #include "app.h"
 #include "event_handler.h"
 
-void handle_events(App *app, int *is_running, int sdl_wait_timeout)
+void handle_events(App *app, int sdl_wait_timeout)
 {
     SDL_Event e;
     if (SDL_WaitEventTimeout(&e, sdl_wait_timeout)) {
         do {
             switch (e.type) {
                 case SDL_EVENT_QUIT:
-                    *is_running = 0;
+                    app->running = false;
                     break;
                 case SDL_EVENT_WINDOW_RESIZED:
                     app_notify_resize_event(app, e.window.data1, e.window.data2);

@@ -1,6 +1,8 @@
 # Simple Paint
 
-A simple paint application created with C and SDL3.
+A simple painting application created with C and SDL3. It is designed to be a fun, kid-friendly drawing program with basic tools, colors, and emojis.
+
+![Screenshot of the paint program in action](paint.png)
 
 ## 🤖 Disclaimer
 
@@ -10,21 +12,18 @@ The development process consists of a human providing high-level tasks and objec
 
 ---
 
-![Screenshot of the paint program in action](paint.png)
-
 ## Features
 
-- **Basic Drawing Tools**: Includes a standard brush and a semi-transparent "water marker".
-- **Blur Tool**: A tool to smudge and blur parts of the drawing, creating soft, blended effects.
-- **Emoji Brush**: Select from a shuffled grid of emojis to paint with.
-- **Resizable Brush**: Change the brush size with the mouse wheel or keyboard shortcuts.
-- **Color Palette**: A dynamic color palette is generated based on window size. Click to select a
-    color, or middle-click to set the background.
-- **Straight Line Mode**: Hold `Ctrl` or toggle with `Ctrl`+`Ctrl` to draw straight lines. Hold
-    `Shift` while drawing a straight line to snap to horizontal or vertical axes.
-- **Simple UI**: The UI is minimal, with tool selectors and palettes that adjust to the window
-    size.
-- **Cross-Platform**: Built with SDL3, it should compile and run on Windows, macOS, and Linux.
+- **Multiple Tools**: Brush, Water Marker, Blur, and Emoji stamper.
+- **Color Palette**: A dynamically generated palette of colors.
+- **Emoji Palette**: A shuffled grid of fun emojis to stamp on the canvas.
+- **Brush Controls**: Adjustable brush size.
+- **Straight Line Mode**: Draw straight lines with any tool.
+- **Fullscreen Mode**: Toggle fullscreen for an immersive drawing experience.
+- **Eraser**: Use the right mouse button to erase.
+- **Dynamic UI**: The user interface adapts to the window size.
+
+---
 
 ## Dependencies
 
@@ -51,6 +50,8 @@ Execute the binary from the build directory:
 ```bash
 ./build/paint
 ```
+
+---
 
 ## How to Use
 
@@ -85,6 +86,7 @@ Execute the binary from the build directory:
 
 #### UI & Window
 
+- `Escape`: Exit the application.
 - `F1`: Toggle the color palette.
 - `F2`: Toggle the emoji palette.
 - `Arrow Keys`: Navigate the active palette (color or emoji).

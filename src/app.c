@@ -70,6 +70,7 @@ App *app_create(SDL_Window *win, SDL_Renderer *ren)
     app->blur_dab_texture = NULL;
     app_recreate_canvas_texture(app);
 
+    app->running = true;
     app->needs_redraw = true;
     app->resize_pending = false;
     app->last_resize_timestamp = 0;
