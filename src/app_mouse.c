@@ -169,7 +169,33 @@ void app_handle_mousedown(App *app, const SDL_MouseButtonEvent *mouse_event)
             if (!app->straight_line_stroke_latched) {
                 app_draw_stroke(app, mx, my, (mouse_event->button == SDL_BUTTON_RIGHT));
             } else {
-                app->needs_redraw = true; // Redraw to show preview on first move
+                // In line mode, draw a single dab/stamp immediately for better UX
+                // This will be the final result if no mouse movement occurs
+                if (mouse_event->button == SDL_BUTTON_LEFT) {
+                    switch (app->current_tool) {
+                        case TOOL_BRUSH:
+                            tool_brush_draw_dab(app, (int)mx, (int)my);
+                            break;
+                        case TOOL_EMOJI:
+                            tool_emoji_draw_dab(app, (int)mx, (int)my);
+                            break;
+                        case TOOL_WATER_MARKER:
+                            // For water marker, draw a single dab to the stroke buffer
+                            if (app->stroke_buffer && SDL_SetRenderTarget(app->ren, app->stroke_buffer)) {
+                                tool_water_marker_draw_dab(app, (int)mx, (int)my);
+                                if (!SDL_SetRenderTarget(app->ren, NULL)) {
+                                    SDL_Log("Failed to reset render target after water marker dab: %s", SDL_GetError());
+                                }
+                            }
+                            break;
+                        case TOOL_BLUR:
+                            // Blur tool handles this differently, don't draw here
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                app->needs_redraw = true; // Redraw to show the dab and any future preview
             }
         } else if (mouse_event->button == SDL_BUTTON_MIDDLE) {
             app_clear_canvas_with_current_bg(app);
@@ -182,19 +208,23 @@ void app_handle_mouseup(App *app, const SDL_MouseButtonEvent *mouse_event)
     if (app->is_drawing && mouse_event->button == SDL_BUTTON_LEFT) {
         if (app->straight_line_stroke_latched) {
             if (app->current_tool == TOOL_BRUSH || app->current_tool == TOOL_EMOJI) {
-                if (SDL_SetRenderTarget(app->ren, app->canvas_texture)) {
-                    if (!SDL_SetTextureBlendMode(app->stroke_buffer, SDL_BLENDMODE_BLEND)) {
-                        SDL_Log("MUP:Failed to set blend mode for stroke buffer: %s", SDL_GetError());
+                // For line drawing with movement, render the stroke buffer to canvas
+                if (app->has_moved_since_mousedown) {
+                    if (SDL_SetRenderTarget(app->ren, app->canvas_texture)) {
+                        if (!SDL_SetTextureBlendMode(app->stroke_buffer, SDL_BLENDMODE_BLEND)) {
+                            SDL_Log("MUP:Failed to set blend mode for stroke buffer: %s", SDL_GetError());
+                        }
+                        if (!SDL_RenderTexture(app->ren, app->stroke_buffer, NULL, NULL)) {
+                            SDL_Log("MUP:Failed to render stroke buffer: %s", SDL_GetError());
+                        }
+                        if (!SDL_SetRenderTarget(app->ren, NULL)) {
+                            SDL_Log("MUP:Failed to reset render target: %s", SDL_GetError());
+                        }
+                    } else {
+                        SDL_Log("MUP:Failed to set render target to canvas: %s", SDL_GetError());
                     }
-                    if (!SDL_RenderTexture(app->ren, app->stroke_buffer, NULL, NULL)) {
-                        SDL_Log("MUP:Failed to render stroke buffer: %s", SDL_GetError());
-                    }
-                    if (!SDL_SetRenderTarget(app->ren, NULL)) {
-                        SDL_Log("MUP:Failed to reset render target: %s", SDL_GetError());
-                    }
-                } else {
-                    SDL_Log("MUP:Failed to set render target to canvas: %s", SDL_GetError());
                 }
+                // Single clicks are already handled on mousedown, no need to draw again
             } else if (app->current_tool == TOOL_WATER_MARKER) {
                 tool_water_marker_end_stroke(app);
             } else if (app->current_tool == TOOL_BLUR) {

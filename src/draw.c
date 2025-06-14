@@ -131,3 +131,51 @@ void draw_thick_line(
     draw_circle(ren, x1, y1, radius);
     draw_circle(ren, x2, y2, radius);
 }
+
+// Draw a thick line with round caps, but skip the first cap (to avoid double-drawing)
+void draw_thick_line_skip_first(
+    SDL_Renderer *ren, float x1, float y1, float x2, float y2, int thickness, SDL_Color color)
+{
+    int radius = thickness / 2;
+    if (radius < 1) {
+        radius = 1;
+    }
+
+    // For zero-length lines, don't draw anything (since we're skipping the first cap)
+    if (SDL_fabsf(x1 - x2) < 1e-5f && SDL_fabsf(y1 - y2) < 1e-5f) {
+        return;
+    }
+
+    // Use geometry for the line shaft
+    float angle = SDL_atan2f(y2 - y1, x2 - x1);
+    float sin_angle = SDL_sinf(angle);
+    float cos_angle = SDL_cosf(angle);
+    float half_thickness = (float)radius;
+
+    SDL_FColor fcolor = {
+        color.r / 255.0f,
+        color.g / 255.0f,
+        color.b / 255.0f,
+        color.a / 255.0f,
+    };
+
+    // The four corners of the rectangle making up the line shaft
+    SDL_Vertex vertices[4] = {
+        {{x1 - half_thickness * sin_angle, y1 + half_thickness * cos_angle}, fcolor, {0, 0}},
+        {{x2 - half_thickness * sin_angle, y2 + half_thickness * cos_angle}, fcolor, {0, 0}},
+        {{x2 + half_thickness * sin_angle, y2 - half_thickness * cos_angle}, fcolor, {0, 0}},
+        {{x1 + half_thickness * sin_angle, y1 - half_thickness * cos_angle}, fcolor, {0, 0}},
+    };
+
+    // The rectangle is formed by two triangles: (0, 1, 3) and (1, 2, 3).
+    int indices[6] = {0, 1, 3, 1, 2, 3};
+    if (!SDL_RenderGeometry(ren, NULL, vertices, 4, indices, 6)) {
+        SDL_Log("draw_thick_line_skip_first: SDL_RenderGeometry failed: %s", SDL_GetError());
+    }
+
+    // Draw circle only at the end (skip the first cap)
+    if (!SDL_SetRenderDrawColor(ren, color.r, color.g, color.b, color.a)) {
+        SDL_Log("draw_thick_line_skip_first: SDL_SetRenderDrawColor for cap failed: %s", SDL_GetError());
+    }
+    draw_circle(ren, x2, y2, radius);
+}

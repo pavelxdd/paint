@@ -1,7 +1,7 @@
 #include "app.h"
 #include "ui.h"
 
-static void draw_line_of_emojis(App *app, float x0, float y0, float x1, float y1)
+static void draw_line_of_emojis(App *app, float x0, float y0, float x1, float y1, bool skip_first)
 {
     SDL_Texture *emoji_tex = NULL;
     int ew = 0, eh = 0;
@@ -26,10 +26,12 @@ static void draw_line_of_emojis(App *app, float x0, float y0, float x1, float y1
         h = 1;
     }
 
-    // Draw first emoji at the start point
-    SDL_FRect dst_start = {x0 - w / 2.0f, y0 - h / 2.0f, (float)w, (float)h};
-    if (!SDL_RenderTexture(app->ren, emoji_tex, NULL, &dst_start)) {
-        SDL_Log("Emoji: Failed to render start emoji: %s", SDL_GetError());
+    // Draw first emoji at the start point (unless skipping)
+    if (!skip_first) {
+        SDL_FRect dst_start = {x0 - w / 2.0f, y0 - h / 2.0f, (float)w, (float)h};
+        if (!SDL_RenderTexture(app->ren, emoji_tex, NULL, &dst_start)) {
+            SDL_Log("Emoji: Failed to render start emoji: %s", SDL_GetError());
+        }
     }
 
     float dx = x1 - x0;
@@ -89,5 +91,10 @@ void tool_emoji_draw_dab(App *app, int x, int y)
 
 void tool_emoji_draw_line_preview(App *app, float x0, float y0, float x1, float y1)
 {
-    draw_line_of_emojis(app, x0, y0, x1, y1);
+    draw_line_of_emojis(app, x0, y0, x1, y1, false);
+}
+
+void tool_emoji_draw_line_preview_skip_first(App *app, float x0, float y0, float x1, float y1)
+{
+    draw_line_of_emojis(app, x0, y0, x1, y1, true);
 }

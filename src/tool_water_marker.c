@@ -106,3 +106,46 @@ void tool_water_marker_draw_line_preview(App *app, float x0, float y0, float x1,
     }
     draw_line_bresenham((int)x0, (int)y0, (int)x1, (int)y1, draw_square_dab_callback, app);
 }
+
+static void draw_square_dab_callback_skip_first(int x, int y, void *userdata)
+{
+    typedef struct {
+        App *app;
+        bool *is_first;
+    } SkipFirstData;
+
+    SkipFirstData *data = (SkipFirstData *)userdata;
+
+    // Skip the first call
+    if (*data->is_first) {
+        *data->is_first = false;
+        return;
+    }
+
+    App *app = data->app;
+    int side = (int)SDL_lroundf(app->brush_radius * 2 * 1.5f);
+    SDL_FRect rect = {(float)x - side / 2.0f, (float)y - side / 2.0f, (float)side, (float)side};
+    if (!SDL_RenderFillRect(app->ren, &rect)) {
+        SDL_Log("Water: Failed to draw preview dab rect (skip first): %s", SDL_GetError());
+    }
+}
+
+void tool_water_marker_draw_line_preview_skip_first(App *app, float x0, float y0, float x1, float y1)
+{
+    if (!SDL_SetRenderDrawColor(app->ren,
+                                app->water_marker_color.r,
+                                app->water_marker_color.g,
+                                app->water_marker_color.b,
+                                255)) {
+        SDL_Log("Water: Failed to set color for preview (skip first): %s", SDL_GetError());
+    }
+
+    bool is_first = true;
+    typedef struct {
+        App *app;
+        bool *is_first;
+    } SkipFirstData;
+
+    SkipFirstData data = {app, &is_first};
+    draw_line_bresenham((int)x0, (int)y0, (int)x1, (int)y1, draw_square_dab_callback_skip_first, &data);
+}

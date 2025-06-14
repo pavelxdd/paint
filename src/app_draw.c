@@ -122,15 +122,30 @@ void app_draw_stroke(App *app, float mouse_x, float mouse_y, bool use_background
         }
 
         // Draw the preview line based on the active tool
+        // Use "skip first" versions if we haven't moved yet (meaning we drew the initial dab on mousedown)
+        bool use_skip_first = !app->has_moved_since_mousedown;
+
         switch (app->current_tool) {
             case TOOL_BRUSH:
-                tool_brush_draw_line_preview(app, x0, y0, x1, y1);
+                if (use_skip_first) {
+                    tool_brush_draw_line_preview_skip_first(app, x0, y0, x1, y1);
+                } else {
+                    tool_brush_draw_line_preview(app, x0, y0, x1, y1);
+                }
                 break;
             case TOOL_WATER_MARKER:
-                tool_water_marker_draw_line_preview(app, x0, y0, x1, y1);
+                if (use_skip_first) {
+                    tool_water_marker_draw_line_preview_skip_first(app, x0, y0, x1, y1);
+                } else {
+                    tool_water_marker_draw_line_preview(app, x0, y0, x1, y1);
+                }
                 break;
             case TOOL_EMOJI:
-                tool_emoji_draw_line_preview(app, x0, y0, x1, y1);
+                if (use_skip_first) {
+                    tool_emoji_draw_line_preview_skip_first(app, x0, y0, x1, y1);
+                } else {
+                    tool_emoji_draw_line_preview(app, x0, y0, x1, y1);
+                }
                 break;
             case TOOL_BLUR:
                 tool_blur_draw_line_preview(app, x0, y0, x1, y1);

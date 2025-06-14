@@ -8,3 +8,5 @@ void draw_circle(SDL_Renderer *ren, float cx, float cy, int radius);
 void draw_hollow_circle(SDL_Renderer *ren, float cx, float cy, int radius);
 void draw_thick_line(
     SDL_Renderer *ren, float x1, float y1, float x2, float y2, int thickness, SDL_Color color);
+void draw_thick_line_skip_first(
+    SDL_Renderer *ren, float x1, float y1, float x2, float y2, int thickness, SDL_Color color);

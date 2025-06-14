@@ -22,3 +22,8 @@ void tool_brush_draw_line_preview(App *app, float x0, float y0, float x1, float 
 {
     draw_thick_line(app->ren, x0, y0, x1, y1, app->brush_radius * 2, app->current_color);
 }
+
+void tool_brush_draw_line_preview_skip_first(App *app, float x0, float y0, float x1, float y1)
+{
+    draw_thick_line_skip_first(app->ren, x0, y0, x1, y1, app->brush_radius * 2, app->current_color);
+}
