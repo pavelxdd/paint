@@ -1,7 +1,8 @@
 #pragma once
 
-// Ensure this font is available
-#define EMOJI_FONT_PATH "/usr/share/fonts/noto/NotoColorEmoji.ttf"
+#include "embedded_emoji_font.h"
+
+// Font path is now defined in CMakeLists.txt and embedded in the binary
 #define EMOJI_FONT_SIZE 48 // Font size for rendering emojis to texture
 
 typedef struct EmojiRenderer {

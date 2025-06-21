@@ -38,9 +38,19 @@ EmojiRenderer *emoji_renderer_create(SDL_Renderer *ren)
     }
 
     er->ren_ref = ren;
-    er->emoji_font = TTF_OpenFont(EMOJI_FONT_PATH, EMOJI_FONT_SIZE);
+
+    // Use the embedded font data instead of loading from file
+    SDL_IOStream *font_stream = SDL_IOFromConstMem(EMBEDDED_EMOJI_FONT_DATA,
+                                                   EMBEDDED_EMOJI_FONT_SIZE);
+    if (!font_stream) {
+        SDL_Log("Failed to create IOStream from embedded font data: %s", SDL_GetError());
+        SDL_free(er);
+        return NULL;
+    }
+
+    er->emoji_font = TTF_OpenFontIO(font_stream, true, EMOJI_FONT_SIZE);
     if (!er->emoji_font) {
-        SDL_Log("Failed to load emoji font '%s': %s", EMOJI_FONT_PATH, SDL_GetError());
+        SDL_Log("Failed to load embedded emoji font: %s", SDL_GetError());
         SDL_free(er);
         return NULL;
     }
