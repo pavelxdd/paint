@@ -82,6 +82,13 @@ App *app_create(SDL_Window *win, SDL_Renderer *ren)
     app->last_stroke_y = -1.0f;
     app->has_moved_since_mousedown = false;
 
+    // Initialize dirty rectangle tracking
+    app->has_dirty_rect = true;  // Start with a redraw needed
+    app->full_redraw = true;     // Start with a full redraw
+    app->dirty_rect = (SDL_FRect) {
+        0, 0, (float)app->canvas_texture_w, (float)app->canvas_display_area_h
+    };
+
     return app;
 
 fail:

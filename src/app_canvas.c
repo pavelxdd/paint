@@ -27,7 +27,9 @@ void app_clear_canvas_with_current_bg(App *app)
     if (!SDL_SetRenderTarget(app->ren, NULL)) {
         SDL_Log("Failed to reset render target: %s", SDL_GetError());
     }
-    app->needs_redraw = true;
+
+    // Mark the entire canvas as dirty since we cleared it
+    app_mark_full_redraw(app);
 }
 
 void app_recreate_canvas_texture(App *app)
@@ -41,6 +43,11 @@ void app_recreate_canvas_texture(App *app)
 
     SDL_Texture *new_tex =
         SDL_CreateTexture(app->ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+
+    // Set blend mode for the new texture
+    if (new_tex && !SDL_SetTextureBlendMode(new_tex, SDL_BLENDMODE_BLEND)) {
+        SDL_Log("Failed to set blend mode for new canvas texture: %s", SDL_GetError());
+    }
     if (!new_tex) {
         SDL_Log("Failed to resize canvas texture: %s", SDL_GetError());
         return;
@@ -73,6 +80,11 @@ void app_recreate_canvas_texture(App *app)
     app->canvas_texture = new_tex;
     app->canvas_texture_w = w;
     app->canvas_texture_h = h;
+
+    // Set blend mode for the canvas texture
+    if (!SDL_SetTextureBlendMode(app->canvas_texture, SDL_BLENDMODE_BLEND)) {
+        SDL_Log("Failed to set blend mode for canvas texture: %s", SDL_GetError());
+    }
 
     // Recreate stroke buffer
     if (app->stroke_buffer) {
@@ -137,5 +149,5 @@ void app_recreate_canvas_texture(App *app)
         }
     }
 
-    app->needs_redraw = true;
+    app_mark_full_redraw(app);
 }

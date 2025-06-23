@@ -55,6 +55,11 @@ typedef struct App {
     float last_stroke_x;
     float last_stroke_y;
     bool has_moved_since_mousedown;
+
+    // Dirty rectangle tracking
+    bool has_dirty_rect;    // Flag to indicate that a redraw is needed
+    bool full_redraw;       // Flag to indicate that the entire canvas needs redrawing
+    SDL_FRect dirty_rect;   // The bounding box of all dirty regions since last redraw
 } App;
 
 /* --- Lifecycle (app.c) --- */
@@ -75,6 +80,11 @@ bool app_is_straight_line_mode(const App *app);
 void app_toggle_fullscreen(App *app);
 void app_toggle_color_palette(App *app);
 void app_toggle_emoji_palette(App *app);
+
+/* --- Dirty Rectangle Management (app_state.c) --- */
+void app_add_dirty_rect(App *app, float x, float y, float w, float h);
+void app_mark_full_redraw(App *app);
+void app_clear_dirty_rects(App *app);
 
 /* --- Drawing & Canvas (app_draw.c, app_canvas.c) --- */
 void app_draw_stroke(App *app, float mouse_x, float mouse_y, bool use_background_color);

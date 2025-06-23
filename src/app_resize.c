@@ -11,7 +11,7 @@ void app_notify_resize_event(App *app, int new_w, int new_h)
     app->window_h = new_h < 1 ? 1 : new_h;
     app->last_resize_timestamp = SDL_GetTicks();
     app->resize_pending = true;
-    app->needs_redraw = true;
+    app_mark_full_redraw(app);
 }
 
 void app_process_debounced_resize(App *app)
@@ -67,6 +67,6 @@ void app_process_debounced_resize(App *app)
         app_recreate_canvas_texture(app);
 
         app->resize_pending = false;
-        app->needs_redraw = true;
+        app_mark_full_redraw(app);
     }
 }

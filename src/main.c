@@ -58,22 +58,28 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    while (app->running) {
-        int wait_timeout;
-        if (app->needs_redraw) {
-            wait_timeout = 16;
-        } else if (app->resize_pending) {
-            wait_timeout = RESIZE_DEBOUNCE_MS / 4;
-        } else {
-            wait_timeout = -1;
-        }
+    Uint64 last_render_time = 0;
 
+    while (app->running) {
+        Uint64 frame_start = SDL_GetTicks();
+
+        // Process events with a short timeout
+        int wait_timeout = 1;  // Always use a short timeout for responsiveness
         handle_events(app, wait_timeout);
         app_process_debounced_resize(app);
 
-        if (app->needs_redraw) {
+        // Render if needed and enough time has passed since last render
+        Uint64 current_time = SDL_GetTicks();
+        if (app->needs_redraw && (current_time - last_render_time >= 16)) {  // ~60 FPS
             render_scene(app);
             app->needs_redraw = false;
+            last_render_time = current_time;
+        }
+
+        // Simple frame rate limiting to avoid excessive CPU usage
+        Uint64 frame_time = SDL_GetTicks() - frame_start;
+        if (frame_time < 8) {  // Ensure we don't spin too fast
+            SDL_Delay(1);
         }
     }
 

@@ -34,7 +34,6 @@ static void app_draw_dab_callback(int x, int y, void *userdata)
         if (!SDL_SetRenderTarget(app->ren, NULL)) {
             SDL_Log("Failed to reset render target after eraser dab: %s", SDL_GetError());
         }
-        app->needs_redraw = true;
         return;
     }
 
@@ -54,11 +53,43 @@ static void app_draw_dab_callback(int x, int y, void *userdata)
         default:
             return; // Should not happen
     }
-    app->needs_redraw = true;
 }
 
 void app_draw_line_of_dabs(App *app, float x0, float y0, float x1, float y1, bool use_background_color)
 {
+    // Calculate one dirty rectangle for the entire line segment for efficiency.
+    float radius = (float)app->brush_radius;
+    float dirty_margin = 2.0f;
+    float dirty_size_multiplier = 1.0f;
+
+    // Eraser uses brush radius, but other tools might have larger dabs.
+    if (app->current_tool == TOOL_EMOJI && !use_background_color) {
+        // The emoji tool draws with a height of (brush_radius * 6), meaning its
+        // visual radius is (brush_radius * 3). A multiplier of 3.0 here is
+        // applied to the base brush_radius to get a dirty rectangle radius that
+        // exactly matches the visual radius. The `dirty_margin` provides the
+        // necessary safe area for antialiasing or other edge effects.
+        dirty_size_multiplier = 3.0f;
+    } else if (app->current_tool == TOOL_WATER_MARKER && !use_background_color) {
+        // Water marker draws a square that is 1.5x the brush diameter.
+        dirty_size_multiplier = 1.5f;
+    } else if (app->current_tool == TOOL_BLUR && !use_background_color) {
+        // Blur tool has a visual radius twice the brush radius.
+        dirty_size_multiplier = 2.0f;
+    }
+
+    float dirty_radius = radius * dirty_size_multiplier;
+    float min_x = (x0 < x1) ? x0 : x1;
+    float max_x = (x0 > x1) ? x0 : x1;
+    float min_y = (y0 < y1) ? y0 : y1;
+    float max_y = (y0 > y1) ? y0 : y1;
+
+    float dirty_x = min_x - dirty_radius - dirty_margin;
+    float dirty_y = min_y - dirty_radius - dirty_margin;
+    float dirty_w = (max_x - min_x) + 2.0f * (dirty_radius + dirty_margin);
+    float dirty_h = (max_y - min_y) + 2.0f * (dirty_radius + dirty_margin);
+    app_add_dirty_rect(app, dirty_x, dirty_y, dirty_w, dirty_h);
+
     DabInfo info = {app, use_background_color};
     draw_line_bresenham((int)x0, (int)y0, (int)x1, (int)y1, app_draw_dab_callback, &info);
 }
@@ -157,7 +188,10 @@ void app_draw_stroke(App *app, float mouse_x, float mouse_y, bool use_background
         if (!SDL_SetRenderTarget(app->ren, NULL)) {
             SDL_Log("Failed to reset render target after preview: %s", SDL_GetError());
         }
-        app->needs_redraw = true;
+
+        // For straight line previews, we need to mark the entire canvas as dirty
+        // since we're rendering the preview on top of the canvas
+        app_mark_full_redraw(app);
         return;
     }
 
