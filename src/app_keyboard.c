@@ -37,6 +37,7 @@ void app_handle_keydown(App *app, const SDL_KeyboardEvent *key_event)
             app->needs_redraw = true;
             break;
         }
+        case SDLK_GRAVE:
         case SDLK_0:
             app->current_tool = TOOL_EMOJI;
             app->needs_redraw = true;
