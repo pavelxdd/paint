@@ -1,15 +1,15 @@
 set(EMOJI_FONT_PATH "/usr/share/fonts/noto/NotoColorEmoji.ttf"
     CACHE STRING "Path to the Noto Emoji font file")
 
-set(EMOJI_FONT_FILE "${CMAKE_CURRENT_BINARY_DIR}/embedded_emoji_font.c")
+set(EMOJI_FONT_FILE "${CMAKE_CURRENT_BINARY_DIR}/emoji_font.c")
 
 add_custom_command(
     OUTPUT ${EMOJI_FONT_FILE}
     COMMAND ${CMAKE_COMMAND}
         -DEMOJI_FONT_PATH=${EMOJI_FONT_PATH}
         -DEMOJI_FONT_FILE=${EMOJI_FONT_FILE}
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/embedded_emoji_font.cmake
-    DEPENDS ${EMOJI_FONT_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/embedded_emoji_font.cmake
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/emoji_font.cmake
+    DEPENDS ${EMOJI_FONT_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/emoji_font.cmake
     COMMENT "Generating embedded font data from ${EMOJI_FONT_PATH}"
     VERBATIM
 )
@@ -47,8 +47,8 @@ target_precompile_headers(${CMAKE_PROJECT_NAME} PRIVATE pch.h)
 
 # Make sure the embedded font header is available
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/embedded_emoji_font.h
-    ${CMAKE_CURRENT_BINARY_DIR}/embedded_emoji_font.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/emoji_font.h
+    ${CMAKE_CURRENT_BINARY_DIR}/emoji_font.h
     COPYONLY
 )
 

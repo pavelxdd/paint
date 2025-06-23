@@ -1,6 +1,6 @@
 #pragma once
 
-#include "embedded_emoji_font.h"
+#include "emoji_font.h"
 
 // Font path is now defined in CMakeLists.txt and embedded in the binary
 #define EMOJI_FONT_SIZE 48 // Font size for rendering emojis to texture
