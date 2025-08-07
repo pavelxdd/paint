@@ -1,5 +1,10 @@
-set(EMOJI_FONT_PATH "/usr/share/fonts/noto/NotoColorEmoji.ttf"
-    CACHE STRING "Path to the Noto Emoji font file")
+if(APPLE)
+    set(EMOJI_FONT_PATH "/System/Library/Fonts/Apple Color Emoji.ttc"
+        CACHE STRING "Path to the Apple Color Emoji font file")
+else()
+    set(EMOJI_FONT_PATH "/usr/share/fonts/noto/NotoColorEmoji.ttf"
+        CACHE STRING "Path to the Noto Emoji font file")
+endif()
 
 set(EMOJI_FONT_FILE "${CMAKE_CURRENT_BINARY_DIR}/emoji_font.c")
 
